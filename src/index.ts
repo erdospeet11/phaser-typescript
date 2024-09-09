@@ -44,17 +44,9 @@ class MyGame extends Phaser.Scene {
 
     // Move player based on WASD keys
     if (this.input.keyboard!.keys[Phaser.Input.Keyboard.KeyCodes.A].isDown) {
-      if (facingRight) {
-        this.player.setFlipX(true);
-        facingRight = false;
-      }
       this.player.x -= speed;
     }
     if (this.input.keyboard!.keys[Phaser.Input.Keyboard.KeyCodes.D].isDown) {
-      if (!facingRight) {
-        this.player.setFlipX(false);
-        facingRight = true;
-      }
       this.player.x += speed;
     }
     if (this.input.keyboard!.keys[Phaser.Input.Keyboard.KeyCodes.W].isDown) {
