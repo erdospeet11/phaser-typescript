@@ -33,6 +33,19 @@ class MyGame extends Phaser.Scene {
       fontSize: '24px'
     });
     this.pointsText.setOrigin(1, 0);
+
+    // Set up the camera to follow the player
+    this.cameras.main.startFollow(this.player);
+    
+    // Optional: Set camera bounds if you want to restrict camera movement
+    this.cameras.main.setBounds(0, 0, 1600, 1200); // Adjust these values based on your game world size
+    
+    // Optional: Add smooth camera movement
+    this.cameras.main.setZoom(2); // You can adjust zoom level
+    this.cameras.main.setLerp(0.1, 0.1); // Adds smooth camera movement (values between 0 and 1)
+    
+    // Optional: Add deadzone - area where player can move without moving camera
+    // this.cameras.main.setDeadzone(100, 100);
   }
 
   update() {
@@ -65,14 +78,14 @@ class MyGame extends Phaser.Scene {
 const config: Phaser.Types.Core.GameConfig = {
   type: AUTO,
   width: 800,
-  height: 600,
+  height: 550,
   scene: MyGame,
   scale: {
     mode: Scale.FIT,
     autoCenter: Scale.CENTER_BOTH
   },
-  pixelArt: true,
-  antialias: false,
+  pixelArt: true,  // This enables nearest-neighbor interpolation
+  antialias: false, // This disables anti-aliasing
 };
 
 const game = new Phaser.Game(config);
