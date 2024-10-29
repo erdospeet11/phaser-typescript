@@ -1,20 +1,27 @@
 import { Game, AUTO, Scale } from 'phaser';
+import { Player } from './Player';
+import { Enemy } from './Enemy';
+import { MenuScene } from './scenes/MenuScene';
+import { HealthPickup } from './pickups/HealthPickup';
+import { CoinPickup } from './pickups/CoinPickup';
+import { PowerupPickup } from './pickups/PowerupPickup';
 
 class MyGame extends Phaser.Scene {
-  private player!: Phaser.GameObjects.Sprite;
+  private player!: Player;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private tileSprite!: Phaser.GameObjects.TileSprite;
-
-  private pointsText!: Phaser.GameObjects.Text;
-  private points: number = 0;
+  private enemy!: Enemy;
+  private healthPickup!: HealthPickup;
 
   constructor() {
-    super('MyGame');
+    super({ key: 'GameScene' });
   }
 
   preload() {
     this.load.image('player', 'assets/player.png');
     this.load.image('tile', 'assets/tile.png'); // Make sure this path is correct
+    this.load.image('enemy', 'assets/enemy.png');
+    this.load.image('health-pickup', 'assets/health_pickup.png');
   }
 
   create() {
@@ -22,56 +29,71 @@ class MyGame extends Phaser.Scene {
     this.tileSprite = this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'tile');
     this.tileSprite.setOrigin(0, 0);
 
-    this.player = this.add.sprite(400, 300, 'player');
+    this.player = new Player(this, 400, 300);
     this.player.setScale(1);
     // Set up keyboard input
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.input.keyboard!.addKeys('W,A,S,D');
 
-    this.pointsText = this.add.text(this.cameras.main.width - 20, 20, 'Points: 0', {
-      color: '#ffffff',
-      fontSize: '24px'
-    });
-    this.pointsText.setOrigin(1, 0);
+    this.setupCamera();
 
-    // Set up the camera to follow the player
-    this.cameras.main.startFollow(this.player);
+    this.enemy = new Enemy(this, 600, 300);
+
+    // Create a pickup
+    this.healthPickup = new HealthPickup(this, 300, 300);
     
-    // Optional: Set camera bounds if you want to restrict camera movement
-    this.cameras.main.setBounds(0, 0, 1600, 1200); // Adjust these values based on your game world size
+    // Add collision between player and pickup
+    this.physics.add.overlap(
+      this.player,
+      this.healthPickup,
+      this.handlePickupCollision,
+      undefined,
+      this
+    );
+
+    // Add ESC key handler
+    this.input.keyboard!.on('keydown-ESC', () => {
+      this.scene.pause();  // Pause current scene
+      this.scene.launch('MenuScene');  // Launch menu scene
+    });
+
+    //DEBUG - FOR COLLISION DETECTION
+
+    // Enable physics debug drawing
+    this.physics.world.createDebugGraphic();
     
-    // Optional: Add smooth camera movement
-    this.cameras.main.setZoom(2); // You can adjust zoom level
-    this.cameras.main.setLerp(0.1, 0.1); // Adds smooth camera movement (values between 0 and 1)
+    // Optional: Set debug colors
+    this.physics.world.debugGraphic.setAlpha(0.75);
     
-    // Optional: Add deadzone - area where player can move without moving camera
-    // this.cameras.main.setDeadzone(100, 100);
+    // Optional: Configure which debug features to show
+    this.physics.world.defaults.debugShowBody = true;
+    this.physics.world.defaults.debugShowStaticBody = true;
+    this.physics.world.defaults.debugShowVelocity = true;
+    this.physics.world.defaults.bodyDebugColor = 0xff00ff;
+  }
+
+  private handlePickupCollision(player: any, pickup: any) {
+    (pickup as HealthPickup).collect(player as Player);
+  }
+
+  setupCamera() {
+        // Set up the camera to follow the player
+        this.cameras.main.startFollow(this.player);
+    
+        // Optional: Set camera bounds if you want to restrict camera movement
+        this.cameras.main.setBounds(0, 0, 1600, 1200); // Adjust these values based on your game world size
+        
+        // Optional: Add smooth camera movement
+        this.cameras.main.setZoom(2); // You can adjust zoom level
+        this.cameras.main.setLerp(0.1, 0.1); // Adds smooth camera movement (values between 0 and 1)
+        
+        // Optional: Add deadzone - area where player can move without moving camera
+        // this.cameras.main.setDeadzone(100, 100);
   }
 
   update() {
-    const speed = 1;
-    var facingRight = true;
-
-    this.points += 1/60; // Assuming 60 FPS
-    this.pointsText.setText(`Points: ${Math.floor(this.points)}`);
-
-    // Move player based on WASD keys
-    if (this.input.keyboard!.keys[Phaser.Input.Keyboard.KeyCodes.A].isDown) {
-      this.player.x -= speed;
-    }
-    if (this.input.keyboard!.keys[Phaser.Input.Keyboard.KeyCodes.D].isDown) {
-      this.player.x += speed;
-    }
-    if (this.input.keyboard!.keys[Phaser.Input.Keyboard.KeyCodes.W].isDown) {
-      this.player.y -= speed;
-    }
-    if (this.input.keyboard!.keys[Phaser.Input.Keyboard.KeyCodes.S].isDown) {
-      this.player.y += speed;
-    }
-
-    // Optional: Scroll the tile sprite for a moving background effect
-    // this.tileSprite.tilePositionX += 0.5;
-    // this.tileSprite.tilePositionY += 0.5;
+    this.player.update();
+    this.enemy.update(this.player);
   }
 }
 
@@ -79,7 +101,17 @@ const config: Phaser.Types.Core.GameConfig = {
   type: AUTO,
   width: 800,
   height: 550,
-  scene: MyGame,
+  physics: {
+    default: 'arcade',
+    arcade: {
+      gravity: { x: 0, y: 0 },
+      debug: true,
+      debugShowBody: true,
+      debugShowStaticBody: true,
+      debugShowVelocity: true
+    }
+  },
+  scene: [MyGame, MenuScene],
   scale: {
     mode: Scale.FIT,
     autoCenter: Scale.CENTER_BOTH
