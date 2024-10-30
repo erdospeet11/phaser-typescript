@@ -1,3 +1,6 @@
+import { Ability } from './abilities/Ability';
+import { Fireball } from './abilities/Fireball';
+
 export class Player extends Phaser.GameObjects.Sprite {
   private health: number;
   private maxHealth: number;
@@ -9,6 +12,7 @@ export class Player extends Phaser.GameObjects.Sprite {
   private isPoweredUp: boolean = false;
   private powerupTimer?: Phaser.Time.TimerEvent;
   private baseAttack: number = 10;  // Store base attack value
+  private abilities: Ability[];
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'player');
@@ -31,6 +35,12 @@ export class Player extends Phaser.GameObjects.Sprite {
     // Set up keyboard input
     this.cursors = scene.input.keyboard!.createCursorKeys();
     scene.input.keyboard!.addKeys('W,A,S,D');
+
+    // Initialize abilities
+    this.abilities = [
+      new Fireball(scene, this),
+      // Add more abilities here
+    ];
   }
 
   update() {
@@ -49,6 +59,12 @@ export class Player extends Phaser.GameObjects.Sprite {
     if (this.scene.input.keyboard!.keys[Phaser.Input.Keyboard.KeyCodes.S].isDown) {
       this.y += this.speed;
     }
+
+    // Bind ability keys
+    this.scene.input.keyboard!.on('keydown-Q', () => {
+      this.useAbility(0);
+    });
+    // Add more keybindings for other abilities
   }
 
   damage(amount: number): void {
@@ -131,5 +147,11 @@ export class Player extends Phaser.GameObjects.Sprite {
 
   getMoney(): number {
     return this.money;
+  }
+
+  private useAbility(index: number): void {
+    if (index >= 0 && index < this.abilities.length) {
+      this.abilities[index].use();
+    }
   }
 } 

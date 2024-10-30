@@ -8,10 +8,18 @@ export class Enemy extends Phaser.GameObjects.Sprite {
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'enemy');
     
+    // Enable physics on this sprite
+    scene.physics.add.existing(this);
+
+    // Configure physics body
+    const body = this.body as Phaser.Physics.Arcade.Body;
+    body.setCollideWorldBounds(true);
+    body.setSize(16, 16); // Adjust these values based on your sprite size
+    
     this.health = 50;
     this.maxHealth = 50;
     this.attack = 5;
-    this.speed = 0.5; // Adjust this value to change enemy speed
+    this.speed = 0.25; // Adjust this value to change enemy speed
     
     this.healthBar = scene.add.graphics();
     scene.add.existing(this);
@@ -31,12 +39,12 @@ export class Enemy extends Phaser.GameObjects.Sprite {
     
     // Bar background
     this.healthBar.fillStyle(0xff0000);
-    this.healthBar.fillRect(this.x - 25, this.y - 40, 50, 5);
+    this.healthBar.fillRect(this.x-10, this.y-20, 50, 5);
     
     // Health remaining
     const width = (this.health / this.maxHealth) * 50;
     this.healthBar.fillStyle(0x00ff00);
-    this.healthBar.fillRect(this.x - 25, this.y - 40, width, 5);
+    this.healthBar.fillRect(this.x-10, this.y-20, width, 5);
   }
 
   private handleDeath(): void {
@@ -56,16 +64,15 @@ export class Enemy extends Phaser.GameObjects.Sprite {
       const dirX = dx / distance;
       const dirY = dy / distance;
 
-      // Move toward player
-      this.x += dirX * this.speed;
-      this.y += dirY * this.speed;
+      // Use velocity instead of directly modifying position
+      const body = this.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(
+        dirX * this.speed * 100,
+        dirY * this.speed * 100
+      );
 
       // Flip sprite based on movement direction
-      if (dirX < 0) {
-        this.setFlipX(true);
-      } else {
-        this.setFlipX(false);
-      }
+      this.setFlipX(dirX < 0);
     }
 
     this.updateHealthBar();

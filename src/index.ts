@@ -56,7 +56,16 @@ class MyGame extends Phaser.Scene {
       this.scene.pause();  // Pause current scene
       this.scene.launch('MenuScene');  // Launch menu scene
     });
+    
 
+    this.setupDebug();
+  }
+
+  private handlePickupCollision(player: any, pickup: any) {
+    (pickup as HealthPickup).collect(player as Player);
+  }
+
+  setupDebug() {
     //DEBUG - FOR COLLISION DETECTION
 
     // Enable physics debug drawing
@@ -70,10 +79,6 @@ class MyGame extends Phaser.Scene {
     this.physics.world.defaults.debugShowStaticBody = true;
     this.physics.world.defaults.debugShowVelocity = true;
     this.physics.world.defaults.bodyDebugColor = 0xff00ff;
-  }
-
-  private handlePickupCollision(player: any, pickup: any) {
-    (pickup as HealthPickup).collect(player as Player);
   }
 
   setupCamera() {
@@ -97,6 +102,7 @@ class MyGame extends Phaser.Scene {
   }
 }
 
+//initialize game config
 const config: Phaser.Types.Core.GameConfig = {
   type: AUTO,
   width: 800,
@@ -120,4 +126,5 @@ const config: Phaser.Types.Core.GameConfig = {
   antialias: false, // This disables anti-aliasing
 };
 
+//initialize game
 const game = new Phaser.Game(config);
