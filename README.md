@@ -24,3 +24,35 @@ TODOs:
             - throws daggers
         - healer
             - heals herself
+
+- random dungeon generation
+    - or make an infinite dungeon
+    - 
+    
+## Features
+- [] Map
+- [] Player
+- [] Enemies
+    - Walker (it walks toward the player)
+    - Caster (it casts projectiles toward the player)
+    - Summoner (it summons minions)
+    - Boss
+- [] Abilities
+    - [x] Dash
+    - [ ] Projectile
+- [] UI
+    - [] Health bar
+    - [] Inventory
+- [] 
+- [] 
+- [] 
+- [] 
+- [] 
+- [] 
+- [] 
+- [] 
+- [] 
+- [] 
+- [] 
+- [] 
+- [] 

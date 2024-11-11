@@ -1,0 +1,59 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "untitled3.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "basic_tileset.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "dungeon.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 3
+        },
+        "untitled.tmx": {
+            "scale": 1,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 215,
+                "y": 323
+            }
+        },
+        "untitled3.tmx": {
+            "scale": 2,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": -14.5,
+                "y": -26.5
+            }
+        }
+    },
+    "last.imagePath": "C:/Users/User/Desktop/phaser-typescript",
+    "map.fixedSize": false,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "openFiles": [
+        "basic_tileset.tsx",
+        "untitled.tmx",
+        "dungeon.tsx",
+        "untitled3.tmx"
+    ],
+    "project": "untitled.tiled-project",
+    "recentFiles": [
+        "basic_tileset.tsx",
+        "untitled.tmx",
+        "dungeon.tsx",
+        "untitled3.tmx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
+}

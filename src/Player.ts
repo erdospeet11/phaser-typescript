@@ -1,7 +1,6 @@
-import { Ability } from './abilities/Ability';
-import { Fireball } from './abilities/Fireball';
+import { Projectile } from './Projectile';
 
-export class Player extends Phaser.GameObjects.Sprite {
+export class Player extends Phaser.Physics.Arcade.Sprite {
   private health: number;
   private maxHealth: number;
   private attack: number;
@@ -12,10 +11,26 @@ export class Player extends Phaser.GameObjects.Sprite {
   private isPoweredUp: boolean = false;
   private powerupTimer?: Phaser.Time.TimerEvent;
   private baseAttack: number = 10;  // Store base attack value
-  private abilities: Ability[];
+  private statsText!: Phaser.GameObjects.Text;
+  private projectiles: Phaser.GameObjects.Group;
+  private lastShootTime: number = 0;
+  private shootCooldown: number = 250; // 250ms between shots
+  private facing: number = 0; // Will now store angle in radians
+  private score: number = 0;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'player');
+    
+    scene.add.existing(this);
+    scene.physics.add.existing(this);
+    
+    // Configure physics body - move this AFTER physics.add.existing
+    const body = this.body as Phaser.Physics.Arcade.Body;
+    body.setCollideWorldBounds(true);
+    body.setSize(16, 16); // Adjust these values based on your sprite size
+    // Add these lines to make the body more solida
+    body.setBounce(0);
+    body.setImmovable(false);
     
     this.health = 100;
     this.maxHealth = 100;
@@ -24,51 +39,110 @@ export class Player extends Phaser.GameObjects.Sprite {
     this.money = 0;
     this.coins = 0;
     
-    // Add to scene and enable physics
-    scene.add.existing(this);
-    scene.physics.add.existing(this);
-    
-    // Optional: Add collision body size/offset if needed
-    const body = this.body as Phaser.Physics.Arcade.Body;
-    body.setSize(16, 16);  // Adjust these numbers to match your sprite
-    
     // Set up keyboard input
     this.cursors = scene.input.keyboard!.createCursorKeys();
     scene.input.keyboard!.addKeys('W,A,S,D');
 
-    // Initialize abilities
-    this.abilities = [
-      new Fireball(scene, this),
-      // Add more abilities here
-    ];
+    // Create the stats text
+    this.createStatsDisplay();
+
+    // Create projectiles group
+    this.projectiles = scene.add.group({
+      classType: Projectile,
+      maxSize: 10,
+      runChildUpdate: true
+    });
+
+    // Add left-click binding for shooting
+    scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.leftButtonDown()) {
+        this.shoot();
+      }
+    });
+  }
+
+  private createStatsDisplay(): void {
+    this.statsText = this.scene.add.text(
+      10,
+      10,
+      this.getStatsString(),
+      {
+        fontSize: '14px',
+        fontFamily: 'Arial',
+        color: '#ffffff',
+        padding: { x: 0, y: 0 },
+        align: 'left',
+        // Add shadow
+        shadow: {
+            offsetX: 1,
+            offsetY: 1,
+            color: '#000000',
+            blur: 1,
+            stroke: true,
+            fill: true
+        },
+        // Add stroke (outline)
+        stroke: '#000000',
+        strokeThickness: 1
+      }
+    )
+    .setOrigin(0, 0)
+    .setScrollFactor(0)
+    .setDepth(1000);
+  }
+
+  private getStatsString(): string {
+    return [
+      `❤️ HP: ${this.health}/${this.maxHealth}`,
+      `⚔️ ATK: ${this.attack}`,
+      `🏆Score: ${this.score}`
+    ].join('\n');
   }
 
   update() {
-    // Move player based on WASD keys
+    const body = this.body as Phaser.Physics.Arcade.Body;
+    
+    // Reset velocity at the start of each update
+    body.setVelocity(0);
+
+    // Handle WASD movement
     if (this.scene.input.keyboard!.keys[Phaser.Input.Keyboard.KeyCodes.A].isDown) {
-      this.x -= this.speed;
-      this.setFlipX(true);  // Face left
+      body.setVelocityX(-this.speed * 75);
     }
     if (this.scene.input.keyboard!.keys[Phaser.Input.Keyboard.KeyCodes.D].isDown) {
-      this.x += this.speed;
-      this.setFlipX(false);  // Face right
+      body.setVelocityX(this.speed * 75);
     }
     if (this.scene.input.keyboard!.keys[Phaser.Input.Keyboard.KeyCodes.W].isDown) {
-      this.y -= this.speed;
+      body.setVelocityY(-this.speed * 75);
     }
     if (this.scene.input.keyboard!.keys[Phaser.Input.Keyboard.KeyCodes.S].isDown) {
-      this.y += this.speed;
+      body.setVelocityY(this.speed * 75);
     }
 
-    // Bind ability keys
-    this.scene.input.keyboard!.on('keydown-Q', () => {
-      this.useAbility(0);
-    });
-    // Add more keybindings for other abilities
+    // Update facing based on mouse position
+    const pointer = this.scene.input.activePointer;
+    const angle = Phaser.Math.Angle.Between(
+      this.x, 
+      this.y,
+      pointer.x + this.scene.cameras.main.scrollX,
+      pointer.y + this.scene.cameras.main.scrollY
+    );
+    this.facing = angle;
+
+    // Flip sprite based on mouse position
+    this.setFlipX(Math.abs(angle) > Math.PI/2);
+
+    // Update the stats text
+    if (this.statsText) {
+      this.statsText.setText(this.getStatsString());
+    }
   }
 
   damage(amount: number): void {
     this.health = Math.max(0, this.health - amount);
+    if (this.statsText) {
+      this.statsText.setText(this.getStatsString());
+    }
     if (this.health <= 0) {
       this.handleDeath();
     }
@@ -130,10 +204,10 @@ export class Player extends Phaser.GameObjects.Sprite {
   }
 
   heal(amount: number): void {
-    // Add health but don't exceed max health
     this.health = Math.min(this.health + amount, this.maxHealth);
-    
-    // Emit event for UI updates
+    if (this.statsText) {
+      this.statsText.setText(this.getStatsString());
+    }
     this.emit('healthChanged', this.health);
   }
 
@@ -149,9 +223,40 @@ export class Player extends Phaser.GameObjects.Sprite {
     return this.money;
   }
 
-  private useAbility(index: number): void {
-    if (index >= 0 && index < this.abilities.length) {
-      this.abilities[index].use();
+  private shoot(): void {
+    const currentTime = this.scene.time.now;
+    if (currentTime - this.lastShootTime < this.shootCooldown) {
+      return;
+    }
+    this.lastShootTime = currentTime;
+
+    // Create projectile slightly in front of the player
+    const offsetX = Math.cos(this.facing) * 10;
+    const offsetY = Math.sin(this.facing) * 10;
+
+    const projectile = this.projectiles.get(
+      this.x + offsetX,
+      this.y + offsetY
+    ) as Projectile;
+
+    if (projectile) {
+      projectile.fire({
+        x: Math.cos(this.facing),
+        y: Math.sin(this.facing)
+      });
+    }
+  }
+
+  getProjectiles(): Phaser.GameObjects.Group {
+    return this.projectiles;
+  }
+
+  addScore(points: number): void {
+    this.score += points;
+    console.log('Score updated:', this.score);
+    if (this.statsText && this.statsText.active) {
+      this.statsText.setText(this.getStatsString());
+      this.statsText.setVisible(true);
     }
   }
 } 

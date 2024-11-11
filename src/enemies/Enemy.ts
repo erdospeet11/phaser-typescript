@@ -1,3 +1,6 @@
+import { HealthPickup } from '../pickups/HealthPickup';
+import { ArenaScene } from '../scenes/ArenaScene';
+
 export class Enemy extends Phaser.GameObjects.Sprite {
   private health: number;
   private maxHealth: number;
@@ -8,70 +11,72 @@ export class Enemy extends Phaser.GameObjects.Sprite {
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'enemy');
     
-    // Enable physics on this sprite
     scene.physics.add.existing(this);
 
-    // Configure physics body
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.setCollideWorldBounds(true);
-    body.setSize(16, 16); // Adjust these values based on your sprite size
+    body.setSize(16, 16);
     
-    this.health = 50;
-    this.maxHealth = 50;
+    this.health = 100;
+    this.maxHealth = 100;
     this.attack = 5;
-    this.speed = 0.25; // Adjust this value to change enemy speed
+    this.speed = 0.25;
     
     this.healthBar = scene.add.graphics();
     scene.add.existing(this);
     this.updateHealthBar();
   }
 
-  damage(amount: number): void {
+  damage(amount: number): boolean {
     this.health = Math.max(0, this.health - amount);
     this.updateHealthBar();
     if (this.health <= 0) {
       this.handleDeath();
+      return true;
     }
+    return false;
   }
 
-  private updateHealthBar(): void {
+  public updateHealthBar(): void {
+    if (!this.healthBar || !this.active) return;
+    
     this.healthBar.clear();
     
-    // Bar background
     this.healthBar.fillStyle(0xff0000);
-    this.healthBar.fillRect(this.x-10, this.y-20, 50, 5);
+    this.healthBar.fillRect(this.x-25, this.y-20, 50, 5);
     
-    // Health remaining
-    const width = (this.health / this.maxHealth) * 50;
+    const width = Math.max(0, (this.health / this.maxHealth) * 50);
     this.healthBar.fillStyle(0x00ff00);
-    this.healthBar.fillRect(this.x-10, this.y-20, width, 5);
+    this.healthBar.fillRect(this.x-25, this.y-20, width, 5);
   }
 
   private handleDeath(): void {
-    this.healthBar.destroy();  // Clean up health bar
-    this.emit('death');
+    if (Phaser.Math.Between(1, 100) <= 30) {
+      const pickup = new HealthPickup(this.scene, this.x, this.y);
+      (this.scene as ArenaScene).healthPickups.add(pickup);
+    }
+
+    if (this.healthBar) {
+      this.healthBar.destroy();
+    }
     this.destroy();
   }
 
   update(player: Phaser.GameObjects.Sprite): void {
-    // Calculate direction to player
     const dx = player.x - this.x;
     const dy = player.y - this.y;
     
-    // Normalize the direction
     const distance = Math.sqrt(dx * dx + dy * dy);
     if (distance > 0) {
       const dirX = dx / distance;
       const dirY = dy / distance;
 
-      // Use velocity instead of directly modifying position
       const body = this.body as Phaser.Physics.Arcade.Body;
       body.setVelocity(
         dirX * this.speed * 100,
         dirY * this.speed * 100
       );
 
-      // Flip sprite based on movement direction
       this.setFlipX(dirX < 0);
     }
 
