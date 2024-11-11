@@ -3,6 +3,11 @@ export class PauseScene extends Phaser.Scene {
     super({ key: 'PauseScene' });
   }
 
+  preload() {
+    // Preload the background image
+    this.load.image('menu-bg', 'assets/menu-background.png');
+  }
+
   create() {
     // Semi-transparent black background
     const bg = this.add.rectangle(
@@ -97,8 +102,13 @@ export class PauseScene extends Phaser.Scene {
   }
 
   private quitToMain() {
-    this.scene.stop('ArenaScene');
-    this.scene.stop();
-    this.scene.start('MainMenuScene');
+    // Make sure the background is loaded before transitioning
+    this.load.once('complete', () => {
+      this.scene.stop('ArenaScene');
+      this.scene.stop();
+      this.scene.start('MainMenuScene');
+    });
+    
+    this.load.start();
   }
 } 
