@@ -18,7 +18,7 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('player', 'assets/player.png');
+        this.load.image('player', 'assets/player2.png');
         this.load.image('wall', 'assets/wall.png');
         this.load.image('enemy', 'assets/enemy.png');
         this.load.image('ranged-enemy', 'assets/ranged-enemy.png');

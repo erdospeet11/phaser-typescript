@@ -1,4 +1,5 @@
 import { Projectile } from './Projectile';
+import { DashAbility } from './abilities/DashAbility';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   private health: number;
@@ -17,6 +18,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private shootCooldown: number = 250; // 250ms between shots
   private facing: number = 0; // Will now store angle in radians
   private score: number = 0;
+  private dashAbility: DashAbility;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'player');
@@ -24,11 +26,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
     
-    // Configure physics body - move this AFTER physics.add.existing
+    // Set the sprite scale to half size
+    this.setScale(0.75);
+    
+    // Configure physics body
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.setCollideWorldBounds(true);
-    body.setSize(16, 16); // Adjust these values based on your sprite size
-    // Add these lines to make the body more solida
+    // Adjust hitbox size to match new sprite size (assuming original was 16x16)
+    body.setSize(8, 8);  // Half of original size
     body.setBounce(0);
     body.setImmovable(false);
     
@@ -58,6 +63,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       if (pointer.leftButtonDown()) {
         this.shoot();
       }
+    });
+
+    // Add dash ability
+    this.dashAbility = new DashAbility(scene, this);
+
+    // Add space key binding for dash
+    scene.input.keyboard!.on('keydown-SPACE', () => {
+      this.dashAbility.use();
     });
   }
 
@@ -230,9 +243,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
     this.lastShootTime = currentTime;
 
-    // Create projectile slightly in front of the player
-    const offsetX = Math.cos(this.facing) * 10;
-    const offsetY = Math.sin(this.facing) * 10;
+    // Adjust offset for smaller sprite
+    const offsetX = Math.cos(this.facing) * 5;  // Reduced from 10
+    const offsetY = Math.sin(this.facing) * 5;  // Reduced from 10
 
     const projectile = this.projectiles.get(
       this.x + offsetX,
@@ -258,5 +271,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.statsText.setText(this.getStatsString());
       this.statsText.setVisible(true);
     }
+  }
+
+  destroy() {
+    this.dashAbility.destroy();
+    super.destroy();
   }
 } 

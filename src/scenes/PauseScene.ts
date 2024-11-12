@@ -20,72 +20,28 @@ export class PauseScene extends Phaser.Scene {
 
     // Pause title
     this.add.text(
-      this.cameras.main.centerX, 
-      50, 
-      'PAUSED', 
-      { fontSize: '24px', color: '#ffffff' }
+      this.cameras.main.centerX,
+      50,
+      'PAUSED',
+      {
+        fontSize: '24px',
+        color: '#ffffff',
+        fontStyle: 'bold',
+        shadow: {
+          offsetX: 2,
+          offsetY: 2,
+          color: '#000000',
+          blur: 2,
+          fill: true
+        }
+      }
     ).setOrigin(0.5);
 
-    // Resume button
-    const resumeButton = this.add.rectangle(
-      this.cameras.main.centerX,
-      100,
-      200,
-      40,
-      0x4a4a4a
-    ).setInteractive();
-
-    this.add.text(
-      this.cameras.main.centerX,
-      100,
-      'Resume Game',
-      { fontSize: '16px', color: '#ffffff' }
-    ).setOrigin(0.5);
-
-    // Settings button
-    const settingsButton = this.add.rectangle(
-      this.cameras.main.centerX,
-      150,
-      200,
-      40,
-      0x4a4a4a
-    ).setInteractive();
-
-    this.add.text(
-      this.cameras.main.centerX,
-      150,
-      'Settings',
-      { fontSize: '16px', color: '#ffffff' }
-    ).setOrigin(0.5);
-
-    // Quit button
-    const quitButton = this.add.rectangle(
-      this.cameras.main.centerX,
-      200,
-      200,
-      40,
-      0x4a4a4a
-    ).setInteractive();
-
-    this.add.text(
-      this.cameras.main.centerX,
-      200,
-      'Quit to Main Menu',
-      { fontSize: '16px', color: '#ffffff' }
-    ).setOrigin(0.5);
-
-    // Button interactions
-    resumeButton.on('pointerover', () => resumeButton.setFillStyle(0x6a6a6a));
-    resumeButton.on('pointerout', () => resumeButton.setFillStyle(0x4a4a4a));
-    resumeButton.on('pointerdown', () => this.resumeGame());
-
-    settingsButton.on('pointerover', () => settingsButton.setFillStyle(0x6a6a6a));
-    settingsButton.on('pointerout', () => settingsButton.setFillStyle(0x4a4a4a));
-    settingsButton.on('pointerdown', () => this.openSettings());
-
-    quitButton.on('pointerover', () => quitButton.setFillStyle(0x6a6a6a));
-    quitButton.on('pointerout', () => quitButton.setFillStyle(0x4a4a4a));
-    quitButton.on('pointerdown', () => this.quitToMain());
+    // Create buttons with centered spacing
+    const centerY = this.cameras.main.centerY;
+    this.createButton(centerY - 40, 'Resume', () => this.resumeGame());
+    this.createButton(centerY, 'Settings', () => this.openSettings());
+    this.createButton(centerY + 40, 'Quit to Menu', () => this.quitToMain());
 
     // Add ESC key handler
     this.input.keyboard!.on('keydown-ESC', () => this.resumeGame());
@@ -110,5 +66,80 @@ export class PauseScene extends Phaser.Scene {
     });
     
     this.load.start();
+  }
+
+  // Use the exact same createButton method as MainMenuScene
+  private createButton(yPosition: number, text: string, onClick: () => void) {
+    const button = this.add.graphics();
+    const buttonWidth = 120;
+    const buttonHeight = 30;
+    const cornerRadius = 8;
+
+    const normalColor = 0x4a4a4a;
+    const hoverColor = 0x6a6a6a;
+
+    // Draw the rounded rectangle
+    button.fillStyle(normalColor);
+    button.fillRoundedRect(
+      this.cameras.main.centerX - buttonWidth / 2,
+      yPosition - buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+      cornerRadius
+    );
+
+    // Create an interactive zone for the button
+    const hitArea = new Phaser.Geom.Rectangle(
+      this.cameras.main.centerX - buttonWidth / 2,
+      yPosition - buttonHeight / 2,
+      buttonWidth,
+      buttonHeight
+    );
+
+    const interactiveZone = this.add.zone(
+      this.cameras.main.centerX,
+      yPosition,
+      buttonWidth,
+      buttonHeight
+    ).setInteractive({ hitArea: hitArea, useHandCursor: true });
+
+    // Add text
+    const buttonText = this.add.text(
+      this.cameras.main.centerX,
+      yPosition,
+      text,
+      {
+        fontSize: '14px',
+        color: '#ffffff',
+        fontStyle: 'bold'
+      }
+    ).setOrigin(0.5);
+
+    // Hover effects with proper redraw
+    interactiveZone.on('pointerover', () => {
+      button.clear();
+      button.fillStyle(hoverColor);
+      button.fillRoundedRect(
+        this.cameras.main.centerX - buttonWidth / 2,
+        yPosition - buttonHeight / 2,
+        buttonWidth,
+        buttonHeight,
+        cornerRadius
+      );
+    });
+
+    interactiveZone.on('pointerout', () => {
+      button.clear();
+      button.fillStyle(normalColor);
+      button.fillRoundedRect(
+        this.cameras.main.centerX - buttonWidth / 2,
+        yPosition - buttonHeight / 2,
+        buttonWidth,
+        buttonHeight,
+        cornerRadius
+      );
+    });
+
+    interactiveZone.on('pointerdown', onClick);
   }
 } 

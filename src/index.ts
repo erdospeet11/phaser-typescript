@@ -2,6 +2,7 @@ import { Game, AUTO, Scale } from 'phaser';
 import { ArenaScene } from './scenes/ArenaScene';
 import { PauseScene } from './scenes/PauseScene';
 import { MainMenuScene } from './scenes/MainMenuScene';
+import { SettingsScene } from './scenes/SettingsScene';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
@@ -17,14 +18,28 @@ const config: Phaser.Types.Core.GameConfig = {
             debugShowBody: true,
         }
     },
-    scene: [MainMenuScene, ArenaScene, PauseScene],
+    scene: [MainMenuScene, SettingsScene, ArenaScene, PauseScene],
     scale: {
         mode: Scale.FIT,
         autoCenter: Scale.CENTER_BOTH
     },
     pixelArt: true,
     antialias: false,
-    zoom: 2
+    zoom: 2,
+    render: {
+        antialias: false,
+        pixelArt: true,
+        roundPixels: true
+    },
+    callbacks: {
+        postBoot: (game) => {
+            const canvas = game.canvas;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.imageSmoothingEnabled = false;
+            }
+        }
+    }
 };
 
 const game = new Phaser.Game(config);

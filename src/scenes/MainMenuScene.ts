@@ -14,7 +14,7 @@ export class MainMenuScene extends Phaser.Scene {
 
     create() {
         // Create parallax background layers
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 2; i++) {
             const bg = this.add.tileSprite(
                 0,
                 0,
@@ -176,8 +176,7 @@ export class MainMenuScene extends Phaser.Scene {
     }
 
     private openSettings() {
-        // TODO: Implement settings functionality
-        console.log('Settings clicked');
+        this.scene.start('SettingsScene');
     }
 
     private showCredits() {
