@@ -5,6 +5,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private health: number;
   private maxHealth: number;
   private attack: number;
+  private defense: number;
   private speed: number;
   private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
   private money: number;
@@ -40,7 +41,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.health = 100;
     this.maxHealth = 100;
     this.attack = this.baseAttack;
-    this.speed = 0.5;
+    this.defense = 5;
+    this.speed = 1;
     this.money = 0;
     this.coins = 0;
     
@@ -106,8 +108,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   private getStatsString(): string {
     return [
-      `❤️ HP: ${this.health}/${this.maxHealth}`,
-      `⚔️ ATK: ${this.attack}`,
       `🏆Score: ${this.score}`
     ].join('\n');
   }
@@ -152,7 +152,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   damage(amount: number): void {
-    this.health = Math.max(0, this.health - amount);
+    const damageAfterDefense = Math.max(1, amount - this.defense);
+    this.health = Math.max(0, this.health - damageAfterDefense);
     if (this.statsText) {
       this.statsText.setText(this.getStatsString());
     }
@@ -276,5 +277,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   destroy() {
     this.dashAbility.destroy();
     super.destroy();
+  }
+
+  getDefense(): number {
+    return this.defense;
+  }
+
+  setDefense(value: number): void {
+    this.defense = value;
+  }
+
+  public getScore(): number {
+    return this.score;
   }
 } 

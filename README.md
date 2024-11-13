@@ -48,11 +48,12 @@ TODOs:
 - [] 
 - [] 
 - [] 
-- [] 
-- [] 
-- [] 
-- [] 
-- [] 
-- [] 
-- [] 
-- [] 
+
+
+
+
+
+## Bugs or Mistakes
+- [] Opening the character sheet does not pause the game
+- [] Scaling down a sprite is messy
+- [] Player does not have invincibility frames after hurt

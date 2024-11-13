@@ -4,6 +4,7 @@ import { Projectile } from "../Projectile";
 import { HealthPickup } from "../pickups/HealthPickup";
 import { RangedEnemy } from '../enemies/RangedEnemy';
 import { FloatingDamage } from '../effects/FloatingDamage';
+import { CharacterSheet } from '../ui/CharacterSheet';
 
 export class ArenaScene extends Phaser.Scene {
     private player!: Player;
@@ -12,6 +13,7 @@ export class ArenaScene extends Phaser.Scene {
     public healthPickups!: Phaser.GameObjects.Group;
     private rangedEnemies!: Phaser.GameObjects.Group;
     private readonly MAX_ENEMIES: number = 2;
+    private characterSheet!: CharacterSheet;
 
     constructor() {
         super({ key: 'ArenaScene' });
@@ -26,6 +28,7 @@ export class ArenaScene extends Phaser.Scene {
         this.load.image('projectile', 'assets/fireball.png');
         this.load.image('health-pickup', 'assets/health_pickup.png');
         this.load.image('custom-cursor', 'assets/cursor.png');
+        this.load.image('fireball', 'assets/fireball.png');
     }
 
     create() {
@@ -154,6 +157,22 @@ export class ArenaScene extends Phaser.Scene {
         this.input.keyboard!.on('keydown-ESC', () => {
             this.scene.pause();
             this.scene.launch('PauseScene');
+        });
+
+        // Create character sheet at center of screen
+        this.characterSheet = new CharacterSheet(
+            this,
+            this.cameras.main.centerX - 200,  // Center horizontally
+            this.cameras.main.centerY - 150   // Center vertically
+        );
+
+        // Add key binding to toggle character sheet
+        this.input.keyboard!.on('keydown-C', () => {
+            if (this.characterSheet.visible) {
+                this.characterSheet.hide();
+            } else {
+                this.characterSheet.show();
+            }
         });
     }
 
@@ -305,5 +324,17 @@ export class ArenaScene extends Phaser.Scene {
             }
             return true;
         });
+
+        // Only update stats when visible
+        if (this.characterSheet.visible) {
+            this.characterSheet.updateStats({
+                health: this.player.getHealth(),
+                maxHealth: this.player.getMaxHealth(),
+                attack: this.player.getAttack(),
+                defense: this.player.getDefense(),
+                speed: this.player.getSpeed(),
+                score: this.player.getScore()
+            });
+        }
     }
 } 
