@@ -8,6 +8,8 @@ Idea is you have infinite dungeons (rooms joined together) and you kill monsters
     - [] Door Room
     - [] Corridor
     - [] Jungle
+    - [] Shopkeeper
+    - [] NPCs
 - [] Enemies
     - [x] Walker (it walks toward the player)
     - [x] Caster (it casts projectiles toward the player)
@@ -29,3 +31,4 @@ Idea is you have infinite dungeons (rooms joined together) and you kill monsters
 - [] Opening the character sheet does not pause the game
 - [] Scaling down a sprite is messy
 - [] Player does not have invincibility frames after hurt
+- [] When player's health reaches zero, it dies
