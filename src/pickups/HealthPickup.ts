@@ -39,4 +39,4 @@ export class HealthPickup extends Pickup {
     this.tooltip.destroy();
     super.destroy();
   }
-} 
+}

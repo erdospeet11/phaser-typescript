@@ -1,12 +1,13 @@
 import { HealthPickup } from '../pickups/HealthPickup';
 import { ArenaScene } from '../scenes/ArenaScene';
+import { CoinPickup } from '../pickups/CoinPickup';
 
 export class Enemy extends Phaser.GameObjects.Sprite {
-  private health: number;
-  private maxHealth: number;
-  private attack: number;
-  private healthBar: Phaser.GameObjects.Graphics;
-  private speed: number;
+  protected health: number;
+  protected maxHealth: number;
+  protected attack: number;
+  protected healthBar: Phaser.GameObjects.Graphics;
+  protected speed: number;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'enemy');
@@ -54,6 +55,9 @@ export class Enemy extends Phaser.GameObjects.Sprite {
     if (Phaser.Math.Between(1, 100) <= 30) {
       const pickup = new HealthPickup(this.scene, this.x, this.y);
       (this.scene as ArenaScene).healthPickups.add(pickup);
+    } else {
+      const pickup = new CoinPickup(this.scene, this.x, this.y);
+      (this.scene as ArenaScene).coinPickups.add(pickup);
     }
 
     if (this.healthBar) {

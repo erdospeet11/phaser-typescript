@@ -22,6 +22,10 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
         direction.x /= length;
         direction.y /= length;
 
+        // Calculate rotation angle from direction
+        const angle = Math.atan2(direction.y, direction.x);
+        this.setRotation(angle);
+
         // Set velocity
         const body = this.body as Phaser.Physics.Arcade.Body;
         body.setVelocity(

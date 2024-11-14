@@ -27,9 +27,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
     
-    // Set the sprite scale to half size
-    this.setScale(0.75);
-    
     // Configure physics body
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.setCollideWorldBounds(true);
@@ -108,7 +105,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   private getStatsString(): string {
     return [
-      `🏆Score: ${this.score}`
+      `🏆Score: ${this.score}`,
+      `💰Gold: ${this.coins}`,
     ].join('\n');
   }
 
@@ -154,11 +152,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   damage(amount: number): void {
     const damageAfterDefense = Math.max(1, amount - this.defense);
     this.health = Math.max(0, this.health - damageAfterDefense);
+    
+    // Flash red effect
+    this.setTint(0xff0000);
+    this.scene.time.delayedCall(100, () => {
+        this.clearTint();
+    });
+
     if (this.statsText) {
-      this.statsText.setText(this.getStatsString());
+        this.statsText.setText(this.getStatsString());
     }
+    
     if (this.health <= 0) {
-      this.handleDeath();
+        this.handleDeath();
     }
   }
 
@@ -176,6 +182,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   addCoins(amount: number): void {
     this.coins += amount;
+    // Update the stats display
+    if (this.statsText) {
+        this.statsText.setText(this.getStatsString());
+    }
     // Optional: Emit an event for UI updates
     this.emit('coinsChanged', this.coins);
   }

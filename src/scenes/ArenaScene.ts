@@ -5,12 +5,14 @@ import { HealthPickup } from "../pickups/HealthPickup";
 import { RangedEnemy } from '../enemies/RangedEnemy';
 import { FloatingDamage } from '../effects/FloatingDamage';
 import { CharacterSheet } from '../ui/CharacterSheet';
+import { CoinPickup } from '../pickups/CoinPickup';
 
 export class ArenaScene extends Phaser.Scene {
     private player!: Player;
     private walls!: Phaser.Physics.Arcade.StaticGroup;
     private enemies!: Phaser.GameObjects.Group;
     public healthPickups!: Phaser.GameObjects.Group;
+    public coinPickups!: Phaser.GameObjects.Group;
     private rangedEnemies!: Phaser.GameObjects.Group;
     private readonly MAX_ENEMIES: number = 2;
     private characterSheet!: CharacterSheet;
@@ -29,6 +31,7 @@ export class ArenaScene extends Phaser.Scene {
         this.load.image('health-pickup', 'assets/health_pickup.png');
         this.load.image('custom-cursor', 'assets/cursor.png');
         this.load.image('fireball', 'assets/fireball.png');
+        this.load.image('coin-pickup', 'assets/coin_pickup.png');
     }
 
     create() {
@@ -56,6 +59,12 @@ export class ArenaScene extends Phaser.Scene {
             runChildUpdate: true
         });
 
+        // Create coin pickups group
+        this.coinPickups = this.add.group({
+            classType: CoinPickup,
+            runChildUpdate: true
+        });
+
         // Create ranged enemies group
         this.rangedEnemies = this.add.group({
             classType: RangedEnemy,
@@ -66,89 +75,9 @@ export class ArenaScene extends Phaser.Scene {
         // Add collisions
         this.physics.world.fixedStep = false;
 
-        this.physics.add.collider(this.player, this.walls);
-        
-        // Enemy collisions
-        this.physics.add.collider(this.enemies, this.walls);
-        this.physics.add.overlap(
-            this.player, 
-            this.enemies, 
-            this.handlePlayerEnemyCollision, 
-            undefined, 
-            this
-        );
-
-        // Projectile collisions
-        this.physics.add.collider(
-            this.player.getProjectiles(), 
-            this.walls, 
-            (projectile) => {
-                (projectile as Projectile).destroy();
-            }
-        );
-        
-        this.physics.add.collider(
-            this.player.getProjectiles(), 
-            this.enemies, 
-            this.handleProjectileEnemyCollision, 
-            undefined, 
-            this
-        );
-
-        // Add health pickup collisions
-        this.physics.add.overlap(
-            this.player,
-            this.healthPickups,
-            (player, pickup) => {
-                (pickup as HealthPickup).collect(player as Player);
-            }
-        );
-
-        // Add collisions for player projectiles with ranged enemies
-        this.physics.add.collider(
-            this.player.getProjectiles(),
-            this.rangedEnemies,
-            this.handleProjectileEnemyCollision,
-            undefined,
-            this
-        );
-
-        // Add collisions for ranged enemy projectiles with player
-        this.rangedEnemies.children.iterate((enemy: any) => {
-            if (enemy) {
-                this.physics.add.collider(
-                    this.player,
-                    (enemy as RangedEnemy).getProjectiles(),
-                    (player, projectile) => {
-                        const damage = 10;
-                        const playerObj = player as Player;
-                        new FloatingDamage(
-                            this,
-                            playerObj.x,
-                            playerObj.y - 20,
-                            damage
-                        );
-                        playerObj.damage(damage);
-                        (projectile as Projectile).destroy();
-                    }
-                );
-            }
-            return true;
-        });
-
-        // Add collisions for ranged enemy projectiles with walls
-        this.rangedEnemies.children.iterate((enemy: any) => {
-            if (enemy) {
-                this.physics.add.collider(
-                    (enemy as RangedEnemy).getProjectiles(),
-                    this.walls,
-                    (projectile) => {
-                        (projectile as Projectile).destroy();
-                    }
-                );
-            }
-            return true;
-        });
+        // Setup physics
+        this.setupPhysicsColliders();
+        this.setupPhysicsOverlaps();
 
         // Start spawning enemies
         this.startEnemySpawner();
@@ -199,79 +128,6 @@ export class ArenaScene extends Phaser.Scene {
         this.walls.create(375, 150, 'wall')
             .setScale(1, 15)
             .refreshBody();
-    }
-
-    private startEnemySpawner(): void {
-        // Spawn enemies periodically
-        this.time.addEvent({
-            delay: 2000, // Spawn every 2 seconds
-            callback: this.spawnEnemy,
-            callbackScope: this,
-            loop: true
-        });
-    }
-
-    private spawnEnemy(): void {
-        if (this.enemies.getLength() + this.rangedEnemies.getLength() >= this.MAX_ENEMIES) {
-            return;
-        }
-
-        const spawnPoint = this.getRandomSpawnPoint();
-        
-        if (Phaser.Math.Between(1, 100) <= 30) {
-            const enemy = new RangedEnemy(this, spawnPoint.x, spawnPoint.y);
-            this.rangedEnemies.add(enemy);
-
-            // Add collisions for the new ranged enemy's projectiles
-            this.physics.add.collider(
-                this.player,
-                enemy.getProjectiles(),
-                (player, projectile) => {
-                    (player as Player).damage(10);
-                    (projectile as Projectile).destroy();
-                }
-            );
-
-            this.physics.add.collider(
-                enemy.getProjectiles(),
-                this.walls,
-                (projectile) => {
-                    (projectile as Projectile).destroy();
-                }
-            );
-        } else {
-            const enemy = new Enemy(this, spawnPoint.x, spawnPoint.y);
-            this.enemies.add(enemy);
-        }
-    }
-
-    private getRandomSpawnPoint(): { x: number, y: number } {
-        const side = Phaser.Math.Between(0, 3);
-        let x, y;
-
-        switch(side) {
-            case 0: // Top
-                x = Phaser.Math.Between(50, 350);
-                y = 50;
-                break;
-            case 1: // Right
-                x = 350;
-                y = Phaser.Math.Between(50, 250);
-                break;
-            case 2: // Bottom
-                x = Phaser.Math.Between(50, 350);
-                y = 250;
-                break;
-            case 3: // Left
-                x = 50;
-                y = Phaser.Math.Between(50, 250);
-                break;
-            default:
-                x = 50;
-                y = 50;
-        }
-
-        return { x, y };
     }
 
     private handlePlayerEnemyCollision(player: any, enemy: any): void {
@@ -336,5 +192,178 @@ export class ArenaScene extends Phaser.Scene {
                 score: this.player.getScore()
             });
         }
+    }
+
+    private setupPhysicsColliders(): void {
+        // Player and walls
+        this.physics.add.collider(this.player, this.walls);
+        
+        // Enemy and walls
+        this.physics.add.collider(this.enemies, this.walls);
+        
+        // Player projectiles and walls
+        this.physics.add.collider(
+            this.player.getProjectiles(), 
+            this.walls, 
+            (projectile) => {
+                (projectile as Projectile).destroy();
+            }
+        );
+        
+        // Player projectiles and enemies
+        this.physics.add.collider(
+            this.player.getProjectiles(), 
+            this.enemies, 
+            this.handleProjectileEnemyCollision, 
+            undefined, 
+            this
+        );
+        
+        // Player projectiles and ranged enemies
+        this.physics.add.collider(
+            this.player.getProjectiles(),
+            this.rangedEnemies,
+            this.handleProjectileEnemyCollision,
+            undefined,
+            this
+        );
+
+        // Ranged enemy projectiles setup
+        this.rangedEnemies.children.iterate((enemy: any) => {
+            if (enemy) {
+                // With player
+                this.physics.add.collider(
+                    this.player,
+                    (enemy as RangedEnemy).getProjectiles(),
+                    (player, projectile) => {
+                        const damage = 10;
+                        const playerObj = player as Player;
+                        new FloatingDamage(
+                            this,
+                            playerObj.x,
+                            playerObj.y - 20,
+                            damage
+                        );
+                        playerObj.damage(damage);
+                        (projectile as Projectile).destroy();
+                    }
+                );
+                
+                // With walls
+                this.physics.add.collider(
+                    (enemy as RangedEnemy).getProjectiles(),
+                    this.walls,
+                    (projectile) => {
+                        (projectile as Projectile).destroy();
+                    }
+                );
+            }
+            return true;
+        });
+    }
+
+    private setupPhysicsOverlaps(): void {
+        // Player and enemies
+        this.physics.add.overlap(
+            this.player, 
+            this.enemies, 
+            this.handlePlayerEnemyCollision, 
+            undefined, 
+            this
+        );
+
+        // Player and health pickups
+        this.physics.add.overlap(
+            this.player,
+            this.healthPickups,
+            (player, pickup) => {
+                (pickup as HealthPickup).collect(player as Player);
+            }
+        );
+
+        // Player and coin pickups
+        this.physics.add.overlap(
+            this.player,
+            this.coinPickups,
+            (player, pickup) => {
+                (pickup as CoinPickup).collect(player as Player);
+            }
+        );
+    }
+
+    // ENEMY SPAWNING AND FUNCTIONALITY
+
+    private spawnEnemy(): void {
+        if (this.enemies.getLength() + this.rangedEnemies.getLength() >= this.MAX_ENEMIES) {
+            return;
+        }
+
+        const spawnPoint = this.getRandomSpawnPoint();
+        
+        if (Phaser.Math.Between(1, 100) <= 30) {
+            const enemy = new RangedEnemy(this, spawnPoint.x, spawnPoint.y);
+            this.rangedEnemies.add(enemy);
+
+            // Add collisions for the new ranged enemy's projectiles
+            this.physics.add.collider(
+                this.player,
+                enemy.getProjectiles(),
+                (player, projectile) => {
+                    (player as Player).damage(10);
+                    (projectile as Projectile).destroy();
+                }
+            );
+
+            this.physics.add.collider(
+                enemy.getProjectiles(),
+                this.walls,
+                (projectile) => {
+                    (projectile as Projectile).destroy();
+                }
+            );
+        } else {
+            const enemy = new Enemy(this, spawnPoint.x, spawnPoint.y);
+            this.enemies.add(enemy);
+        }
+    }
+
+
+    private startEnemySpawner(): void {
+        // Spawn enemies periodically
+        this.time.addEvent({
+            delay: 2000, // Spawn every 2 seconds
+            callback: this.spawnEnemy,
+            callbackScope: this,
+            loop: true
+        });
+    }
+
+    private getRandomSpawnPoint(): { x: number, y: number } {
+        const side = Phaser.Math.Between(0, 3);
+        let x, y;
+
+        switch(side) {
+            case 0: // Top
+                x = Phaser.Math.Between(50, 350);
+                y = 50;
+                break;
+            case 1: // Right
+                x = 350;
+                y = Phaser.Math.Between(50, 250);
+                break;
+            case 2: // Bottom
+                x = Phaser.Math.Between(50, 350);
+                y = 250;
+                break;
+            case 3: // Left
+                x = 50;
+                y = Phaser.Math.Between(50, 250);
+                break;
+            default:
+                x = 50;
+                y = 50;
+        }
+
+        return { x, y };
     }
 } 
