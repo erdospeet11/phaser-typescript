@@ -2,24 +2,24 @@ import { Projectile } from './Projectile';
 import { DashAbility } from './abilities/DashAbility';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
-  private health: number;
-  private maxHealth: number;
-  private attack: number;
-  private defense: number;
-  private speed: number;
-  private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-  private money: number;
-  private coins: number;
-  private isPoweredUp: boolean = false;
-  private powerupTimer?: Phaser.Time.TimerEvent;
-  private baseAttack: number = 10;  // Store base attack value
-  private statsText!: Phaser.GameObjects.Text;
-  private projectiles: Phaser.GameObjects.Group;
-  private lastShootTime: number = 0;
-  private shootCooldown: number = 250; // 250ms between shots
-  private facing: number = 0; // Will now store angle in radians
-  private score: number = 0;
-  private dashAbility: DashAbility;
+  protected health: number;
+  protected maxHealth: number;
+  protected attack: number;
+  protected defense: number;
+  protected speed: number;
+  protected cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+  protected money: number;
+  protected coins: number;
+  protected isPoweredUp: boolean = false;
+  protected powerupTimer?: Phaser.Time.TimerEvent;
+  protected baseAttack: number = 10;  // Store base attack value
+  protected statsText!: Phaser.GameObjects.Text;
+  protected projectiles: Phaser.GameObjects.Group;
+  protected lastShootTime: number = 0;
+  protected shootCooldown: number = 250; // 250ms between shots
+  protected facing: number = 0; // Will now store angle in radians
+  protected score: number = 0;
+  protected dashAbility: DashAbility;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'player');

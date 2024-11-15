@@ -136,7 +136,8 @@ export class ArenaScene extends Phaser.Scene {
             this,
             player.x,
             player.y - 20,
-            damage
+            damage,
+            false
         );
         player.damage(damage);
     }
@@ -151,7 +152,8 @@ export class ArenaScene extends Phaser.Scene {
             this,
             enemy.x,
             enemy.y - 20, // Spawn slightly above the enemy
-            damage
+            damage,
+            false
         );
         
         // Destroy projectile first
@@ -242,7 +244,8 @@ export class ArenaScene extends Phaser.Scene {
                             this,
                             playerObj.x,
                             playerObj.y - 20,
-                            damage
+                            damage,
+                            false
                         );
                         playerObj.damage(damage);
                         (projectile as Projectile).destroy();
