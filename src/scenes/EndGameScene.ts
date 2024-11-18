@@ -16,14 +16,14 @@ export class EndGameScene extends Phaser.Scene {
         const centerX = width / 2;
         const centerY = height / 2;
 
-        // Add victory/defeat message
+        // Victory or Game Over
         const message = this.gameData.victory ? 'Victory!' : 'Game Over';
         this.add.text(centerX, centerY - 100, message, {
             fontSize: '48px',
             color: this.gameData.victory ? '#00ff00' : '#ff0000'
         }).setOrigin(0.5);
 
-        // Add score and gold stats
+        // Score and Gold
         this.add.text(centerX, centerY, `Final Score: ${this.gameData.score}`, {
             fontSize: '24px',
             color: '#ffffff'
@@ -34,7 +34,7 @@ export class EndGameScene extends Phaser.Scene {
             color: '#ffffff'
         }).setOrigin(0.5);
 
-        // Add restart button
+        // Restart Button
         const restartButton = this.add.text(centerX, centerY + 100, 'Play Again', {
             fontSize: '32px',
             color: '#ffffff',
@@ -44,13 +44,12 @@ export class EndGameScene extends Phaser.Scene {
         .setOrigin(0.5)
         .setInteractive({ useHandCursor: true })
         .on('pointerdown', () => {
-            // Reset GameManager and restart game
+            
             const gameManager = GameManager.getInstance();
             gameManager.reset();
             this.scene.start('ArenaScene');
         });
 
-        // Add hover effect
         restartButton.on('pointerover', () => restartButton.setTint(0x999999));
         restartButton.on('pointerout', () => restartButton.clearTint());
     }

@@ -72,7 +72,7 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     create() {
-        this.physics.world.createDebugGraphic();
+        //this.physics.world.createDebugGraphic();
 
         this.input.setDefaultCursor('url(assets/cursor.png), auto');
 
@@ -193,13 +193,6 @@ export class ArenaScene extends Phaser.Scene {
                 enemy.update(this.player);
             }
         });
-
-        // Update ranged enemies
-        this.rangedEnemies.getChildren().forEach((enemy: any) => {
-            if (enemy?.active) {
-                enemy.update(this.player);
-            }
-        });
     }
 
     private setupPhysicsColliders(): void {
@@ -304,21 +297,12 @@ export class ArenaScene extends Phaser.Scene {
             this
         );
 
-        // Player and health pickups
+        // Pickups and pla
         this.physics.add.overlap(
             this.player,
             this.pickups,
             (player, pickup) => {
                 (pickup as Pickup).collect(player as Player);
-            }
-        );
-
-        // Player and coin pickups
-        this.physics.add.overlap(
-            this.player,
-            this.pickups,
-            (player, pickup) => {
-                (pickup as CoinPickup).collect(player as Player);
             }
         );
 

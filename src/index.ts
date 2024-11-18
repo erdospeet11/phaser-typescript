@@ -19,7 +19,7 @@ const config: Phaser.Types.Core.GameConfig = {
             debug: false,
             fixedStep: false,
             fps: 300,
-            //debugShowBody: true,
+            debugShowBody: false,
         }
     },
     scene: [MainMenuScene, CharacterSheetScene, LevelSelectScene, SettingsScene, ArenaScene, PauseScene, DungeonScene, EndGameScene],
