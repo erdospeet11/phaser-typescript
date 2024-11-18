@@ -13,7 +13,7 @@ export class MainMenuScene extends Phaser.Scene {
     }
 
     create() {
-        // Create parallax background layers
+        // Parallax background
         for (let i = 0; i < 2; i++) {
             const bg = this.add.tileSprite(
                 0,
@@ -47,12 +47,10 @@ export class MainMenuScene extends Phaser.Scene {
             }
         ).setOrigin(0.5);
 
-        // Create rounded buttons
         this.createButton(120, 'Play Game', () => this.startGame());
         this.createButton(170, 'Settings', () => this.openSettings());
-        this.createButton(220, 'Credits', () => this.showCredits());
 
-        // Add version number text
+        // Version number
         this.add.text(
             this.cameras.main.width - 10,
             this.cameras.main.height - 10,
@@ -73,17 +71,14 @@ export class MainMenuScene extends Phaser.Scene {
     }
 
     private createButton(yPosition: number, text: string, onClick: () => void) {
-        // Create rounded rectangle graphics
         const button = this.add.graphics();
         const buttonWidth = 200;
         const buttonHeight = 40;
-        const cornerRadius = 10;  // Adjust this for more or less rounding
+        const cornerRadius = 10;
 
-        // Button colors
         const normalColor = 0x4a4a4a;
         const hoverColor = 0x6a6a6a;
 
-        // Draw the rounded rectangle
         button.fillStyle(normalColor);
         button.fillRoundedRect(
             this.cameras.main.centerX - buttonWidth / 2,
@@ -93,7 +88,7 @@ export class MainMenuScene extends Phaser.Scene {
             cornerRadius
         );
 
-        // Create an interactive zone for the button
+        // Interactive zone
         const hitArea = new Phaser.Geom.Rectangle(
             this.cameras.main.centerX - buttonWidth / 2,
             yPosition - buttonHeight / 2,
@@ -108,7 +103,6 @@ export class MainMenuScene extends Phaser.Scene {
             buttonHeight
         ).setInteractive({ hitArea: hitArea, useHandCursor: true });
 
-        // Add text
         const buttonText = this.add.text(
             this.cameras.main.centerX,
             yPosition,
@@ -120,7 +114,6 @@ export class MainMenuScene extends Phaser.Scene {
             }
         ).setOrigin(0.5);
 
-        // Hover effects
         interactiveZone.on('pointerover', () => {
             button.clear();
             button.fillStyle(hoverColor);
@@ -145,7 +138,7 @@ export class MainMenuScene extends Phaser.Scene {
             );
         });
 
-        // Click effect
+        // Click
         interactiveZone.on('pointerdown', () => {
             button.clear();
             button.fillStyle(normalColor);
@@ -164,7 +157,6 @@ export class MainMenuScene extends Phaser.Scene {
         this.ttime += 0.01;
         
         this.backgrounds.forEach((bg, index) => {
-            // Add sine wave movement for more organic scrolling
             const speed = this.scrollSpeeds[index];
             bg.tilePositionX += speed * Math.cos(this.ttime + index);
             bg.tilePositionY += speed * Math.sin(this.ttime + index) * 0.5;
@@ -177,10 +169,5 @@ export class MainMenuScene extends Phaser.Scene {
 
     private openSettings() {
         this.scene.start('SettingsScene');
-    }
-
-    private showCredits() {
-        // TODO: Implement credits functionality
-        console.log('Credits clicked');
     }
 } 

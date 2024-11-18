@@ -5,7 +5,7 @@ import { ArenaScene } from '../scenes/ArenaScene';
 import { Projectile } from '../Projectile';
 
 export class TentacleBoss extends Enemy {
-    protected statee: 'chasing' | 'spawning';
+    protected entity_state: 'chasing' | 'spawning';
     protected stateTimer: number;
     protected readonly SPAWN_INTERVAL = 5000;
     protected readonly TENTACLE_COUNT = 1;
@@ -16,7 +16,7 @@ export class TentacleBoss extends Enemy {
         
         scene.physics.add.existing(this);
         
-        this.statee = 'chasing';
+        this.entity_state = 'chasing';
         this.stateTimer = 0;
         
         this.health = 750;
@@ -40,7 +40,7 @@ export class TentacleBoss extends Enemy {
             this.stateTimer = 0;
         }
 
-        if (this.statee === 'chasing') {
+        if (this.entity_state === 'chasing') {
             this.chasePlayer(player);
         } else {
             const body = this.body as Phaser.Physics.Arcade.Body;
@@ -71,8 +71,8 @@ export class TentacleBoss extends Enemy {
     }
 
     private toggleState(): void {
-        this.statee = this.statee === 'chasing' ? 'spawning' : 'chasing';
-        if (this.statee === 'spawning') {
+        this.entity_state = this.entity_state === 'chasing' ? 'spawning' : 'chasing';
+        if (this.entity_state === 'spawning') {
             this.justEnteredSpawningState = true;
         }
     }
@@ -93,8 +93,8 @@ export class TentacleBoss extends Enemy {
                     this.scene, 
                     spawnX, 
                     spawnY, 
-                    'tentacle',    // tentacle sprite
-                    'voidball'     // projectile sprite
+                    'tentacle',
+                    'voidball'
                 );
                 const scene = this.scene as ArenaScene;
                 scene.addEnemy(tentacle);

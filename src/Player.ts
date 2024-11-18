@@ -22,6 +22,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   protected dashAbility: DashAbility;
   private gameManager: GameManager;
   protected weaponSprite!: Phaser.GameObjects.Sprite;
+  public isInvulnerable: boolean = false;
+  private invulnerabilityDuration: number = 1000; // 1 second of invulnerability
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'player');
@@ -208,12 +210,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public damage(amount: number): void {
+    // If player is invulnerable, don't take damage
+    if (this.isInvulnerable) return;
+
     this.gameManager.damage(amount);
     
-    // Flash red effect
+    // Make player invulnerable and flash red
     this.setTint(0xff0000);
-    this.scene.time.delayedCall(100, () => {
-        this.clearTint();
+    this.isInvulnerable = true;
+
+    // Remove invulnerability after duration
+    this.scene.time.delayedCall(this.invulnerabilityDuration, () => {
+      this.isInvulnerable = false;
+      this.clearTint();
     });
 
     if (this.gameManager.getHealth() <= 0) {
@@ -267,7 +276,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private endPowerup(): void {
     this.isPoweredUp = false;
     this.attack = this.baseAttack;
-    this.clearTint();  // Remove visual effect
+    this.clearTint();
     this.emit('powerupEnded');
   }
 
@@ -309,7 +318,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     ) as Projectile;
 
     if (projectile) {
-      projectile.setTexture('fireball');  // Ensure correct texture
+      //TODO: Currently i only set the texture to a fireball, but i should set it to the weapons sprite that the player helds
+      projectile.setTexture('fireball');
       projectile.fire({
         x: Math.cos(this.facing),
         y: Math.sin(this.facing)

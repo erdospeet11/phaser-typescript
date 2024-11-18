@@ -48,7 +48,7 @@ export class LevelSelectScene extends Phaser.Scene {
             }
         ).setOrigin(0.5);
 
-        // Create level buttons
+        // Level button
         const levelConfigs = [
             { text: 'Level 1', y: 150 },
             { text: 'Level 2', y: 200 },

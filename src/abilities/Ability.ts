@@ -3,7 +3,6 @@ export abstract class Ability {
     protected cooldown: number;
     protected isOnCooldown: boolean = false;
     protected cooldownTimer?: Phaser.Time.TimerEvent;
-    protected icon?: Phaser.GameObjects.Sprite;
 
     constructor(scene: Phaser.Scene, cooldown: number) {
         this.scene = scene;
@@ -14,19 +13,11 @@ export abstract class Ability {
 
     protected startCooldown(): void {
         this.isOnCooldown = true;
-        
-        // Update icon if it exists
-        if (this.icon) {
-            this.icon.setAlpha(0.5);
-        }
 
         this.cooldownTimer = this.scene.time.delayedCall(
             this.cooldown,
             () => {
                 this.isOnCooldown = false;
-                if (this.icon) {
-                    this.icon.setAlpha(1);
-                }
             }
         );
     }
@@ -43,9 +34,6 @@ export abstract class Ability {
     destroy(): void {
         if (this.cooldownTimer) {
             this.cooldownTimer.destroy();
-        }
-        if (this.icon) {
-            this.icon.destroy();
         }
     }
 } 

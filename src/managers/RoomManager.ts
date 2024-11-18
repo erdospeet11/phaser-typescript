@@ -1,12 +1,16 @@
 export type RoomType = 'start' | 'normal' | 'boss';
 type RoomLayout = (RoomType | null)[][];
 type LevelLayouts = { [key: number]: RoomLayout };
+type PortalPosition = { direction: string, x: number, y: number };
+type SpawnPosition = { x: number, y: number };
 
 export class RoomManager {
     private static instance: RoomManager;
     private visitedRooms: Set<string> = new Set();
     private currentLevel: number = 1;
     
+    // Static room layouts
+    //TODO: Add more level type
     private readonly levelLayouts: LevelLayouts = {
         1: [
             [null,    'normal', 'normal', null],
@@ -25,7 +29,20 @@ export class RoomManager {
         ]
     };
 
-    private constructor() {}
+    private readonly portalPositions: { [key: string]: PortalPosition } = {
+        'north': { direction: 'north', x: 200, y: 30 },
+        'south': { direction: 'south', x: 200, y: 270 },
+        'east': { direction: 'east', x: 370, y: 150 },
+        'west': { direction: 'west', x: 30, y: 150 }
+    };
+
+    private readonly spawnPositions: { [key: string]: SpawnPosition } = {
+        'north': { x: 200, y: 30 },
+        'south': { x: 200, y: 270 },
+        'east': { x: 370, y: 150 },
+        'west': { x: 30, y: 150 },
+        'default': { x: 200, y: 150 }
+    };
 
     public static getInstance(): RoomManager {
         if (!RoomManager.instance) {
@@ -47,28 +64,44 @@ export class RoomManager {
         return this.roomLayout[position.y][position.x] as RoomType;
     }
 
-    public getAvailablePortals(position: { x: number, y: number }): { direction: string, x: number, y: number }[] {
-        const portals: { direction: string, x: number, y: number }[] = [];
+    public getAvailablePortals(position: { x: number, y: number }): PortalPosition[] {
+        const portals: PortalPosition[] = [];
         const { x, y } = position;
 
-        // Mark current room as visited
         this.visitedRooms.add(`${x},${y}`);
 
-        // Check each direction for valid unvisited rooms
+        // Check each direction for unvisited rooms
         if (y > 0 && this.roomLayout[y-1][x] && !this.visitedRooms.has(`${x},${y-1}`)) {
-            portals.push({ direction: 'north', x: 200, y: 30 });
+            portals.push(this.portalPositions['north']);
         }
         if (y < this.roomLayout.length-1 && this.roomLayout[y+1][x] && !this.visitedRooms.has(`${x},${y+1}`)) {
-            portals.push({ direction: 'south', x: 200, y: 270 });
+            portals.push(this.portalPositions['south']);
         }
         if (x > 0 && this.roomLayout[y][x-1] && !this.visitedRooms.has(`${x-1},${y}`)) {
-            portals.push({ direction: 'west', x: 30, y: 150 });
+            portals.push(this.portalPositions['west']);
         }
         if (x < this.roomLayout[0].length-1 && this.roomLayout[y][x+1] && !this.visitedRooms.has(`${x+1},${y}`)) {
-            portals.push({ direction: 'east', x: 370, y: 150 });
+            portals.push(this.portalPositions['east']);
         }
 
         return portals;
+    }
+
+    public getSpawnPosition(entryDirection?: string): SpawnPosition {
+        if (!entryDirection) {
+            return this.spawnPositions['default'];
+        }
+        return this.spawnPositions[entryDirection];
+    }
+
+    public getOppositeDirection(direction: string): string {
+        const oppositeDirections: { [key: string]: string } = {
+            'north': 'south',
+            'south': 'north',
+            'east': 'west',
+            'west': 'east'
+        };
+        return oppositeDirections[direction] || 'default';
     }
 
     public getNextRoomPosition(currentPosition: { x: number, y: number }, direction: string): { x: number, y: number } {

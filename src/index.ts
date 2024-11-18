@@ -5,6 +5,7 @@ import { MainMenuScene } from './scenes/MainMenuScene';
 import { SettingsScene } from './scenes/SettingsScene';
 import { DungeonScene } from './scenes/DungeonScene';
 import { LevelSelectScene } from './scenes/LevelSelectScene';
+import { CharacterSheetScene } from './ui/CharacterSheetScene';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
@@ -17,10 +18,10 @@ const config: Phaser.Types.Core.GameConfig = {
             debug: false,
             fixedStep: false,
             fps: 300,
-            debugShowBody: true,
+            //debugShowBody: true,
         }
     },
-    scene: [MainMenuScene, LevelSelectScene, SettingsScene, ArenaScene, PauseScene, DungeonScene],
+    scene: [MainMenuScene, CharacterSheetScene, LevelSelectScene, SettingsScene, ArenaScene, PauseScene, DungeonScene],
     scale: {
         mode: Scale.FIT,
         autoCenter: Scale.CENTER_BOTH
@@ -32,15 +33,6 @@ const config: Phaser.Types.Core.GameConfig = {
         antialias: false,
         pixelArt: true,
         roundPixels: true
-    },
-    callbacks: {
-        postBoot: (game) => {
-            const canvas = game.canvas;
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-                ctx.imageSmoothingEnabled = false;
-            }
-        }
     }
 };
 

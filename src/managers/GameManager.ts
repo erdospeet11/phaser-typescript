@@ -40,7 +40,6 @@ export class GameManager {
         return false;
     }
 
-    // Health methods
     public getHealth(): number {
         return this.health;
     }
@@ -61,7 +60,7 @@ export class GameManager {
         this.health = Math.max(this.health - amount, 0);
     }
 
-    // Reset method for new games
+    // Reset method for new game
     public reset(): void {
         this.score = 0;
         this.gold = 0;

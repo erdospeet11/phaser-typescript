@@ -8,7 +8,6 @@ export class SettingsScene extends Phaser.Scene {
     }
 
     preload() {
-        // Load background image every time the scene starts
         this.load.image('menu-bg', 'assets/menu-background.png');
     }
 

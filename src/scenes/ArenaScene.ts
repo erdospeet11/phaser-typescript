@@ -4,7 +4,7 @@ import { Projectile } from "../Projectile";
 import { HealthPickup } from "../pickups/HealthPickup";
 import { RangedEnemy } from '../enemies/RangedEnemy';
 import { FloatingDamage } from '../effects/FloatingDamage';
-import { CharacterSheet } from '../ui/CharacterSheet';
+import { CharacterSheetScene } from '../ui/CharacterSheetScene';
 import { CoinPickup } from '../pickups/CoinPickup';
 import { Pickup } from '../pickups/Pickup';
 import { RoomManager } from '../managers/RoomManager';
@@ -18,13 +18,15 @@ export class ArenaScene extends Phaser.Scene {
     private rangedEnemies!: Phaser.GameObjects.Group;
     private pickups!: Phaser.GameObjects.Group;
     private max_enemies: number = 2;
-    private characterSheet!: CharacterSheet;
+    private characterSheet!: CharacterSheetScene;
     private portals: {[key: string]: Phaser.GameObjects.Sprite} = {};
     protected roomPosition: { x: number, y: number };
     private roomType: 'start' | 'normal' | 'boss';
     private roomManager: RoomManager;
     private obstacleEnemy!: ObstacleEnemy;
     private boss?: TentacleBoss;
+    private entryDirection: string = 'default';
+    private portalsSpawned: boolean = false;
 
     constructor() {
         super({ key: 'ArenaScene' });
@@ -33,7 +35,7 @@ export class ArenaScene extends Phaser.Scene {
         this.roomManager = RoomManager.getInstance();
     }
 
-    init(data: { roomPosition?: { x: number, y: number }, roomType?: 'start' | 'normal' | 'boss' }) {
+    init(data: { roomPosition?: { x: number, y: number }, roomType?: 'start' | 'normal' | 'boss', entryDirection?: string }) {
         if (data.roomType === 'start') {
             this.roomManager.resetVisitedRooms();
         }
@@ -42,6 +44,9 @@ export class ArenaScene extends Phaser.Scene {
         }
         if (data.roomType) {
             this.roomType = data.roomType;
+        }
+        if (data.entryDirection) {
+            this.entryDirection = data.entryDirection;
         }
     }
 
@@ -63,6 +68,7 @@ export class ArenaScene extends Phaser.Scene {
         this.load.image('tentacle', 'assets/tentacle-minion.png');
         this.load.image('fire-spellbook', 'assets/fire-spellbook.png');
         this.load.image('voidball', 'assets/void-ball.png');
+        this.load.image('character-sheet-bg', 'assets/sheet_background.png'); 
     }
 
     create() {
@@ -74,7 +80,9 @@ export class ArenaScene extends Phaser.Scene {
 
         this.createArenaWalls();
 
-        this.player = new Player(this, 200, 150);
+        // Get spawn position from RoomManager
+        const spawnPosition = this.roomManager.getSpawnPosition(this.entryDirection);
+        this.player = new Player(this, spawnPosition.x, spawnPosition.y);
         
         // Update UI with current values
         this.player.updateUIText();
@@ -120,24 +128,22 @@ export class ArenaScene extends Phaser.Scene {
             this.scene.launch('PauseScene');
         });
 
-        // Create character sheet at center of screen
-        this.characterSheet = new CharacterSheet(
-            this,
-            this.cameras.main.centerX - 200,  // Center horizontally
-            this.cameras.main.centerY - 150   // Center vertically
-        );
-
-        // Add key binding to toggle character sheet
+        // Replace character sheet creation with keyboard event
         this.input.keyboard!.on('keydown-C', () => {
-            if (this.characterSheet.visible) {
-                this.characterSheet.hide();
-            } else {
-                this.characterSheet.show();
-            }
+            console.log('C key pressed, launching CharacterSheetScene');
+            this.scene.pause();
+            this.scene.launch('CharacterSheetScene', { player: this.player });
+            this.scene.bringToTop('CharacterSheetScene');
         });
 
-        // Create portals based on room position
-        this.createPortals();
+        // Remove immediate portal creation and replace with delayed creation
+        this.time.delayedCall(10000, () => {
+            this.createPortals();
+            this.portalsSpawned = true;
+            
+            // Optional: Add visual feedback when portals spawn
+            this.cameras.main.flash(500, 0, 0, 255);
+        });
     }
 
     private createArenaWalls(): void {
@@ -165,6 +171,12 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     private handlePlayerEnemyCollision(player: any, enemy: any): void {
+        // Cast to proper type to access isInvulnerable
+        const playerObj = player as Player;
+        
+        // Check if player is invulnerable before applying damage
+        if (playerObj.isInvulnerable) return;
+
         const damage = 10;
         new FloatingDamage(
             this,
@@ -173,7 +185,7 @@ export class ArenaScene extends Phaser.Scene {
             damage,
             false
         );
-        player.damage(damage);
+        playerObj.damage(damage);
     }
 
     private handleProjectileEnemyCollision(projectile: any, enemy: any): void {
@@ -216,18 +228,6 @@ export class ArenaScene extends Phaser.Scene {
             }
             return true;
         });
-
-        // Only update stats when visible
-        if (this.characterSheet.visible) {
-            this.characterSheet.updateStats({
-                health: this.player.getHealth(),
-                maxHealth: this.player.getMaxHealth(),
-                attack: this.player.getAttack(),
-                defense: this.player.getDefense(),
-                speed: this.player.getSpeed(),
-                score: this.player.getScore()
-            });
-        }
 
         // Check if player is at the right edge of the arena
         if (this.player.x > 380) {  // Adjust threshold as needed
@@ -455,16 +455,20 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     private handlePortalCollision(direction: string): void {
+        // Only handle collision if portals are spawned
+        if (!this.portalsSpawned) return;
+
         const newPosition = this.roomManager.getNextRoomPosition(this.roomPosition, direction);
         const newRoomType = this.roomManager.getRoomType(newPosition);
+        const oppositeDirection = this.roomManager.getOppositeDirection(direction);
 
-        // Transition effect
         this.cameras.main.fade(500, 0, 0, 0);
         
         this.time.delayedCall(500, () => {
             this.scene.start('ArenaScene', { 
                 roomPosition: newPosition,
-                roomType: newRoomType
+                roomType: newRoomType,
+                entryDirection: oppositeDirection
             });
         });
     }

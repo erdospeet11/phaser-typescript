@@ -4,7 +4,6 @@ export class PauseScene extends Phaser.Scene {
   }
 
   preload() {
-    // Preload the background image
     this.load.image('menu-bg', 'assets/menu-background.png');
   }
 
@@ -18,7 +17,7 @@ export class PauseScene extends Phaser.Scene {
     );
     bg.setOrigin(0, 0);
 
-    // Pause title
+    // Pause
     this.add.text(
       this.cameras.main.centerX,
       50,
@@ -37,13 +36,10 @@ export class PauseScene extends Phaser.Scene {
       }
     ).setOrigin(0.5);
 
-    // Create buttons with centered spacing
     const centerY = this.cameras.main.centerY;
-    this.createButton(centerY - 40, 'Resume', () => this.resumeGame());
-    this.createButton(centerY, 'Settings', () => this.openSettings());
-    this.createButton(centerY + 40, 'Quit to Menu', () => this.quitToMain());
+    this.createButton(centerY + 10, 'Resume', () => this.resumeGame());
+    this.createButton(centerY + 50, 'Quit', () => this.quitToMain());
 
-    // Add ESC key handler
     this.input.keyboard!.on('keydown-ESC', () => this.resumeGame());
   }
 
@@ -52,13 +48,7 @@ export class PauseScene extends Phaser.Scene {
     this.scene.stop();
   }
 
-  private openSettings() {
-    // TODO: Implement settings functionality
-    console.log('Settings clicked');
-  }
-
   private quitToMain() {
-    // Make sure the background is loaded before transitioning
     this.load.once('complete', () => {
       this.scene.stop('ArenaScene');
       this.scene.stop();
@@ -68,7 +58,6 @@ export class PauseScene extends Phaser.Scene {
     this.load.start();
   }
 
-  // Use the exact same createButton method as MainMenuScene
   private createButton(yPosition: number, text: string, onClick: () => void) {
     const button = this.add.graphics();
     const buttonWidth = 140;
@@ -78,7 +67,6 @@ export class PauseScene extends Phaser.Scene {
     const normalColor = 0x4a4a4a;
     const hoverColor = 0x6a6a6a;
 
-    // Draw the rounded rectangle
     button.fillStyle(normalColor);
     button.fillRoundedRect(
       this.cameras.main.centerX - buttonWidth / 2,
@@ -88,7 +76,6 @@ export class PauseScene extends Phaser.Scene {
       cornerRadius
     );
 
-    // Create an interactive zone for the button
     const hitArea = new Phaser.Geom.Rectangle(
       this.cameras.main.centerX - buttonWidth / 2,
       yPosition - buttonHeight / 2,
@@ -103,7 +90,6 @@ export class PauseScene extends Phaser.Scene {
       buttonHeight
     ).setInteractive({ hitArea: hitArea, useHandCursor: true });
 
-    // Add text
     const buttonText = this.add.text(
       this.cameras.main.centerX,
       yPosition,
@@ -115,7 +101,7 @@ export class PauseScene extends Phaser.Scene {
       }
     ).setOrigin(0.5);
 
-    // Hover effects with proper redraw
+    // Hover effect
     interactiveZone.on('pointerover', () => {
       button.clear();
       button.fillStyle(hoverColor);
