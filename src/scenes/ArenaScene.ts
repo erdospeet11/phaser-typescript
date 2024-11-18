@@ -87,7 +87,6 @@ export class ArenaScene extends Phaser.Scene {
         // Update UI with current values
         this.player.updateUIText();
 
-
         this.setupGroups();
 
         // Collision
@@ -112,20 +111,19 @@ export class ArenaScene extends Phaser.Scene {
             this.scene.launch('PauseScene');
         });
 
-        // Replace character sheet creation with keyboard event
+        // Character Sheet
         this.input.keyboard!.on('keydown-C', () => {
-            console.log('C key pressed, launching CharacterSheetScene');
             this.scene.pause();
             this.scene.launch('CharacterSheetScene', { player: this.player });
             this.scene.bringToTop('CharacterSheetScene');
         });
 
-        // Remove immediate portal creation and replace with delayed creation
+        // Create portals
         this.time.delayedCall(10000, () => {
             this.createPortals();
             this.portalsSpawned = true;
             
-            // Optional: Add visual feedback when portals spawn
+            // Flash screen
             this.cameras.main.flash(500, 0, 0, 255);
         });
     }
@@ -147,10 +145,10 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     private handlePlayerEnemyCollision(player: any, enemy: any): void {
-        // Cast to proper type to access isInvulnerable
+        // I need to cast here because the type is any, ArcadePhysicsCallback returns any
         const playerObj = player as Player;
         
-        // Check if player is invulnerable before applying damage
+        // Check if player is invulnerable
         if (playerObj.isInvulnerable) return;
 
         const damage = 10;
@@ -393,19 +391,19 @@ export class ArenaScene extends Phaser.Scene {
         let x, y;
 
         switch(side) {
-            case 0: // Top
+            case 0:
                 x = Phaser.Math.Between(50, 350);
                 y = 50;
                 break;
-            case 1: // Right
+            case 1:
                 x = 350;
                 y = Phaser.Math.Between(50, 250);
                 break;
-            case 2: // Bottom
+            case 2:
                 x = Phaser.Math.Between(50, 350);
                 y = 250;
                 break;
-            case 3: // Left
+            case 3:
                 x = 50;
                 y = Phaser.Math.Between(50, 250);
                 break;
