@@ -87,42 +87,26 @@ export class ArenaScene extends Phaser.Scene {
         // Update UI with current values
         this.player.updateUIText();
 
-        // Create enemies group with proper physics
-        this.enemies = this.add.group({
-            classType: Enemy,
-            runChildUpdate: true,
-            maxSize: 20
-        });
 
-        // Create ranged enemies group
-        this.rangedEnemies = this.add.group({
-            classType: RangedEnemy,
-            runChildUpdate: true,
-            maxSize: 20
-        });
+        this.setupGroups();
 
-        // Replace separate pickup groups with a single group
-        this.pickups = this.add.group({
-            runChildUpdate: true
-        });
-
-        // Add collisions
+        // Collision
         this.physics.world.fixedStep = false;
 
-        // Setup physics
+        // Physics
         this.setupPhysicsColliders();
         this.setupPhysicsOverlaps();
 
         // Modify room based on type
         if (this.roomType === 'boss') {
-            this.max_enemies = 0;  // No regular enemies in boss room
-            this.spawnBoss();      // Spawn the boss instead
+            this.max_enemies = 0;
+            this.spawnBoss();
         } else {
-            this.max_enemies = 5;  // Normal enemy count for regular rooms
+            this.max_enemies = 5;
             this.startEnemySpawner();
         }
 
-        // Add ESC key handler for pausing
+        // Pause
         this.input.keyboard!.on('keydown-ESC', () => {
             this.scene.pause();
             this.scene.launch('PauseScene');
@@ -151,21 +135,13 @@ export class ArenaScene extends Phaser.Scene {
         
         const tileSize = 16;
 
-        // Create top and bottom walls
         for (let x = 0; x < 400; x += tileSize) {
-            // Top row
             this.walls.create(x + tileSize/2, tileSize/2, 'wall');
-            
-            // Bottom row
             this.walls.create(x + tileSize/2, 300 - tileSize/2, 'wall');
         }
 
-        // Create left and right walls
         for (let y = tileSize; y < 300 - 16; y += tileSize) {
-            //Left
             this.walls.create(tileSize/2, y + tileSize/2, 'wall');
-            
-            //Right
             this.walls.create(400 - tileSize/2, y + tileSize/2, 'wall');
         }
     }
@@ -193,50 +169,39 @@ export class ArenaScene extends Phaser.Scene {
         const enemyObj = enemy as Enemy;
         const damage = projectileObj.getDamage();
         
-        // Create floating damage number
+        // Floating Damage
         new FloatingDamage(
             this,
             enemy.x,
-            enemy.y - 20, // Spawn slightly above the enemy
+            enemy.y - 20,
             damage,
             false
         );
         
-        // Destroy projectile first
         projectileObj.destroy();
         
-        // Then handle enemy damage and scoring
         if (enemyObj.damage(damage)) {
             this.player.addScore(100);
         }
     }
 
     update() {
+        // Update player
         this.player.update();
         
-        // Update both enemy types
-        this.enemies.children.iterate((enemy: any) => {
-            if (enemy && enemy.active) {
+        // Update regular enemies
+        this.enemies.getChildren().forEach((enemy: any) => {
+            if (enemy?.active) {
                 enemy.update(this.player);
             }
-            return true;
         });
 
-        this.rangedEnemies.children.iterate((enemy: any) => {
-            if (enemy && enemy.active) {
+        // Update ranged enemies
+        this.rangedEnemies.getChildren().forEach((enemy: any) => {
+            if (enemy?.active) {
                 enemy.update(this.player);
             }
-            return true;
         });
-
-        // Check if player is at the right edge of the arena
-        if (this.player.x > 380) {  // Adjust threshold as needed
-            this.cameras.main.fade(500, 0, 0, 0);
-            
-            this.time.delayedCall(500, () => {
-                this.scene.start('ArenaScene');
-            });
-        }
     }
 
     private setupPhysicsColliders(): void {
@@ -308,6 +273,29 @@ export class ArenaScene extends Phaser.Scene {
         });
     }
 
+    // Groups: groups are used to manage game objects efficiently
+
+    private setupGroups(): void {
+        // Create enemies group
+        this.enemies = this.add.group({
+            classType: Enemy,
+            runChildUpdate: true,
+            maxSize: 20
+        });
+    
+        // Create ranged enemies group
+        this.rangedEnemies = this.add.group({
+            classType: RangedEnemy,
+            runChildUpdate: true,
+            maxSize: 20
+        });
+    
+        // Replace separate pickup groups with a single group
+        this.pickups = this.add.group({
+            runChildUpdate: true
+        });
+    }
+
     private setupPhysicsOverlaps(): void {
         // Player and enemies
         this.physics.add.overlap(
@@ -353,23 +341,22 @@ export class ArenaScene extends Phaser.Scene {
             return;
         }
 
-        // Random number between 1-100 to determine enemy type
         const randomNum = Phaser.Math.Between(1, 100);
         let enemy;
 
-        if (randomNum <= 30) { // 30% chance for RangedEnemy
+        if (randomNum <= 30) {
             const spawnPoint = this.getRandomSpawnPoint();
             enemy = new RangedEnemy(this, spawnPoint.x, spawnPoint.y);
-        } else if (randomNum <= 60) { // 30% chance for ObstacleEnemy
+        } else if (randomNum <= 60) {
             enemy = ObstacleEnemy.spawnNearPlayer(this, this.player);
-        } else { // 40% chance for basic Enemy
+        } else {
             const spawnPoint = this.getRandomSpawnPoint();
             enemy = new Enemy(this, spawnPoint.x, spawnPoint.y);
         }
 
         this.enemies.add(enemy);
 
-        // Add projectile collisions only if it's a RangedEnemy
+        // Add projectile collisions if it's a RangedEnemy
         if (enemy instanceof RangedEnemy) {
             this.physics.add.collider(
                 this.player,
@@ -391,7 +378,6 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     private startEnemySpawner(): void {
-        // Only start spawner if we're not in a boss room
         if (this.roomType !== 'boss') {
             this.time.addEvent({
                 delay: 2000,
@@ -455,7 +441,6 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     private handlePortalCollision(direction: string): void {
-        // Only handle collision if portals are spawned
         if (!this.portalsSpawned) return;
 
         const newPosition = this.roomManager.getNextRoomPosition(this.roomPosition, direction);
@@ -523,5 +508,9 @@ export class ArenaScene extends Phaser.Scene {
                 (projectile as Projectile).destroy();
             }
         );
+    }
+
+    public getPlayer(): Player {
+        return this.player;
     }
 } 

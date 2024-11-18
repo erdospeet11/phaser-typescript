@@ -6,6 +6,7 @@ import { SettingsScene } from './scenes/SettingsScene';
 import { DungeonScene } from './scenes/DungeonScene';
 import { LevelSelectScene } from './scenes/LevelSelectScene';
 import { CharacterSheetScene } from './ui/CharacterSheetScene';
+import { EndGameScene } from './scenes/EndGameScene';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
@@ -21,7 +22,7 @@ const config: Phaser.Types.Core.GameConfig = {
             //debugShowBody: true,
         }
     },
-    scene: [MainMenuScene, CharacterSheetScene, LevelSelectScene, SettingsScene, ArenaScene, PauseScene, DungeonScene],
+    scene: [MainMenuScene, CharacterSheetScene, LevelSelectScene, SettingsScene, ArenaScene, PauseScene, DungeonScene, EndGameScene],
     scale: {
         mode: Scale.FIT,
         autoCenter: Scale.CENTER_BOTH

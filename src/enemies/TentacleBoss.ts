@@ -103,5 +103,13 @@ export class TentacleBoss extends Enemy {
             this.justEnteredSpawningState = false;
         }
     }
+
+    public handleDeath(): void {
+        this.scene.scene.start('EndGameScene', { 
+            victory: true,
+            score: (this.scene as ArenaScene).getPlayer().getScore(),
+            gold: (this.scene as ArenaScene).getPlayer().getCoins()
+        });
+    }
 }
 

@@ -239,7 +239,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public handleDeath(): void {
-    // Implement death handling logic here
+    this.scene.scene.start('EndGameScene', { 
+        victory: false,
+        score: this.gameManager.getScore(),
+        gold: this.gameManager.getGold()
+    });
   }
 
   public addCoins(amount: number): void {
