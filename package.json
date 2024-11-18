@@ -1,6 +1,8 @@
 {
   "dependencies": {
-    "phaser": "^3.85.1"
+    "@types/sqlite3": "^3.1.11",
+    "phaser": "^3.85.1",
+    "sqlite3": "^5.1.7"
   },
   "name": "phaser-typescript",
   "version": "1.0.0",
