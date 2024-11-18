@@ -6,12 +6,14 @@ export class RangedEnemy extends Enemy {
     private projectiles: Phaser.GameObjects.Group;
     private lastShootTime: number = 0;
     private shootCooldown: number = 5000; // 5 seconds in milliseconds
+    private projectileSprite: string;
 
-    constructor(scene: Phaser.Scene, x: number, y: number) {
+    constructor(scene: Phaser.Scene, x: number, y: number, spriteKey: string = 'ranged-enemy', projectileKey: string = 'projectile') {
         super(scene, x, y);
         
-        // Change the sprite texture
-        this.setTexture('ranged-enemy');
+        // Use the provided sprite key or fall back to default
+        this.setTexture(spriteKey);
+        this.projectileSprite = projectileKey;
         
         // Make the enemy stationary
         const body = this.body as Phaser.Physics.Arcade.Body;
@@ -19,11 +21,15 @@ export class RangedEnemy extends Enemy {
         body.setImmovable(true); // Make it immovable
         body.setVelocity(0, 0); // Set velocity to 0
         
-        // Create projectiles group
+        // Create projectiles group with custom sprite
         this.projectiles = scene.add.group({
             classType: Projectile,
             maxSize: 10,
-            runChildUpdate: true
+            runChildUpdate: true,
+            createCallback: (proj) => {
+                // Set the custom sprite when projectile is created
+                (proj as Projectile).setTexture(this.projectileSprite);
+            }
         });
     }
 
@@ -57,6 +63,7 @@ export class RangedEnemy extends Enemy {
         ) as Projectile;
 
         if (projectile) {
+            projectile.setTexture(this.projectileSprite);  // Ensure correct texture
             projectile.fire({
                 x: Math.cos(angle),
                 y: Math.sin(angle)

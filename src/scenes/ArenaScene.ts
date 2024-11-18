@@ -6,23 +6,47 @@ import { RangedEnemy } from '../enemies/RangedEnemy';
 import { FloatingDamage } from '../effects/FloatingDamage';
 import { CharacterSheet } from '../ui/CharacterSheet';
 import { CoinPickup } from '../pickups/CoinPickup';
+import { Pickup } from '../pickups/Pickup';
+import { RoomManager } from '../managers/RoomManager';
+import { ObstacleEnemy } from '../enemies/ObstacleEnemy';
+import { TentacleBoss } from '../enemies/TentacleBoss';
 
 export class ArenaScene extends Phaser.Scene {
     private player!: Player;
     private walls!: Phaser.Physics.Arcade.StaticGroup;
     private enemies!: Phaser.GameObjects.Group;
-    public healthPickups!: Phaser.GameObjects.Group;
-    public coinPickups!: Phaser.GameObjects.Group;
     private rangedEnemies!: Phaser.GameObjects.Group;
-    private readonly MAX_ENEMIES: number = 2;
+    private pickups!: Phaser.GameObjects.Group;
+    private max_enemies: number = 2;
     private characterSheet!: CharacterSheet;
+    private portals: {[key: string]: Phaser.GameObjects.Sprite} = {};
+    protected roomPosition: { x: number, y: number };
+    private roomType: 'start' | 'normal' | 'boss';
+    private roomManager: RoomManager;
+    private obstacleEnemy!: ObstacleEnemy;
+    private boss?: TentacleBoss;
 
     constructor() {
         super({ key: 'ArenaScene' });
+        this.roomPosition = { x: 0, y: 1 }; // Start position
+        this.roomType = 'start';
+        this.roomManager = RoomManager.getInstance();
+    }
+
+    init(data: { roomPosition?: { x: number, y: number }, roomType?: 'start' | 'normal' | 'boss' }) {
+        if (data.roomType === 'start') {
+            this.roomManager.resetVisitedRooms();
+        }
+        if (data.roomPosition) {
+            this.roomPosition = data.roomPosition;
+        }
+        if (data.roomType) {
+            this.roomType = data.roomType;
+        }
     }
 
     preload() {
-        this.load.image('player', 'assets/player2.png');
+        this.load.image('player', 'assets/player5.png');
         this.load.image('wall', 'assets/wall.png');
         this.load.image('enemy', 'assets/enemy.png');
         this.load.image('ranged-enemy', 'assets/ranged-enemy.png');
@@ -32,37 +56,34 @@ export class ArenaScene extends Phaser.Scene {
         this.load.image('custom-cursor', 'assets/cursor.png');
         this.load.image('fireball', 'assets/fireball.png');
         this.load.image('coin-pickup', 'assets/coin_pickup.png');
+        this.load.image('portal', 'assets/portal.png');
+        this.load.image('speed-pickup', 'assets/speed_pickup.png');
+        this.load.image('obstacle-enemy', 'assets/obstacle-enemy.png');
+        this.load.image('tentacle-boss', 'assets/professor-tentacle.png');
+        this.load.image('tentacle', 'assets/tentacle-minion.png');
+        this.load.image('fire-spellbook', 'assets/fire-spellbook.png');
+        this.load.image('voidball', 'assets/void-ball.png');
     }
 
     create() {
+        this.physics.world.createDebugGraphic();
+
         this.input.setDefaultCursor('url(assets/cursor.png), auto');
 
-        // Create arena floor - reduced size from 800x600 to 400x300
         this.add.tileSprite(200, 150, 400, 300, 'floor');
 
-        // Create arena walls
         this.createArenaWalls();
 
-        // Create player in center of smaller arena
         this.player = new Player(this, 200, 150);
+        
+        // Update UI with current values
+        this.player.updateUIText();
 
         // Create enemies group with proper physics
         this.enemies = this.add.group({
             classType: Enemy,
             runChildUpdate: true,
             maxSize: 20
-        });
-
-        // Create health pickups group
-        this.healthPickups = this.add.group({
-            classType: HealthPickup,
-            runChildUpdate: true
-        });
-
-        // Create coin pickups group
-        this.coinPickups = this.add.group({
-            classType: CoinPickup,
-            runChildUpdate: true
         });
 
         // Create ranged enemies group
@@ -72,6 +93,11 @@ export class ArenaScene extends Phaser.Scene {
             maxSize: 20
         });
 
+        // Replace separate pickup groups with a single group
+        this.pickups = this.add.group({
+            runChildUpdate: true
+        });
+
         // Add collisions
         this.physics.world.fixedStep = false;
 
@@ -79,8 +105,14 @@ export class ArenaScene extends Phaser.Scene {
         this.setupPhysicsColliders();
         this.setupPhysicsOverlaps();
 
-        // Start spawning enemies
-        this.startEnemySpawner();
+        // Modify room based on type
+        if (this.roomType === 'boss') {
+            this.max_enemies = 0;  // No regular enemies in boss room
+            this.spawnBoss();      // Spawn the boss instead
+        } else {
+            this.max_enemies = 5;  // Normal enemy count for regular rooms
+            this.startEnemySpawner();
+        }
 
         // Add ESC key handler for pausing
         this.input.keyboard!.on('keydown-ESC', () => {
@@ -103,31 +135,33 @@ export class ArenaScene extends Phaser.Scene {
                 this.characterSheet.show();
             }
         });
+
+        // Create portals based on room position
+        this.createPortals();
     }
 
     private createArenaWalls(): void {
         this.walls = this.physics.add.staticGroup();
+        
+        const tileSize = 16;
 
-        // Create border walls - adjusted positions and scales for smaller arena
-        // Top wall
-        this.walls.create(200, 25, 'wall')
-            .setScale(20, 1) // Reduced from 40 to 20
-            .refreshBody();
-        
-        // Bottom wall
-        this.walls.create(200, 275, 'wall')
-            .setScale(20, 1)
-            .refreshBody();
-        
-        // Left wall
-        this.walls.create(25, 150, 'wall')
-            .setScale(1, 15) // Reduced from 30 to 15
-            .refreshBody();
-        
-        // Right wall
-        this.walls.create(375, 150, 'wall')
-            .setScale(1, 15)
-            .refreshBody();
+        // Create top and bottom walls
+        for (let x = 0; x < 400; x += tileSize) {
+            // Top row
+            this.walls.create(x + tileSize/2, tileSize/2, 'wall');
+            
+            // Bottom row
+            this.walls.create(x + tileSize/2, 300 - tileSize/2, 'wall');
+        }
+
+        // Create left and right walls
+        for (let y = tileSize; y < 300 - 16; y += tileSize) {
+            //Left
+            this.walls.create(tileSize/2, y + tileSize/2, 'wall');
+            
+            //Right
+            this.walls.create(400 - tileSize/2, y + tileSize/2, 'wall');
+        }
     }
 
     private handlePlayerEnemyCollision(player: any, enemy: any): void {
@@ -192,6 +226,15 @@ export class ArenaScene extends Phaser.Scene {
                 defense: this.player.getDefense(),
                 speed: this.player.getSpeed(),
                 score: this.player.getScore()
+            });
+        }
+
+        // Check if player is at the right edge of the arena
+        if (this.player.x > 380) {  // Adjust threshold as needed
+            this.cameras.main.fade(500, 0, 0, 0);
+            
+            this.time.delayedCall(500, () => {
+                this.scene.start('ArenaScene');
             });
         }
     }
@@ -278,36 +321,56 @@ export class ArenaScene extends Phaser.Scene {
         // Player and health pickups
         this.physics.add.overlap(
             this.player,
-            this.healthPickups,
+            this.pickups,
             (player, pickup) => {
-                (pickup as HealthPickup).collect(player as Player);
+                (pickup as Pickup).collect(player as Player);
             }
         );
 
         // Player and coin pickups
         this.physics.add.overlap(
             this.player,
-            this.coinPickups,
+            this.pickups,
             (player, pickup) => {
                 (pickup as CoinPickup).collect(player as Player);
             }
+        );
+
+        // Player and obstacle enemy
+        this.physics.add.overlap(
+            this.player,
+            this.obstacleEnemy,
+            this.handlePlayerEnemyCollision,
+            undefined,
+            this
         );
     }
 
     // ENEMY SPAWNING AND FUNCTIONALITY
 
     private spawnEnemy(): void {
-        if (this.enemies.getLength() + this.rangedEnemies.getLength() >= this.MAX_ENEMIES) {
+        if (this.enemies.getLength() >= this.max_enemies) {
             return;
         }
 
-        const spawnPoint = this.getRandomSpawnPoint();
-        
-        if (Phaser.Math.Between(1, 100) <= 30) {
-            const enemy = new RangedEnemy(this, spawnPoint.x, spawnPoint.y);
-            this.rangedEnemies.add(enemy);
+        // Random number between 1-100 to determine enemy type
+        const randomNum = Phaser.Math.Between(1, 100);
+        let enemy;
 
-            // Add collisions for the new ranged enemy's projectiles
+        if (randomNum <= 30) { // 30% chance for RangedEnemy
+            const spawnPoint = this.getRandomSpawnPoint();
+            enemy = new RangedEnemy(this, spawnPoint.x, spawnPoint.y);
+        } else if (randomNum <= 60) { // 30% chance for ObstacleEnemy
+            enemy = ObstacleEnemy.spawnNearPlayer(this, this.player);
+        } else { // 40% chance for basic Enemy
+            const spawnPoint = this.getRandomSpawnPoint();
+            enemy = new Enemy(this, spawnPoint.x, spawnPoint.y);
+        }
+
+        this.enemies.add(enemy);
+
+        // Add projectile collisions only if it's a RangedEnemy
+        if (enemy instanceof RangedEnemy) {
             this.physics.add.collider(
                 this.player,
                 enemy.getProjectiles(),
@@ -324,21 +387,19 @@ export class ArenaScene extends Phaser.Scene {
                     (projectile as Projectile).destroy();
                 }
             );
-        } else {
-            const enemy = new Enemy(this, spawnPoint.x, spawnPoint.y);
-            this.enemies.add(enemy);
         }
     }
 
-
     private startEnemySpawner(): void {
-        // Spawn enemies periodically
-        this.time.addEvent({
-            delay: 2000, // Spawn every 2 seconds
-            callback: this.spawnEnemy,
-            callbackScope: this,
-            loop: true
-        });
+        // Only start spawner if we're not in a boss room
+        if (this.roomType !== 'boss') {
+            this.time.addEvent({
+                delay: 2000,
+                callback: this.spawnEnemy,
+                callbackScope: this,
+                loop: true
+            });
+        }
     }
 
     private getRandomSpawnPoint(): { x: number, y: number } {
@@ -368,5 +429,95 @@ export class ArenaScene extends Phaser.Scene {
         }
 
         return { x, y };
+    }
+
+    private createPortals(): void {
+        const availablePortals = this.roomManager.getAvailablePortals(this.roomPosition);
+        
+        availablePortals.forEach(portal => {
+            this.portals[portal.direction] = this.createPortal(portal.x, portal.y, portal.direction);
+        });
+    }
+
+    private createPortal(x: number, y: number, direction: string): Phaser.GameObjects.Sprite {
+        const portal = this.add.sprite(x, y, 'portal');
+        this.physics.add.existing(portal, true);
+        
+        this.physics.add.overlap(
+            this.player,
+            portal,
+            () => this.handlePortalCollision(direction),
+            undefined,
+            this
+        );
+
+        return portal;
+    }
+
+    private handlePortalCollision(direction: string): void {
+        const newPosition = this.roomManager.getNextRoomPosition(this.roomPosition, direction);
+        const newRoomType = this.roomManager.getRoomType(newPosition);
+
+        // Transition effect
+        this.cameras.main.fade(500, 0, 0, 0);
+        
+        this.time.delayedCall(500, () => {
+            this.scene.start('ArenaScene', { 
+                roomPosition: newPosition,
+                roomType: newRoomType
+            });
+        });
+    }
+
+    public addPickup(pickup: Pickup): void {
+        this.pickups.add(pickup);
+    }
+
+    private spawnBoss(): void {
+        // Spawn boss in center of room
+        this.boss = new TentacleBoss(
+            this,
+            this.cameras.main.centerX,
+            this.cameras.main.centerY
+        );
+
+        // Add boss to enemies group for collision handling
+        this.enemies.add(this.boss);
+
+        // Setup any boss-specific colliders if needed
+        this.physics.add.collider(this.boss, this.walls);
+        this.physics.add.collider(
+            this.player.getProjectiles(),
+            this.boss,
+            this.handleProjectileEnemyCollision,
+            undefined,
+            this
+        );
+    }
+
+    public addEnemy(enemy: Enemy): void {
+        this.enemies.add(enemy);
+    }
+
+    public setupEnemyProjectileColliders(enemy: RangedEnemy): void {
+        // Setup player collision
+        this.physics.add.collider(
+            this.player,
+            enemy.getProjectiles(),
+            (player, projectile) => {
+                const damage = 10;
+                (player as Player).damage(damage);
+                (projectile as Projectile).destroy();
+            }
+        );
+
+        // Setup wall collision
+        this.physics.add.collider(
+            enemy.getProjectiles(),
+            this.walls,
+            (projectile) => {
+                (projectile as Projectile).destroy();
+            }
+        );
     }
 } 

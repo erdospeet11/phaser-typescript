@@ -1,5 +1,6 @@
 import { Projectile } from './Projectile';
 import { DashAbility } from './abilities/DashAbility';
+import { GameManager } from './managers/GameManager';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   protected health: number;
@@ -9,20 +10,23 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   protected speed: number;
   protected cursors: Phaser.Types.Input.Keyboard.CursorKeys;
   protected money: number;
-  protected coins: number;
   protected isPoweredUp: boolean = false;
   protected powerupTimer?: Phaser.Time.TimerEvent;
-  protected baseAttack: number = 10;  // Store base attack value
-  protected statsText!: Phaser.GameObjects.Text;
+  protected baseAttack: number = 10;
+  protected scoreText!: Phaser.GameObjects.Text;
+  protected goldText!: Phaser.GameObjects.Text;
   protected projectiles: Phaser.GameObjects.Group;
   protected lastShootTime: number = 0;
-  protected shootCooldown: number = 250; // 250ms between shots
-  protected facing: number = 0; // Will now store angle in radians
-  protected score: number = 0;
+  protected shootCooldown: number = 250;
+  protected facing: number = 0;
   protected dashAbility: DashAbility;
+  private gameManager: GameManager;
+  protected weaponSprite!: Phaser.GameObjects.Sprite;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'player');
+    
+    this.gameManager = GameManager.getInstance();
     
     scene.add.existing(this);
     scene.physics.add.existing(this);
@@ -41,20 +45,23 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.defense = 5;
     this.speed = 1;
     this.money = 0;
-    this.coins = 0;
     
     // Set up keyboard input
     this.cursors = scene.input.keyboard!.createCursorKeys();
     scene.input.keyboard!.addKeys('W,A,S,D');
 
-    // Create the stats text
+    // Create the stats text after GameManager is initialized
     this.createStatsDisplay();
 
     // Create projectiles group
     this.projectiles = scene.add.group({
       classType: Projectile,
       maxSize: 10,
-      runChildUpdate: true
+      runChildUpdate: true,
+      createCallback: (proj) => {
+        // Set the fireball sprite when projectile is created
+        (proj as Projectile).setTexture('fireball');
+      }
     });
 
     // Add left-click binding for shooting
@@ -74,40 +81,88 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   private createStatsDisplay(): void {
-    this.statsText = this.scene.add.text(
-      10,
-      10,
-      this.getStatsString(),
-      {
-        fontSize: '14px',
-        fontFamily: 'Arial',
-        color: '#ffffff',
-        padding: { x: 0, y: 0 },
-        align: 'left',
-        // Add shadow
-        shadow: {
-            offsetX: 1,
-            offsetY: 1,
-            color: '#000000',
-            blur: 1,
-            stroke: true,
-            fill: true
-        },
-        // Add stroke (outline)
-        stroke: '#000000',
-        strokeThickness: 1
-      }
+    // Create score text (top left)
+    this.scoreText = this.scene.add.text(
+        10,
+        10,
+        `🏆Score: ${this.gameManager.getScore()}`,
+        {
+            fontSize: '14px',
+            fontFamily: 'Arial',
+            color: '#ffffff',
+            padding: { x: 0, y: 0 },
+            align: 'left',
+            shadow: {
+                offsetX: 1,
+                offsetY: 1,
+                color: '#000000',
+                blur: 1,
+                stroke: true,
+                fill: true
+            },
+            stroke: '#000000',
+            strokeThickness: 1
+        }
     )
     .setOrigin(0, 0)
     .setScrollFactor(0)
     .setDepth(1000);
-  }
 
-  private getStatsString(): string {
-    return [
-      `🏆Score: ${this.score}`,
-      `💰Gold: ${this.coins}`,
-    ].join('\n');
+    // Create gold text (top right)
+    this.goldText = this.scene.add.text(
+        this.scene.cameras.main.width - 10,
+        10,
+        `💰Gold: ${this.gameManager.getGold()}`,
+        {
+            fontSize: '14px',
+            fontFamily: 'Arial',
+            color: '#ffffff',
+            padding: { x: 0, y: 0 },
+            align: 'right',
+            shadow: {
+                offsetX: 1,
+                offsetY: 1,
+                color: '#000000',
+                blur: 1,
+                stroke: true,
+                fill: true
+            },
+            stroke: '#000000',
+            strokeThickness: 1
+        }
+    )
+    .setOrigin(1, 0)
+    .setScrollFactor(0)
+    .setDepth(1000);
+
+    // Create weapon display in bottom right
+    const padding = 5;
+    const squareSize = 32;
+    
+    // Add semi-transparent background square
+    const background = this.scene.add.rectangle(
+        this.scene.cameras.main.width - padding,
+        this.scene.cameras.main.height - padding,
+        squareSize,
+        squareSize,
+        0x000000,
+        0.75
+    )
+    .setOrigin(1, 1)
+    .setScrollFactor(0)
+    .setDepth(999)
+    .setScale(2);
+
+    // Add weapon sprite centered in the background square
+    this.weaponSprite = this.scene.add.sprite(
+        this.scene.cameras.main.width - padding - squareSize,
+        this.scene.cameras.main.height - padding - squareSize,
+        'fire-spellbook'
+    )
+    .setOrigin(0.5, 0.5)
+    .setScrollFactor(0)
+    .setDepth(1000)
+    .setScale(2);
   }
 
   update() {
@@ -143,15 +198,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Flip sprite based on mouse position
     this.setFlipX(Math.abs(angle) > Math.PI/2);
 
-    // Update the stats text
-    if (this.statsText) {
-      this.statsText.setText(this.getStatsString());
+    // Update the stats texts with GameManager values
+    if (this.scoreText) {
+        this.scoreText.setText(`🏆Score: ${this.gameManager.getScore()}`);
+    }
+    if (this.goldText) {
+        this.goldText.setText(`💰Gold: ${this.gameManager.getGold()}`);
     }
   }
 
-  damage(amount: number): void {
-    const damageAfterDefense = Math.max(1, amount - this.defense);
-    this.health = Math.max(0, this.health - damageAfterDefense);
+  public damage(amount: number): void {
+    this.gameManager.damage(amount);
     
     // Flash red effect
     this.setTint(0xff0000);
@@ -159,39 +216,30 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.clearTint();
     });
 
-    if (this.statsText) {
-        this.statsText.setText(this.getStatsString());
-    }
-    
-    if (this.health <= 0) {
+    if (this.gameManager.getHealth() <= 0) {
         this.handleDeath();
     }
   }
 
-  getHealth(): number {
-    return this.health;
+  public getHealth(): number {
+    return this.gameManager.getHealth();
   }
 
-  getMaxHealth(): number {
-    return this.maxHealth;
+  public getMaxHealth(): number {
+    return this.gameManager.getMaxHealth();
   }
 
-  handleDeath(): void {
+  public handleDeath(): void {
     // Implement death handling logic here
   }
 
-  addCoins(amount: number): void {
-    this.coins += amount;
-    // Update the stats display
-    if (this.statsText) {
-        this.statsText.setText(this.getStatsString());
-    }
-    // Optional: Emit an event for UI updates
-    this.emit('coinsChanged', this.coins);
+  public addCoins(amount: number): void {
+    this.gameManager.addGold(amount);
+    this.updateUIText();
   }
 
   getCoins(): number {
-    return this.coins;
+    return this.gameManager.getGold();
   }
 
   addPowerup(duration: number): void {
@@ -223,23 +271,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.emit('powerupEnded');
   }
 
-  isPowered(): boolean {
+  public isPowered(): boolean {
     return this.isPoweredUp;
   }
 
-  heal(amount: number): void {
-    this.health = Math.min(this.health + amount, this.maxHealth);
-    if (this.statsText) {
-      this.statsText.setText(this.getStatsString());
-    }
-    this.emit('healthChanged', this.health);
+  public heal(amount: number): void {
+    this.gameManager.heal(amount);
+    this.emit('healthChanged', this.gameManager.getHealth());
   }
 
-  getAttack(): number {
+  public getAttack(): number {
     return this.attack;
   }
 
-  getSpeed(): number {
+  public getSpeed(): number {
     return this.speed;
   }
 
@@ -255,8 +300,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.lastShootTime = currentTime;
 
     // Adjust offset for smaller sprite
-    const offsetX = Math.cos(this.facing) * 5;  // Reduced from 10
-    const offsetY = Math.sin(this.facing) * 5;  // Reduced from 10
+    const offsetX = Math.cos(this.facing) * 5;
+    const offsetY = Math.sin(this.facing) * 5;
 
     const projectile = this.projectiles.get(
       this.x + offsetX,
@@ -264,6 +309,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     ) as Projectile;
 
     if (projectile) {
+      projectile.setTexture('fireball');  // Ensure correct texture
       projectile.fire({
         x: Math.cos(this.facing),
         y: Math.sin(this.facing)
@@ -271,33 +317,42 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  getProjectiles(): Phaser.GameObjects.Group {
+  public getProjectiles(): Phaser.GameObjects.Group {
     return this.projectiles;
   }
 
-  addScore(points: number): void {
-    this.score += points;
-    console.log('Score updated:', this.score);
-    if (this.statsText && this.statsText.active) {
-      this.statsText.setText(this.getStatsString());
-      this.statsText.setVisible(true);
-    }
+  public addScore(points: number): void {
+    this.gameManager.addScore(points);
+    this.updateUIText();
   }
 
-  destroy() {
+  public destroy() {
     this.dashAbility.destroy();
     super.destroy();
   }
 
-  getDefense(): number {
+  public getDefense(): number {
     return this.defense;
   }
 
-  setDefense(value: number): void {
+  public setDefense(value: number): void {
     this.defense = value;
   }
 
   public getScore(): number {
-    return this.score;
+    return this.gameManager.getScore();
+  }
+
+  public setSpeed(value: number): void {
+    this.speed = value;
+  }
+
+  public updateUIText(): void {
+    if (this.scoreText) {
+      this.scoreText.setText(`🏆Score: ${this.gameManager.getScore()}`);
+    }
+    if (this.goldText) {
+      this.goldText.setText(`💰Gold: ${this.gameManager.getGold()}`);
+    }
   }
 } 

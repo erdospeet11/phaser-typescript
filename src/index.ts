@@ -3,6 +3,8 @@ import { ArenaScene } from './scenes/ArenaScene';
 import { PauseScene } from './scenes/PauseScene';
 import { MainMenuScene } from './scenes/MainMenuScene';
 import { SettingsScene } from './scenes/SettingsScene';
+import { DungeonScene } from './scenes/DungeonScene';
+import { LevelSelectScene } from './scenes/LevelSelectScene';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
@@ -18,7 +20,7 @@ const config: Phaser.Types.Core.GameConfig = {
             debugShowBody: true,
         }
     },
-    scene: [MainMenuScene, SettingsScene, ArenaScene, PauseScene],
+    scene: [MainMenuScene, LevelSelectScene, SettingsScene, ArenaScene, PauseScene, DungeonScene],
     scale: {
         mode: Scale.FIT,
         autoCenter: Scale.CENTER_BOTH

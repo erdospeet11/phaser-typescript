@@ -2,8 +2,8 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     private speed: number = 300;
     private damage: number = 20;
 
-    constructor(scene: Phaser.Scene, x: number, y: number) {
-        super(scene, x, y, 'projectile');
+    constructor(scene: Phaser.Scene, x: number, y: number, spriteKey: string = 'projectile') {
+        super(scene, x, y, spriteKey);
         
         scene.add.existing(this);
         scene.physics.add.existing(this);
@@ -11,6 +11,8 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
         // Set up physics body
         const body = this.body as Phaser.Physics.Arcade.Body;
         body.setSize(8, 8); // Adjust based on your projectile sprite size
+        body.setOffset(4, 4); // Center the collision box on the sprite
+                             // Offset = (sprite width - collision width) / 2
     }
 
     fire(direction: { x: number, y: number }): void {

@@ -71,7 +71,7 @@ export class PauseScene extends Phaser.Scene {
   // Use the exact same createButton method as MainMenuScene
   private createButton(yPosition: number, text: string, onClick: () => void) {
     const button = this.add.graphics();
-    const buttonWidth = 120;
+    const buttonWidth = 140;
     const buttonHeight = 30;
     const cornerRadius = 8;
 
@@ -109,7 +109,7 @@ export class PauseScene extends Phaser.Scene {
       yPosition,
       text,
       {
-        fontSize: '14px',
+        fontSize: '18px',
         color: '#ffffff',
         fontStyle: 'bold'
       }

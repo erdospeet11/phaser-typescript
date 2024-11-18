@@ -1,11 +1,12 @@
-export class MainMenuScene extends Phaser.Scene {
+import { RoomManager } from '../managers/RoomManager';
+
+export class LevelSelectScene extends Phaser.Scene {
     private backgrounds: Phaser.GameObjects.TileSprite[] = [];
     private scrollSpeeds: number[] = [0.5, 1, 1.5];
     private ttime: number = 0;
-    private readonly VERSION: string = 'v0.1.0';
 
     constructor() {
-        super({ key: 'MainMenuScene' });
+        super({ key: 'LevelSelectScene' });
     }
 
     preload() {
@@ -32,7 +33,7 @@ export class MainMenuScene extends Phaser.Scene {
         this.add.text(
             this.cameras.main.centerX,
             50,
-            'Legends of Smash Arena',
+            'Select Level',
             {
                 fontSize: '24px',
                 color: '#ffffff',
@@ -47,43 +48,29 @@ export class MainMenuScene extends Phaser.Scene {
             }
         ).setOrigin(0.5);
 
-        // Create rounded buttons
-        this.createButton(120, 'Play Game', () => this.startGame());
-        this.createButton(170, 'Settings', () => this.openSettings());
-        this.createButton(220, 'Credits', () => this.showCredits());
+        // Create level buttons
+        const levelConfigs = [
+            { text: 'Level 1', y: 150 },
+            { text: 'Level 2', y: 200 },
+            { text: 'Level 3', y: 250 }
+        ];
 
-        // Add version number text
-        this.add.text(
-            this.cameras.main.width - 10,
-            this.cameras.main.height - 10,
-            this.VERSION,
-            {
-                fontSize: '12px',
-                color: '#ffffff',
-                fontStyle: 'bold',
-                shadow: {
-                    offsetX: 1,
-                    offsetY: 1,
-                    color: '#000000',
-                    blur: 1,
-                    fill: true
-                }
-            }
-        ).setOrigin(1, 1);
+        levelConfigs.forEach((config, index) => {
+            this.createButton(config.y, config.text, () => this.startLevel(index + 1));
+        });
+
+        // Back button
+        this.createButton(350, 'Back to Menu', () => this.scene.start('MainMenuScene'));
     }
 
     private createButton(yPosition: number, text: string, onClick: () => void) {
-        // Create rounded rectangle graphics
         const button = this.add.graphics();
         const buttonWidth = 200;
         const buttonHeight = 40;
-        const cornerRadius = 10;  // Adjust this for more or less rounding
-
-        // Button colors
+        const cornerRadius = 10;
         const normalColor = 0x4a4a4a;
         const hoverColor = 0x6a6a6a;
 
-        // Draw the rounded rectangle
         button.fillStyle(normalColor);
         button.fillRoundedRect(
             this.cameras.main.centerX - buttonWidth / 2,
@@ -93,7 +80,6 @@ export class MainMenuScene extends Phaser.Scene {
             cornerRadius
         );
 
-        // Create an interactive zone for the button
         const hitArea = new Phaser.Geom.Rectangle(
             this.cameras.main.centerX - buttonWidth / 2,
             yPosition - buttonHeight / 2,
@@ -108,7 +94,6 @@ export class MainMenuScene extends Phaser.Scene {
             buttonHeight
         ).setInteractive({ hitArea: hitArea, useHandCursor: true });
 
-        // Add text
         const buttonText = this.add.text(
             this.cameras.main.centerX,
             yPosition,
@@ -120,7 +105,6 @@ export class MainMenuScene extends Phaser.Scene {
             }
         ).setOrigin(0.5);
 
-        // Hover effects
         interactiveZone.on('pointerover', () => {
             button.clear();
             button.fillStyle(hoverColor);
@@ -145,42 +129,26 @@ export class MainMenuScene extends Phaser.Scene {
             );
         });
 
-        // Click effect
-        interactiveZone.on('pointerdown', () => {
-            button.clear();
-            button.fillStyle(normalColor);
-            button.fillRoundedRect(
-                this.cameras.main.centerX - buttonWidth / 2,
-                yPosition - buttonHeight / 2,
-                buttonWidth,
-                buttonHeight,
-                cornerRadius
-            );
-            onClick();
-        });
+        interactiveZone.on('pointerdown', onClick);
     }
 
     update() {
         this.ttime += 0.01;
         
         this.backgrounds.forEach((bg, index) => {
-            // Add sine wave movement for more organic scrolling
             const speed = this.scrollSpeeds[index];
             bg.tilePositionX += speed * Math.cos(this.ttime + index);
             bg.tilePositionY += speed * Math.sin(this.ttime + index) * 0.5;
         });
     }
 
-    private startGame() {
-        this.scene.start('LevelSelectScene');
-    }
-
-    private openSettings() {
-        this.scene.start('SettingsScene');
-    }
-
-    private showCredits() {
-        // TODO: Implement credits functionality
-        console.log('Credits clicked');
+    private startLevel(levelNumber: number): void {
+        const roomManager = RoomManager.getInstance();
+        roomManager.setCurrentLevel(levelNumber);
+        
+        this.scene.start('ArenaScene', {
+            roomPosition: { x: 0, y: 1 },
+            roomType: 'start'
+        });
     }
 } 

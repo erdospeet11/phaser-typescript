@@ -133,9 +133,9 @@ export class SettingsScene extends Phaser.Scene {
 
     private createButton(x: number, y: number, text: string, onClick: () => void) {
         const button = this.add.graphics();
-        const buttonWidth = 120;  // Reduced width
-        const buttonHeight = 30;  // Reduced height
-        const cornerRadius = 8;   // Slightly reduced corners
+        const buttonWidth = 120;
+        const buttonHeight = 30;
+        const cornerRadius = 8;
 
         const normalColor = 0x4a4a4a;
         const hoverColor = 0x6a6a6a;
@@ -168,13 +168,13 @@ export class SettingsScene extends Phaser.Scene {
             y,
             text,
             {
-                fontSize: '14px',  // Smaller font
+                fontSize: '14px',
                 color: '#ffffff',
                 fontStyle: 'bold'
             }
         ).setOrigin(0.5);
 
-        // Hover effects (same as before)
+        // Hover effect
         interactiveZone.on('pointerover', () => {
             button.clear();
             button.fillStyle(hoverColor);

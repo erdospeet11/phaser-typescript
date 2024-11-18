@@ -1,6 +1,7 @@
 import { HealthPickup } from '../pickups/HealthPickup';
 import { ArenaScene } from '../scenes/ArenaScene';
 import { CoinPickup } from '../pickups/CoinPickup';
+import { SpeedPickup } from '../pickups/SpeedPickup';
 
 export class Enemy extends Phaser.GameObjects.Sprite {
   protected health: number;
@@ -9,8 +10,8 @@ export class Enemy extends Phaser.GameObjects.Sprite {
   protected healthBar: Phaser.GameObjects.Graphics;
   protected speed: number;
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, 'enemy');
+  constructor(scene: Phaser.Scene, x: number, y: number, texture: string = 'enemy') {
+    super(scene, x, y, texture);
     
     scene.physics.add.existing(this);
 
@@ -51,13 +52,13 @@ export class Enemy extends Phaser.GameObjects.Sprite {
     this.healthBar.fillRect(this.x-25, this.y-20, width, 5);
   }
 
-  private handleDeath(): void {
+  protected handleDeath(): void {
     if (Phaser.Math.Between(1, 100) <= 30) {
-      const pickup = new HealthPickup(this.scene, this.x, this.y);
-      (this.scene as ArenaScene).healthPickups.add(pickup);
+      const pickup = new SpeedPickup(this.scene, this.x, this.y);
+      (this.scene as ArenaScene).addPickup(pickup);
     } else {
       const pickup = new CoinPickup(this.scene, this.x, this.y);
-      (this.scene as ArenaScene).coinPickups.add(pickup);
+      (this.scene as ArenaScene).addPickup(pickup);
     }
 
     if (this.healthBar) {
