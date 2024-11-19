@@ -53,11 +53,13 @@ export class Enemy extends Phaser.GameObjects.Sprite {
   }
 
   protected handleDeath(): void {
-    if (Phaser.Math.Between(1, 100) <= 30) {
-      const pickup = new SpeedPickup(this.scene, this.x, this.y);
-      (this.scene as ArenaScene).addPickup(pickup);
-    } else {
+    var random = Phaser.Math.Between(1, 100);
+
+    if (random <= 30) {
       const pickup = new CoinPickup(this.scene, this.x, this.y);
+      (this.scene as ArenaScene).addPickup(pickup);
+    } else if (random <= 50){
+      const pickup = new SpeedPickup(this.scene, this.x, this.y);
       (this.scene as ArenaScene).addPickup(pickup);
     }
 
