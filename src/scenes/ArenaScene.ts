@@ -82,7 +82,7 @@ export class ArenaScene extends Phaser.Scene {
 
         // Get spawn position from RoomManager
         const spawnPosition = this.roomManager.getSpawnPosition(this.entryDirection);
-        this.player = new Player(this, spawnPosition.x, spawnPosition.y);
+        this.player = new Player(this, spawnPosition.x, spawnPosition.y, 'MAGE');
         
         // Update UI with current values
         this.player.updateUIText();

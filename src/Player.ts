@@ -1,6 +1,31 @@
 import { Projectile } from './Projectile';
 import { DashAbility } from './abilities/DashAbility';
 import { GameManager } from './managers/GameManager';
+import { Weapon } from './weapons/Weapon';
+import { RangedWeapon } from './weapons/RangedWeapon';
+import { MeleeWeapon } from './weapons/MeleeWeapon';
+const CLASSES = {
+  MAGE: new RangedWeapon(
+    'Fire Tome',
+    'fire-spellbook',
+    'fireball',
+    10,
+    250
+  ),
+  WARRIOR: new MeleeWeapon(
+    'Iron Sword',
+    'iron-sword',
+    10,
+    250
+  ),
+  ARCHER: new RangedWeapon(
+    'Longbow',
+    'longbow',
+    'arrow',
+    10,
+    250
+  )
+}
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   protected health: number;
@@ -23,12 +48,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private gameManager: GameManager;
   protected weaponSprite!: Phaser.GameObjects.Sprite;
   public isInvulnerable: boolean = false;
-  private invulnerabilityDuration: number = 1000; // 1 second of invulnerability
+  private invulnerabilityDuration: number = 1000;
+  private currentWeapon: Weapon;
+  private player_class: string;
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
+  constructor(scene: Phaser.Scene, x: number, y: number, player_class: string) {
     super(scene, x, y, 'player');
     
     this.gameManager = GameManager.getInstance();
+
+    this.player_class = player_class;
     
     scene.add.existing(this);
     scene.physics.add.existing(this);
@@ -52,7 +81,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.cursors = scene.input.keyboard!.createCursorKeys();
     scene.input.keyboard!.addKeys('W,A,S,D');
 
-    // Create the stats text after GameManager is initialized
+    // Create and set initial weapon (Fire Tome) BEFORE creating stats display
+    this.currentWeapon = new RangedWeapon(
+        'Fire Tome',
+        'fire-spellbook',
+        'fireball',
+        10,
+        250
+    );
+    (this.currentWeapon as RangedWeapon).initializeProjectiles(scene);
+    this.shootCooldown = this.currentWeapon.cooldown;
+
+    // Create the stats text AFTER weapon is initialized
     this.createStatsDisplay();
 
     // Create projectiles group
@@ -142,7 +182,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const squareSize = 32;
     
     // Add semi-transparent background square
-    const background = this.scene.add.rectangle(
+    const weaponBackground = this.scene.add.rectangle(
         this.scene.cameras.main.width - padding,
         this.scene.cameras.main.height - padding,
         squareSize,
@@ -155,11 +195,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     .setDepth(999)
     .setScale(2);
 
-    // Add weapon sprite centered in the background square
+    // Add weapon sprite using current weapon's sprite
     this.weaponSprite = this.scene.add.sprite(
         this.scene.cameras.main.width - padding - squareSize,
         this.scene.cameras.main.height - padding - squareSize,
-        'fire-spellbook'
+        this.currentWeapon.spriteKey
     )
     .setOrigin(0.5, 0.5)
     .setScrollFactor(0)
@@ -307,32 +347,22 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   private shoot(): void {
     const currentTime = this.scene.time.now;
-    if (currentTime - this.lastShootTime < this.shootCooldown) {
+    if (currentTime - this.lastShootTime < this.currentWeapon.cooldown) {
       return;
     }
     this.lastShootTime = currentTime;
 
-    // Adjust offset for smaller sprite
-    const offsetX = Math.cos(this.facing) * 5;
-    const offsetY = Math.sin(this.facing) * 5;
-
-    const projectile = this.projectiles.get(
-      this.x + offsetX,
-      this.y + offsetY
-    ) as Projectile;
-
-    if (projectile) {
-      //TODO: Currently i only set the texture to a fireball, but i should set it to the weapons sprite that the player helds
-      projectile.setTexture('fireball');
-      projectile.fire({
-        x: Math.cos(this.facing),
-        y: Math.sin(this.facing)
-      });
-    }
+    // Use the weapon
+    this.currentWeapon.use(
+      this.scene,
+      this.x,
+      this.y,
+      this.facing
+    );
   }
 
   public getProjectiles(): Phaser.GameObjects.Group {
-    return this.projectiles;
+    return (this.currentWeapon as RangedWeapon).getProjectiles();
   }
 
   public addScore(points: number): void {
@@ -368,5 +398,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.goldText) {
       this.goldText.setText(`💰Gold: ${this.gameManager.getGold()}`);
     }
+  }
+
+  // Add method to change weapons
+  public setWeapon(weapon: Weapon): void {
+    this.currentWeapon = weapon;
+    this.shootCooldown = weapon.cooldown;
+    if (this.weaponSprite) {
+      this.weaponSprite.setTexture(weapon.spriteKey);
+    }
+  }
+
+  public getCurrentWeapon(): Weapon {
+    return this.currentWeapon;
   }
 } 

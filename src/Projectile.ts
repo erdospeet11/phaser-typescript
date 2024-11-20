@@ -38,4 +38,8 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     getDamage(): number {
         return this.damage;
     }
+
+    setDamage(damage: number): void {
+        this.damage = damage;
+    }
 } 
