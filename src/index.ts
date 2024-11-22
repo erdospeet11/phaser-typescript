@@ -10,8 +10,8 @@ import { EndGameScene } from './scenes/EndGameScene';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
-    width: 400,
-    height: 300,
+    width: 25 * 16,
+    height: 18 * 16,
     physics: {
         default: 'arcade',
         arcade: {

@@ -122,4 +122,9 @@ export class RoomManager {
     public isRoomVisited(position: { x: number, y: number }): boolean {
         return this.visitedRooms.has(`${position.x},${position.y}`);
     }
+
+    public reset(): void {
+        this.resetVisitedRooms();
+        this.currentLevel = 1;
+    }
 } 

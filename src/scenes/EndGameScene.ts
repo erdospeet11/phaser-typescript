@@ -1,4 +1,5 @@
 import { GameManager } from "../managers/GameManager";
+import { RoomManager } from "../managers/RoomManager";
 
 export class EndGameScene extends Phaser.Scene {
     private gameData!: { victory: boolean; score: number; gold: number };
@@ -44,10 +45,19 @@ export class EndGameScene extends Phaser.Scene {
         .setOrigin(0.5)
         .setInteractive({ useHandCursor: true })
         .on('pointerdown', () => {
-            
             const gameManager = GameManager.getInstance();
+            const roomManager = RoomManager.getInstance();
+            
+            // Reset both managers
             gameManager.reset();
-            this.scene.start('ArenaScene');
+            roomManager.reset();  // This will reset level to 1 and clear visited rooms
+            
+            // Start ArenaScene with initial room configuration
+            this.scene.start('ArenaScene', {
+                roomPosition: { x: 0, y: 1 },  // Start position
+                roomType: 'start',
+                entryDirection: 'default'
+            });
         });
 
         restartButton.on('pointerover', () => restartButton.setTint(0x999999));

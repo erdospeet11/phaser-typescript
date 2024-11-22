@@ -27,6 +27,11 @@ export class ArenaScene extends Phaser.Scene {
     private boss?: TentacleBoss;
     private entryDirection: string = 'default';
     private portalsSpawned: boolean = false;
+    private readonly TILE_SIZE = 16;
+    private readonly ROOM_WIDTH_TILES = 25;
+    private readonly ROOM_HEIGHT_TILES = 18;
+    private readonly ROOM_WIDTH = this.ROOM_WIDTH_TILES * this.TILE_SIZE;
+    private readonly ROOM_HEIGHT = this.ROOM_HEIGHT_TILES * this.TILE_SIZE;
 
     constructor() {
         super({ key: 'ArenaScene' });
@@ -51,8 +56,8 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('player', 'assets/player5.png');
-        this.load.image('wall', 'assets/wall.png');
+        //Images
+        this.load.image('player', 'assets/player5.png');this.load.image('wall', 'assets/wall.png');
         this.load.image('enemy', 'assets/enemy.png');
         this.load.image('ranged-enemy', 'assets/ranged-enemy.png');
         this.load.image('floor', 'assets/tile.png');
@@ -69,6 +74,24 @@ export class ArenaScene extends Phaser.Scene {
         this.load.image('fire-spellbook', 'assets/fire-spellbook.png');
         this.load.image('voidball', 'assets/void-ball.png');
         this.load.image('character-sheet-bg', 'assets/sheet_background.png'); 
+
+        //Animations
+        this.load.spritesheet(
+            'stone-spike', 
+            'assets/stone-spike-spritesheet.png', 
+            { 
+                frameWidth: 16, 
+                frameHeight: 16 
+            }
+        );
+        this.load.spritesheet(
+            'explosion',
+            'assets/explosion-spritesheet.png',
+            {
+                frameWidth: 16,
+                frameHeight: 16
+            }
+        );
     }
 
     create() {
@@ -101,7 +124,7 @@ export class ArenaScene extends Phaser.Scene {
             this.max_enemies = 0;
             this.spawnBoss();
         } else {
-            this.max_enemies = 5;
+            this.max_enemies = 10;
             this.startEnemySpawner();
         }
 
@@ -130,17 +153,33 @@ export class ArenaScene extends Phaser.Scene {
 
     private createArenaWalls(): void {
         this.walls = this.physics.add.staticGroup();
-        
-        const tileSize = 16;
 
-        for (let x = 0; x < 400; x += tileSize) {
-            this.walls.create(x + tileSize/2, tileSize/2, 'wall');
-            this.walls.create(x + tileSize/2, 300 - tileSize/2, 'wall');
+        // Horizontal walls
+        for (let x = 0; x < this.ROOM_WIDTH_TILES; x++) {
+            this.walls.create(
+                x * this.TILE_SIZE + this.TILE_SIZE/2,
+                this.TILE_SIZE/2,
+                'wall'
+            );
+            this.walls.create(
+                x * this.TILE_SIZE + this.TILE_SIZE/2,
+                this.ROOM_HEIGHT - this.TILE_SIZE/2,
+                'wall'
+            );
         }
 
-        for (let y = tileSize; y < 300 - 16; y += tileSize) {
-            this.walls.create(tileSize/2, y + tileSize/2, 'wall');
-            this.walls.create(400 - tileSize/2, y + tileSize/2, 'wall');
+        // Vertical walls
+        for (let y = 1; y < this.ROOM_HEIGHT_TILES - 1; y++) {
+            this.walls.create(
+                this.TILE_SIZE/2,
+                y * this.TILE_SIZE + this.TILE_SIZE/2,
+                'wall'
+            );
+            this.walls.create(
+                this.ROOM_WIDTH - this.TILE_SIZE/2,
+                y * this.TILE_SIZE + this.TILE_SIZE/2,
+                'wall'
+            );
         }
     }
 
