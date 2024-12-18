@@ -14,11 +14,11 @@ Idea is you have infinite dungeons (rooms joined together) and you kill monsters
     - [x] Walker (it walks toward the player)
     - [x] Caster (it casts projectiles toward the player)
     - [] Summoner (it summons minions)
-    - [] Boss
+    - [x] Boss
 - [] Character select
     - [] Every character has a dash and an active weapon
     - [] Warrior => swings a sword
-    - [] Mage => shoots fireballs
+    - [x] Mage => shoots fireballs
     - [] Rogue => ?
     - [] Healer => Healing ability
     - [] Alchemist => low damage projectile inflicting on floor / poisioning on touch    
@@ -27,8 +27,14 @@ Idea is you have infinite dungeons (rooms joined together) and you kill monsters
 - [] Login authorization / admin / change rules
 - [] More powerups / abilites / skills
 
+
+
+
+
+
+
 ## Bugs or Mistakes
 - [] Opening the character sheet does not pause the game
 - [] Scaling down a sprite is messy
-- [] Player does not have invincibility frames after hurt
-- [] When player's health reaches zero, it dies
+- [x] Player does not have invincibility frames after hurt
+- [x] When player's health reaches zero, it dies

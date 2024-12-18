@@ -97,4 +97,12 @@ export class Enemy extends Phaser.GameObjects.Sprite {
   getAttack(): number {
     return this.attack;
   }
+
+  public getSpeed(): number {
+    return this.speed;
+  }
+
+  public setSpeed(value: number): void {
+    this.speed = value;
+  }
 } 

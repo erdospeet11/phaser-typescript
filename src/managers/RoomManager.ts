@@ -1,4 +1,4 @@
-export type RoomType = 'start' | 'normal' | 'boss';
+export type RoomType = 'start' | 'normal' | 'boss' | 'item';
 type RoomLayout = (RoomType | null)[][];
 type LevelLayouts = { [key: number]: RoomLayout };
 type PortalPosition = { direction: string, x: number, y: number };
@@ -13,8 +13,8 @@ export class RoomManager {
     //TODO: Add more level type
     private readonly levelLayouts: LevelLayouts = {
         1: [
-            [null,    'normal', 'normal', null],
-            ['start', 'normal', 'normal', 'boss'],
+            [null,    'normal', 'item',   null],
+            ['start', 'item', 'normal', 'boss'],
             [null,    'normal', 'normal', null]
         ],
         2: [

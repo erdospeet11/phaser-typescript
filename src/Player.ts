@@ -4,6 +4,8 @@ import { GameManager } from './managers/GameManager';
 import { Weapon } from './weapons/Weapon';
 import { RangedWeapon } from './weapons/RangedWeapon';
 import { MeleeWeapon } from './weapons/MeleeWeapon';
+import { Item } from './items/Item';
+import { StatusEffect } from './effects/StatusEffect';
 const CLASSES = {
   MAGE: new RangedWeapon(
     'Fire Tome',
@@ -51,6 +53,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private invulnerabilityDuration: number = 1000;
   private currentWeapon: Weapon;
   private player_class: string;
+  private items: Item[] = [];
+  private readonly MAX_ITEMS = 10;
+  private activeEffects: StatusEffect[] = [];
 
   constructor(scene: Phaser.Scene, x: number, y: number, player_class: string) {
     super(scene, x, y, 'player');
@@ -411,5 +416,46 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public getCurrentWeapon(): Weapon {
     return this.currentWeapon;
+  }
+
+  public addItem(item: Item): boolean {
+    if (this.items.length >= this.MAX_ITEMS) {
+        return false;
+    }
+    
+    this.items.push(item);
+    item.apply(this);
+    
+    // Emit event for UI updates
+    this.emit('itemAdded', item);
+    return true;
+  }
+
+  public getItems(): Item[] {
+    return this.items;
+  }
+
+  public modifyAttack(amount: number): void {
+    this.attack += amount;
+  }
+
+  public modifyDefense(amount: number): void {
+    this.defense += amount;
+  }
+
+  public modifySpeed(amount: number): void {
+    this.speed += amount;
+  }
+
+  public modifyMaxHealth(amount: number): void {
+    this.maxHealth += amount;
+    if (this.health > this.maxHealth) {
+        this.health = this.maxHealth;
+    }
+  }
+
+  public addEffect(effect: StatusEffect): void {
+    this.activeEffects.push(effect);
+    effect.apply();
   }
 } 

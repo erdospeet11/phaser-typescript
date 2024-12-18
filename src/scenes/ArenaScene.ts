@@ -10,6 +10,11 @@ import { Pickup } from '../pickups/Pickup';
 import { RoomManager } from '../managers/RoomManager';
 import { ObstacleEnemy } from '../enemies/ObstacleEnemy';
 import { TentacleBoss } from '../enemies/TentacleBoss';
+import { ItemPickup } from '../pickups/ItemPickup';
+import { Item } from '../items/Item';
+import { ItemRoom } from '../rooms/ItemRoom';
+import { BossRoom } from '../rooms/BossRoom';
+import { LineEnemy } from '../enemies/LineEnemy';
 
 export class ArenaScene extends Phaser.Scene {
     private player!: Player;
@@ -21,7 +26,7 @@ export class ArenaScene extends Phaser.Scene {
     private characterSheet!: CharacterSheetScene;
     private portals: {[key: string]: Phaser.GameObjects.Sprite} = {};
     protected roomPosition: { x: number, y: number };
-    private roomType: 'start' | 'normal' | 'boss';
+    private roomType: 'start' | 'normal' | 'boss' | 'item';
     private roomManager: RoomManager;
     private obstacleEnemy!: ObstacleEnemy;
     private boss?: TentacleBoss;
@@ -32,6 +37,36 @@ export class ArenaScene extends Phaser.Scene {
     private readonly ROOM_HEIGHT_TILES = 18;
     private readonly ROOM_WIDTH = this.ROOM_WIDTH_TILES * this.TILE_SIZE;
     private readonly ROOM_HEIGHT = this.ROOM_HEIGHT_TILES * this.TILE_SIZE;
+    public readonly AVAILABLE_ITEMS = [
+        new Item(
+            'Ancient Sword',
+            'A powerful sword that increases attack',
+            'sword-item',
+            { attack: 15 },
+            'rare'
+        ),
+        new Item(
+            'Magic Shield',
+            'A mystical shield that boosts defense',
+            'shield-item',
+            { defense: 10 },
+            'rare'
+        ),
+        new Item(
+            'Swift Boots',
+            'Enchanted boots that increase speed',
+            'boots-item',
+            { speed: 0.3 },
+            'rare'
+        ),
+        new Item(
+            'Heart Crystal',
+            'Increases maximum health',
+            'crystal-item',
+            { maxHealth: 25 },
+            'epic'
+        )
+    ];
 
     constructor() {
         super({ key: 'ArenaScene' });
@@ -40,7 +75,7 @@ export class ArenaScene extends Phaser.Scene {
         this.roomManager = RoomManager.getInstance();
     }
 
-    init(data: { roomPosition?: { x: number, y: number }, roomType?: 'start' | 'normal' | 'boss', entryDirection?: string }) {
+    init(data: { roomPosition?: { x: number, y: number }, roomType?: 'start' | 'normal' | 'boss' | 'item', entryDirection?: string }) {
         if (data.roomType === 'start') {
             this.roomManager.resetVisitedRooms();
         }
@@ -56,10 +91,6 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     preload() {
-        //Images
-        this.load.image('player', 'assets/player5.png');this.load.image('wall', 'assets/wall.png');
-        this.load.image('enemy', 'assets/enemy.png');
-        this.load.image('ranged-enemy', 'assets/ranged-enemy.png');
         this.load.image('floor', 'assets/tile.png');
         this.load.image('projectile', 'assets/fireball.png');
         this.load.image('health-pickup', 'assets/health_pickup.png');
@@ -68,12 +99,24 @@ export class ArenaScene extends Phaser.Scene {
         this.load.image('coin-pickup', 'assets/coin_pickup.png');
         this.load.image('portal', 'assets/portal.png');
         this.load.image('speed-pickup', 'assets/speed_pickup.png');
+        this.load.image('voidball', 'assets/void-ball.png');
+        this.load.image('character-sheet-bg', 'assets/sheet_background.png');
+        this.load.image('sniper-enemy', 'assets/sniper-enemy.png');
+
+
+        //Players
+        this.load.image('player', 'assets/player5.png');this.load.image('wall', 'assets/wall.png');
+        //Enemies
+        this.load.image('enemy', 'assets/enemy.png');
+        this.load.image('ranged-enemy', 'assets/ranged-enemy.png');
         this.load.image('obstacle-enemy', 'assets/obstacle-enemy.png');
         this.load.image('tentacle-boss', 'assets/professor-tentacle.png');
         this.load.image('tentacle', 'assets/tentacle-minion.png');
+        //Weapons
         this.load.image('fire-spellbook', 'assets/fire-spellbook.png');
-        this.load.image('voidball', 'assets/void-ball.png');
-        this.load.image('character-sheet-bg', 'assets/sheet_background.png'); 
+        this.load.image('ice-spellbook', 'assets/ice-spellbook.png');
+        this.load.image('wind-spellbook', 'assets/wind-spellbook.png');
+        //Items
 
         //Animations
         this.load.spritesheet(
@@ -92,6 +135,12 @@ export class ArenaScene extends Phaser.Scene {
                 frameHeight: 16
             }
         );
+
+        //Load items
+        this.load.image('sword-item', 'assets/items/sword-item.png');
+        this.load.image('shield-item', 'assets/items/shield-item.png');
+        this.load.image('boots-item', 'assets/items/boots-item.png');
+        this.load.image('crystal-item', 'assets/items/crystal-item.png');
     }
 
     create() {
@@ -122,9 +171,12 @@ export class ArenaScene extends Phaser.Scene {
         // Modify room based on type
         if (this.roomType === 'boss') {
             this.max_enemies = 0;
-            this.spawnBoss();
+            new BossRoom(this).setup();
+        } else if (this.roomType === 'item') {
+            this.max_enemies = 0;
+            new ItemRoom(this).setup();
         } else {
-            this.max_enemies = 10;
+            this.max_enemies = 5;
             this.startEnemySpawner();
         }
 
@@ -201,7 +253,7 @@ export class ArenaScene extends Phaser.Scene {
         playerObj.damage(damage);
     }
 
-    private handleProjectileEnemyCollision(projectile: any, enemy: any): void {
+    public handleProjectileEnemyCollision(projectile: any, enemy: any): void {
         const projectileObj = projectile as Projectile;
         const enemyObj = enemy as Enemy;
         const damage = projectileObj.getDamage();
@@ -365,10 +417,13 @@ export class ArenaScene extends Phaser.Scene {
         const randomNum = Phaser.Math.Between(1, 100);
         let enemy;
 
-        if (randomNum <= 30) {
+        if (randomNum <= 80) {
+            const spawnPoint = this.getRandomSpawnPoint();
+            enemy = new LineEnemy(this, spawnPoint.x, spawnPoint.y);
+        } else if (randomNum <= 40) {
             const spawnPoint = this.getRandomSpawnPoint();
             enemy = new RangedEnemy(this, spawnPoint.x, spawnPoint.y);
-        } else if (randomNum <= 60) {
+        } else if (randomNum <= 70) {
             enemy = ObstacleEnemy.spawnNearPlayer(this, this.player);
         } else {
             const spawnPoint = this.getRandomSpawnPoint();
@@ -483,28 +538,6 @@ export class ArenaScene extends Phaser.Scene {
         this.pickups.add(pickup);
     }
 
-    private spawnBoss(): void {
-        // Spawn boss in center of room
-        this.boss = new TentacleBoss(
-            this,
-            this.cameras.main.centerX,
-            this.cameras.main.centerY
-        );
-
-        // Add boss to enemies group for collision handling
-        this.enemies.add(this.boss);
-
-        // Setup any boss-specific colliders if needed
-        this.physics.add.collider(this.boss, this.walls);
-        this.physics.add.collider(
-            this.player.getProjectiles(),
-            this.boss,
-            this.handleProjectileEnemyCollision,
-            undefined,
-            this
-        );
-    }
-
     public addEnemy(enemy: Enemy): void {
         this.enemies.add(enemy);
     }
@@ -533,5 +566,9 @@ export class ArenaScene extends Phaser.Scene {
 
     public getPlayer(): Player {
         return this.player;
+    }
+
+    public getWalls(): Phaser.Physics.Arcade.StaticGroup {
+        return this.walls;
     }
 } 
