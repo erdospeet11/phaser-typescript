@@ -1,5 +1,6 @@
 import { GameManager } from "../managers/GameManager";
 import { RoomManager } from "../managers/RoomManager";
+import { GameDatabase } from '../services/GameDatabase';
 
 export class EndGameScene extends Phaser.Scene {
     private gameData!: { victory: boolean; score: number; gold: number };
@@ -12,7 +13,7 @@ export class EndGameScene extends Phaser.Scene {
         this.gameData = data;
     }
 
-    create() {
+    async create() {
         const { width, height } = this.cameras.main;
         const centerX = width / 2;
         const centerY = height / 2;

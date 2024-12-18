@@ -1,3 +1,5 @@
+import { GameDatabase } from '../services/GameDatabase';
+
 export class MainMenuScene extends Phaser.Scene {
     private backgrounds: Phaser.GameObjects.TileSprite[] = [];
     private scrollSpeeds: number[] = [0.5, 1, 1.5];
@@ -12,7 +14,7 @@ export class MainMenuScene extends Phaser.Scene {
         this.load.image('menu-bg', 'assets/menu-background.png');
     }
 
-    create() {
+    async create() {
         // Parallax background
         for (let i = 0; i < 2; i++) {
             const bg = this.add.tileSprite(
@@ -46,6 +48,16 @@ export class MainMenuScene extends Phaser.Scene {
                 }
             }
         ).setOrigin(0.5);
+
+        // Get score from database
+        const db = GameDatabase.getInstance();
+        try {
+            const scores = await db.getTopScores(100); // Get 100 scores
+            console.log('=== Game Scores ===');
+            console.table(scores);
+        } catch (error) {
+            console.error('Failed to load scores:', error);
+        }
 
         this.createButton(120, 'Play Game', () => this.startGame());
         this.createButton(170, 'Settings', () => this.openSettings());
@@ -164,7 +176,7 @@ export class MainMenuScene extends Phaser.Scene {
     }
 
     private startGame() {
-        this.scene.start('LevelSelectScene');
+        this.scene.start('HeroSelectScene');
     }
 
     private openSettings() {

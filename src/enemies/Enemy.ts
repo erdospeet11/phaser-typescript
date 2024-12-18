@@ -2,6 +2,7 @@ import { HealthPickup } from '../pickups/HealthPickup';
 import { ArenaScene } from '../scenes/ArenaScene';
 import { CoinPickup } from '../pickups/CoinPickup';
 import { SpeedPickup } from '../pickups/SpeedPickup';
+import { Chest } from '../entities/Chest';
 
 export class Enemy extends Phaser.GameObjects.Sprite {
   protected health: number;
@@ -55,10 +56,13 @@ export class Enemy extends Phaser.GameObjects.Sprite {
   protected handleDeath(): void {
     var random = Phaser.Math.Between(1, 100);
 
-    if (random <= 30) {
+    if (random <= 15) {
+      const chest = new Chest(this.scene, this.x, this.y);
+      chest.setupInteraction((this.scene as ArenaScene).getPlayer());
+    } else if (random <= 30) {
       const pickup = new CoinPickup(this.scene, this.x, this.y);
       (this.scene as ArenaScene).addPickup(pickup);
-    } else if (random <= 50){
+    } else if (random <= 50) {
       const pickup = new SpeedPickup(this.scene, this.x, this.y);
       (this.scene as ArenaScene).addPickup(pickup);
     }

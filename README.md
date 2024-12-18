@@ -29,6 +29,14 @@ Idea is you have infinite dungeons (rooms joined together) and you kill monsters
 
 
 
+- Shopkeeper
+- Chest
+- items
+- 2 more boss
+- 2 more level design
+
+- if u select a hero, its data loaded in and you can play as him
+
 
 
 

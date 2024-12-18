@@ -91,7 +91,9 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('floor', 'assets/tile.png');
+        this.load.image('floor', 'assets/tile-grass.png');
+        this.load.image('floor-simple', 'assets/tile.png');
+        this.load.image('tree', 'assets/tree.png');
         this.load.image('projectile', 'assets/fireball.png');
         this.load.image('health-pickup', 'assets/health_pickup.png');
         this.load.image('custom-cursor', 'assets/cursor.png');
@@ -105,7 +107,15 @@ export class ArenaScene extends Phaser.Scene {
 
 
         //Players
-        this.load.image('player', 'assets/player5.png');this.load.image('wall', 'assets/wall.png');
+        this.load.image('player', 'assets/player5.png');
+        this.load.image('player-mage', 'assets/player-mage.png');
+        this.load.image('player-warrior', 'assets/player-warrior.png');
+        this.load.image('player-archer', 'assets/player-archer.png');
+        this.load.image('player-thing', 'assets/player-thing.png');
+
+
+
+        this.load.image('wall', 'assets/wall.png');
         //Enemies
         this.load.image('enemy', 'assets/enemy.png');
         this.load.image('ranged-enemy', 'assets/ranged-enemy.png');
@@ -141,6 +151,15 @@ export class ArenaScene extends Phaser.Scene {
         this.load.image('shield-item', 'assets/items/shield-item.png');
         this.load.image('boots-item', 'assets/items/boots-item.png');
         this.load.image('crystal-item', 'assets/items/crystal-item.png');
+
+        // NPC assets
+        this.load.image('npc', 'assets/shopkeeper-npc.png');
+        this.load.image('speech-bubble', 'assets/speech-bubble.png');
+
+        this.load.image('grass', 'assets/grass.png');
+
+        // Chest sprites
+        this.load.image('chest-closed', 'assets/chest-closed.png');
     }
 
     create() {
@@ -148,13 +167,16 @@ export class ArenaScene extends Phaser.Scene {
 
         this.input.setDefaultCursor('url(assets/cursor.png), auto');
 
-        this.add.tileSprite(200, 150, 400, 300, 'floor');
+        this.add.tileSprite(200, 150, 400, 300, 'floor-simple');
+
+        this.createScatteredGrass();
 
         this.createArenaWalls();
 
         // Get spawn position from RoomManager
         const spawnPosition = this.roomManager.getSpawnPosition(this.entryDirection);
-        this.player = new Player(this, spawnPosition.x, spawnPosition.y, 'MAGE');
+        const selectedClass = localStorage.getItem('selectedClass') || 'MAGE';
+        this.player = new Player(this, spawnPosition.x, spawnPosition.y, selectedClass);
         
         // Update UI with current values
         this.player.updateUIText();
@@ -211,12 +233,12 @@ export class ArenaScene extends Phaser.Scene {
             this.walls.create(
                 x * this.TILE_SIZE + this.TILE_SIZE/2,
                 this.TILE_SIZE/2,
-                'wall'
+                'tree'
             );
             this.walls.create(
                 x * this.TILE_SIZE + this.TILE_SIZE/2,
                 this.ROOM_HEIGHT - this.TILE_SIZE/2,
-                'wall'
+                'tree'
             );
         }
 
@@ -225,12 +247,12 @@ export class ArenaScene extends Phaser.Scene {
             this.walls.create(
                 this.TILE_SIZE/2,
                 y * this.TILE_SIZE + this.TILE_SIZE/2,
-                'wall'
+                'tree'
             );
             this.walls.create(
                 this.ROOM_WIDTH - this.TILE_SIZE/2,
                 y * this.TILE_SIZE + this.TILE_SIZE/2,
-                'wall'
+                'tree'
             );
         }
     }
@@ -570,5 +592,24 @@ export class ArenaScene extends Phaser.Scene {
 
     public getWalls(): Phaser.Physics.Arcade.StaticGroup {
         return this.walls;
+    }
+
+    private createScatteredGrass(): void {
+        const NUM_GRASS = 30; // Number of grass sprites to scatter
+        const PADDING = 30; // Distance from walls
+
+        for (let i = 0; i < NUM_GRASS; i++) {
+            const x = Phaser.Math.Between(
+                PADDING, 
+                this.ROOM_WIDTH - PADDING
+            );
+            const y = Phaser.Math.Between(
+                PADDING, 
+                this.ROOM_HEIGHT - PADDING
+            );
+
+            const grass = this.add.sprite(x, y, 'grass')
+                .setDepth(0)
+        }
     }
 } 

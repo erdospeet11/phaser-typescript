@@ -14,7 +14,7 @@ export class LevelSelectScene extends Phaser.Scene {
     }
 
     create() {
-        // Create parallax background layers
+        // Parallax background
         for (let i = 0; i < 2; i++) {
             const bg = this.add.tileSprite(
                 0,
@@ -50,9 +50,9 @@ export class LevelSelectScene extends Phaser.Scene {
 
         // Level button
         const levelConfigs = [
-            { text: 'Level 1', y: 150 },
-            { text: 'Level 2', y: 200 },
-            { text: 'Level 3', y: 250 }
+            { text: '🌳Evil Forest🌳', y: 150 },
+            { text: '🏰Dungeons of Khaos🏰', y: 200 },
+            { text: '🔥HELL🔥', y: 250 }
         ];
 
         levelConfigs.forEach((config, index) => {
