@@ -49,18 +49,24 @@ export class MainMenuScene extends Phaser.Scene {
             }
         ).setOrigin(0.5);
 
-        // Get score from database
-        const db = GameDatabase.getInstance();
-        try {
-            const scores = await db.getTopScores(100); // Get 100 scores
-            console.log('=== Game Scores ===');
-            console.table(scores);
-        } catch (error) {
-            console.error('Failed to load scores:', error);
-        }
+        // Create buttons using the createButton method
+        const startButton = this.createButton(
+            this.cameras.main.centerY,
+            'Start Game',
+            () => this.scene.start('HeroSelectScene')
+        );
 
-        this.createButton(120, 'Play Game', () => this.startGame());
-        this.createButton(170, 'Settings', () => this.openSettings());
+        const leaderboardButton = this.createButton(
+            this.cameras.main.centerY + 60,
+            'Leaderboard',
+            () => this.scene.start('LeaderboardScene')
+        );
+
+        const settingsButton = this.createButton(
+            this.cameras.main.centerY + 120,
+            'Settings',
+            () => this.scene.start('SettingsScene')
+        );
 
         // Version number
         this.add.text(
@@ -87,9 +93,8 @@ export class MainMenuScene extends Phaser.Scene {
         const buttonWidth = 200;
         const buttonHeight = 40;
         const cornerRadius = 10;
-
-        const normalColor = 0x4a4a4a;
-        const hoverColor = 0x6a6a6a;
+        const normalColor = 0x333333;
+        const hoverColor = 0x555555;
 
         button.fillStyle(normalColor);
         button.fillRoundedRect(
@@ -120,7 +125,7 @@ export class MainMenuScene extends Phaser.Scene {
             yPosition,
             text,
             {
-                fontSize: '16px',
+                fontSize: '20px',
                 color: '#ffffff',
                 fontStyle: 'bold'
             }
@@ -150,19 +155,9 @@ export class MainMenuScene extends Phaser.Scene {
             );
         });
 
-        // Click
-        interactiveZone.on('pointerdown', () => {
-            button.clear();
-            button.fillStyle(normalColor);
-            button.fillRoundedRect(
-                this.cameras.main.centerX - buttonWidth / 2,
-                yPosition - buttonHeight / 2,
-                buttonWidth,
-                buttonHeight,
-                cornerRadius
-            );
-            onClick();
-        });
+        interactiveZone.on('pointerdown', onClick);
+
+        return { button, buttonText, interactiveZone };
     }
 
     update() {

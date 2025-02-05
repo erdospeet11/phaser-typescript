@@ -1,48 +1,48 @@
-This is a basic Phaser game project made with Typescript.
-
-Idea is you have infinite dungeons (rooms joined together) and you kill monsters collect loot. everything attacks automatically, you only have to position yourself. you can collect powerups: gear, weapon, skills, attacks, gold. Special rooms or maps that are big and you encounter bigger waves.
-    
-## What we need
-- [] MapLayout / Rooms with transition
-    - [] Portal Room
-    - [] Door Room
-    - [] Corridor
-    - [] Jungle
-    - [] Shopkeeper
-    - [] NPCs
-- [] Enemies
-    - [x] Walker (it walks toward the player)
-    - [x] Caster (it casts projectiles toward the player)
-    - [] Summoner (it summons minions)
-    - [x] Boss
-- [] Character select
-    - [] Every character has a dash and an active weapon
-    - [] Warrior => swings a sword
-    - [x] Mage => shoots fireballs
-    - [] Rogue => ?
-    - [] Healer => Healing ability
-    - [] Alchemist => low damage projectile inflicting on floor / poisioning on touch    
-- [] Save progression
-- [] Backend Database
-- [] Login authorization / admin / change rules
-- [] More powerups / abilites / skills
+## TODO for Friday, Saturday, Sunday
+- [] fix the shop (prices, style)
+- [] last boss for hell
+- [] tweak mob drops
+- [] fix the map (there is an instance of getting stuck)
 
 
+# LAST
+- [] sql database just like in datafetch
+- [] test cases
 
-- Shopkeeper
-- Chest
-- items
-- 2 more boss
-- 2 more level design
+skill tree?
+another room?
+items for strengthening your build
 
-- if u select a hero, its data loaded in and you can play as him
+
+experience -> you level up
+when you level up you can choose an item of three to get
+these items grant
+- plus damage
+- plus movementspeed
+- plus firerate
+- plus luck
+- plus ability haste
+
+Ability                                Special
+mage       -> teleport to cursor       - burning damage with projectiles    
+thing      -> summon a little monster  - pfft
+archer     -> push away enemies        - 4th shot critical
+warrior    -> need melee               - ?
 
 
 
 
 
-## Bugs or Mistakes
-- [] Opening the character sheet does not pause the game
-- [] Scaling down a sprite is messy
-- [x] Player does not have invincibility frames after hurt
-- [x] When player's health reaches zero, it dies
+
+
+
+
+
+
+
+
+WE LOST
+
+archer arrow ability
+mage teleport
+experience bar

@@ -1,7 +1,11 @@
 import { Player } from '../Player';
-import { Item } from '../items/Item';
-import { ItemPickup } from '../pickups/ItemPickup';
 import { ArenaScene } from '../scenes/ArenaScene';
+import { CoinPickup } from '../pickups/CoinPickup';
+import { SpeedPickup } from '../pickups/SpeedPickup';
+import { HealthPickup } from '../pickups/HealthPickup';
+import { BombPickup } from '../pickups/BombPickup';
+import { ScorePickup } from '../pickups/ScorePickup';
+import { StrengthPickup } from '../pickups/StrengthPickup';
 
 export class Chest extends Phaser.GameObjects.Sprite {
     private detectionZone: Phaser.GameObjects.Zone;
@@ -69,23 +73,25 @@ export class Chest extends Phaser.GameObjects.Sprite {
         if (this.isOpen) return;
         this.isOpen = true;
 
-        // Get sword item from ArenaScene
-        const swordItem = (this.scene as ArenaScene).AVAILABLE_ITEMS.find(item => item.spriteKey === 'sword-item');
-        
-        if (!swordItem) {
-            console.error('Sword item not found in AVAILABLE_ITEMS');
-            return;
+        // Random number between 1 and 100
+        const random = Phaser.Math.Between(1, 100);
+
+        let pickup;
+        if (random <= 20) {
+            pickup = new CoinPickup(this.scene, this.x, this.y);
+        } else if (random <= 40) {
+            pickup = new SpeedPickup(this.scene, this.x, this.y);
+        } else if (random <= 60) {
+            pickup = new HealthPickup(this.scene, this.x, this.y);
+        } else if (random <= 75) {
+            pickup = new BombPickup(this.scene, this.x, this.y);
+        } else if (random <= 90) {
+            pickup = new ScorePickup(this.scene, this.x, this.y);
+        } else {
+            pickup = new StrengthPickup(this.scene, this.x, this.y);
         }
 
-        // Create item pickup
-        const itemPickup = new ItemPickup(
-            this.scene,
-            this.x,
-            this.y,
-            swordItem
-        );
-        
-        (this.scene as ArenaScene).addPickup(itemPickup);
+        (this.scene as ArenaScene).addPickup(pickup);
 
         // Clean up event listeners before destroying
         if (this.handleKeyPress) {

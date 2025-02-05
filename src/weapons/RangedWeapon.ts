@@ -1,5 +1,7 @@
 import { Projectile } from '../Projectile';
 import { Weapon } from './Weapon';
+import { FireballProjectile } from '../projectiles/FireballProjectile';
+import { ArrowProjectile } from '../projectiles/ArrowProjectile';
 
 export class RangedWeapon extends Weapon {
     readonly projectileKey: string;
@@ -31,29 +33,31 @@ export class RangedWeapon extends Weapon {
         });
     }
 
-    use(scene: Phaser.Scene, x: number, y: number, angle: number): void {
-        if (!this.projectiles) {
-            this.initializeProjectiles(scene);
+    use(scene: Phaser.Scene, x: number, y: number, facing: number, attack: number): void {
+        let projectile;
+        
+        // Check projectile type based on projectileKey
+        switch (this.projectileKey) {
+            case 'fireball':
+                projectile = new FireballProjectile(scene, x, y, this.projectileKey, attack);
+                break;
+            case 'arrow':
+                projectile = new ArrowProjectile(scene, x, y, this.projectileKey, attack);
+                break;
+            default:
+                projectile = new Projectile(scene, x, y, this.projectileKey, attack);
         }
-
-        const offsetX = Math.cos(angle) * 5;
-        const offsetY = Math.sin(angle) * 5;
-
-        const projectile = this.projectiles.get(
-            x + offsetX,
-            y + offsetY
-        ) as Projectile;
-
-        if (projectile) {
-            projectile.setActive(true);
-            projectile.setVisible(true);
-            projectile.setTexture(this.projectileKey);
-            projectile.setDamage(this.damage);
-            projectile.fire({
-                x: Math.cos(angle),
-                y: Math.sin(angle)
-            });
-        }
+        
+        this.projectiles.add(projectile);
+        
+        // Calculate direction from facing angle
+        const direction = {
+            x: Math.cos(facing),
+            y: Math.sin(facing)
+        };
+        
+        // Fire the projectile
+        projectile.fire(direction);
     }
 
     getProjectiles(): Phaser.GameObjects.Group {

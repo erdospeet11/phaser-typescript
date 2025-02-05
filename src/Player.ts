@@ -4,7 +4,6 @@ import { GameManager } from './managers/GameManager';
 import { Weapon } from './weapons/Weapon';
 import { RangedWeapon } from './weapons/RangedWeapon';
 import { MeleeWeapon } from './weapons/MeleeWeapon';
-import { Item } from './items/Item';
 import { StatusEffect } from './effects/StatusEffect';
 const CLASSES = {
   MAGE: new RangedWeapon(
@@ -14,12 +13,14 @@ const CLASSES = {
     10,
     250
   ),
-  WARRIOR: new MeleeWeapon(
+  WARRIOR: new RangedWeapon(
     'Iron Sword',
     'iron-sword',
+    'sword-slash',
     10,
     250
   ),
+
   ARCHER: new RangedWeapon(
     'Longbow',
     'longbow',
@@ -53,12 +54,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private invulnerabilityDuration: number = 1000;
   private currentWeapon: Weapon;
   private player_class: string;
-  private items: Item[] = [];
   private readonly MAX_ITEMS = 10;
   private activeEffects: StatusEffect[] = [];
+  private experience: number = 0;
+  private level: number = 1;
+  private experienceToNextLevel: number = 100;
+  private criticalChance: number = 0.05; // 5% base crit chance
 
   constructor(scene: Phaser.Scene, x: number, y: number, player_class: string) {
-    super(scene, x, y, 'player');
+    const spriteKey = `player-${player_class.toLowerCase()}`;
+    super(scene, x, y, spriteKey);
     
     this.gameManager = GameManager.getInstance();
 
@@ -86,14 +91,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.cursors = scene.input.keyboard!.createCursorKeys();
     scene.input.keyboard!.addKeys('W,A,S,D');
 
-    // Create and set initial weapon (Fire Tome) BEFORE creating stats display
-    this.currentWeapon = new RangedWeapon(
-        'Fire Tome',
-        'fire-spellbook',
-        'fireball',
-        10,
-        250
-    );
+    // Set initial weapon based on class
+    this.currentWeapon = CLASSES[player_class as keyof typeof CLASSES];
     (this.currentWeapon as RangedWeapon).initializeProjectiles(scene);
     this.shootCooldown = this.currentWeapon.cooldown;
 
@@ -362,7 +361,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.scene,
       this.x,
       this.y,
-      this.facing
+      this.facing,
+      this.attack
     );
   }
 
@@ -386,6 +386,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public setDefense(value: number): void {
     this.defense = value;
+  }
+
+  public setAttack(value: number): void {
+    this.attack = value;
+    console.log(`Attack set to ${value}`);
   }
 
   public getScore(): number {
@@ -418,21 +423,45 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     return this.currentWeapon;
   }
 
-  public addItem(item: Item): boolean {
-    if (this.items.length >= this.MAX_ITEMS) {
-        return false;
+  public gainExperience(amount: number): void {
+    this.experience += amount;
+    if (this.experience >= this.experienceToNextLevel) {
+        this.levelUp();
     }
-    
-    this.items.push(item);
-    item.apply(this);
-    
-    // Emit event for UI updates
-    this.emit('itemAdded', item);
-    return true;
   }
 
-  public getItems(): Item[] {
-    return this.items;
+  public increaseAttack(multiplier: number): void {
+    this.attack *= (1 + multiplier);
+    console.log(`Attack increased by ${multiplier * 100}%. New attack: ${this.attack}`);
+  }
+
+  public increaseSpeed(multiplier: number): void {
+    this.speed *= (1 + multiplier);
+    console.log(`Speed increased by ${multiplier * 100}%. New speed: ${this.speed}`);
+  }
+
+  public increaseMaxHealth(multiplier: number): void {
+    const increase = this.maxHealth * multiplier;
+    this.maxHealth += increase;
+    this.health += increase; // Also increase current health
+    this.updateUIText();
+  }
+
+  public increaseAttackSpeed(multiplier: number): void {
+    this.shootCooldown *= (1 - multiplier);  // Reduce cooldown by multiplier
+    console.log(`Attack cooldown reduced by ${multiplier * 100}%. New cooldown: ${this.shootCooldown}ms`);
+  }
+
+  public increaseCriticalChance(amount: number): void {
+    this.criticalChance = Math.min(1, this.criticalChance + amount);
+    console.log(`Critical chance increased to ${this.criticalChance * 100}%`);
+  }
+
+  private levelUp(): void {
+    this.level++;
+    this.experience -= this.experienceToNextLevel;
+    this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * 1.2);
+    this.scene.scene.launch('LevelUpScene', { player: this });
   }
 
   public modifyAttack(amount: number): void {

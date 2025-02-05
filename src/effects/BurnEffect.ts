@@ -1,39 +1,62 @@
 import { StatusEffect } from './StatusEffect';
-import { Player } from '../Player';
 import { Enemy } from '../enemies/Enemy';
+import { FloatingDamage } from './FloatingDamage';
 
 export class BurnEffect extends StatusEffect {
-    private readonly DAMAGE_PER_TICK = 5;
-    private readonly TICK_INTERVAL = 1000; // 1 second
     private tickTimer: Phaser.Time.TimerEvent;
+    private readonly tickInterval = 1000; // 1 second between ticks
+    private readonly damage: number;
+    private readonly enemy: Enemy;
 
-    constructor(scene: Phaser.Scene, target: Phaser.GameObjects.Sprite) {
-        super(scene, target);
+    constructor(scene: Phaser.Scene, enemy: Enemy, damage: number, duration: number) {
+        super(scene, enemy);
+        this.damage = damage;
+        this.enemy = enemy;
         
-        // Ticking damage
+        // Visual effect - orange tint
+        enemy.setTint(0xFFA500);
+        
+        // Set up damage ticks
         this.tickTimer = scene.time.addEvent({
-            delay: this.TICK_INTERVAL,
-            callback: this.tick,
+            delay: this.tickInterval,
+            callback: this.applyBurnDamage,
             callbackScope: this,
-            loop: true
+            repeat: (duration / this.tickInterval) - 1
         });
     }
 
-    apply(): void {
-        this.target.setTint(0xff4400);
-    }
-
-    tick(): void {
-        if (this.target instanceof Player) {
-            (this.target as Player).damage(this.DAMAGE_PER_TICK);
-        } else if (this.target instanceof Enemy) {
-            (this.target as Enemy).damage(this.DAMAGE_PER_TICK);
+    private applyBurnDamage(): void {
+        if (this.enemy && this.enemy.active) {
+            this.enemy.damage(this.damage);
+            
+            // Show floating damage
+            new FloatingDamage(
+                this.scene,
+                this.enemy.x,
+                this.enemy.y - 20,
+                this.damage,
+                false,
+                '🔥',
+                0xFFA500
+            );
         }
     }
 
     protected remove(): void {
-        this.target.clearTint();
-        this.tickTimer.remove();
+        if (this.tickTimer) {
+            this.tickTimer.destroy();
+        }
+        if (this.enemy && this.enemy.active) {
+            this.enemy.clearTint();
+        }
         super.remove();
+    }
+
+    apply(): void {
+        // Apply is handled in constructor
+    }
+
+    tick(): void {
+        // Tick is handled by applyBurnDamage
     }
 } 

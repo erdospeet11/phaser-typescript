@@ -3,6 +3,10 @@ import { ArenaScene } from '../scenes/ArenaScene';
 import { CoinPickup } from '../pickups/CoinPickup';
 import { SpeedPickup } from '../pickups/SpeedPickup';
 import { Chest } from '../entities/Chest';
+import { BombPickup } from '../pickups/BombPickup';
+import { ScorePickup } from '../pickups/ScorePickup';
+import { StrengthPickup } from '../pickups/StrengthPickup';
+import { Player } from '../Player';
 
 export class Enemy extends Phaser.GameObjects.Sprite {
   protected health: number;
@@ -54,6 +58,14 @@ export class Enemy extends Phaser.GameObjects.Sprite {
   }
 
   protected handleDeath(): void {
+    // Drop experience when enemy dies (add this at the start of handleDeath)
+    const experienceValue = 20; // Base experience value
+    const player = (this.scene as ArenaScene).getPlayer();
+    if (player) {
+        console.log('Enemy died, dropping experience:', experienceValue);
+        player.gainExperience(experienceValue);
+    }
+
     var random = Phaser.Math.Between(1, 100);
 
     if (random <= 15) {
@@ -62,8 +74,20 @@ export class Enemy extends Phaser.GameObjects.Sprite {
     } else if (random <= 30) {
       const pickup = new CoinPickup(this.scene, this.x, this.y);
       (this.scene as ArenaScene).addPickup(pickup);
-    } else if (random <= 50) {
+    } else if (random <= 45) {
       const pickup = new SpeedPickup(this.scene, this.x, this.y);
+      (this.scene as ArenaScene).addPickup(pickup);
+    } else if (random <= 60) {
+      const pickup = new HealthPickup(this.scene, this.x, this.y);
+      (this.scene as ArenaScene).addPickup(pickup);
+    } else if (random <= 70) {
+      const pickup = new BombPickup(this.scene, this.x, this.y);
+      (this.scene as ArenaScene).addPickup(pickup);
+    } else if (random <= 80) {
+      const pickup = new ScorePickup(this.scene, this.x, this.y);
+      (this.scene as ArenaScene).addPickup(pickup);
+    } else if (random <= 90) { // 10% chance for strength pickup
+      const pickup = new StrengthPickup(this.scene, this.x, this.y);
       (this.scene as ArenaScene).addPickup(pickup);
     }
 
@@ -108,5 +132,18 @@ export class Enemy extends Phaser.GameObjects.Sprite {
 
   public setSpeed(value: number): void {
     this.speed = value;
+  }
+
+  die(): void {
+    // Add debug log
+    console.log('Enemy died, dropping experience');
+    const experienceValue = 20;
+    if (this.scene && this.scene.registry) {
+      const player = this.scene.registry.get('player') as Player;
+      if (player) {
+        player.gainExperience(experienceValue);
+      }
+    }
+    // ... existing death code ...
   }
 } 

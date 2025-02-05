@@ -3,7 +3,7 @@ import { Player } from '../Player';
 import { Tooltip } from '../ui/Tooltip';
 
 export class HealthPickup extends Pickup {
-  private healAmount: number = 20;
+  private healAmount: number = 10;
   private tooltip: Tooltip;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {

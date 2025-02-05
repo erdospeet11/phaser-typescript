@@ -1,13 +1,19 @@
+import sqlite3 from 'sqlite3';
+import { open } from 'sqlite';
+import path from 'path';
+
+interface Score {
+    player_name: string;
+    score: number;
+    date: string;
+}
+
 export class GameDatabase {
     private static instance: GameDatabase;
-    private db!: IDBDatabase;
-    private readonly DB_NAME = 'gameScores';
-    private readonly STORE_NAME = 'scores';
-    private dbReady: Promise<void>;
+    private readonly API_URL = 'http://localhost:3000/api';
+    private readonly GAME_API_URL = 'http://localhost:3000/api/game';
 
-    private constructor() {
-        this.dbReady = this.initDB();
-    }
+    private constructor() {}
 
     public static getInstance(): GameDatabase {
         if (!GameDatabase.instance) {
@@ -16,57 +22,86 @@ export class GameDatabase {
         return GameDatabase.instance;
     }
 
-    private initDB(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(this.DB_NAME, 1);
-
-            request.onerror = () => {
-                console.error("Error opening database");
-                reject();
-            };
-
-            request.onupgradeneeded = (event) => {
-                const db = (event.target as IDBOpenDBRequest).result;
-                if (!db.objectStoreNames.contains(this.STORE_NAME)) {
-                    db.createObjectStore(this.STORE_NAME, { autoIncrement: true });
+    public async initialize(): Promise<void> {
+        try {
+            const response = await fetch(`${this.API_URL}/scores?limit=1`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 }
-            };
-
-            request.onsuccess = (event) => {
-                this.db = (event.target as IDBOpenDBRequest).result;
-                resolve();
-            };
-        });
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            console.log('GameDatabase API connection established');
+        } catch (error) {
+            console.error('Failed to connect to API:', error);
+            // Don't throw here, just log the error
+        }
     }
 
-    public async saveScore(playerName: string, score: number, level: number): Promise<void> {
-        await this.dbReady;
-        
-        const transaction = this.db.transaction([this.STORE_NAME], 'readwrite');
-        const store = transaction.objectStore(this.STORE_NAME);
-        
-        store.add({
-            playerName,
-            score,
-            level,
-            date: new Date()
-        });
+    public async saveScore(playerName: string, score: number): Promise<void> {
+        try {
+            const response = await fetch(`${this.API_URL}/scores`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                credentials: 'include',
+                mode: 'cors',
+                body: JSON.stringify({ playerName, score })
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            console.log(`Score saved: ${playerName} - ${score}`);
+        } catch (error) {
+            console.error('Error saving score:', error);
+            // Don't throw here, just log the error
+        }
     }
 
-    public async getTopScores(limit: number = 10): Promise<any[]> {
-        await this.dbReady;
-        
-        return new Promise((resolve) => {
-            const transaction = this.db.transaction([this.STORE_NAME], 'readonly');
-            const store = transaction.objectStore(this.STORE_NAME);
-            const request = store.getAll();
-
-            request.onsuccess = () => {
-                const scores = request.result
-                    .sort((a, b) => b.score - a.score)
-                    .slice(0, limit);
-                resolve(scores);
-            };
-        });
+    public async getTopScores(limit: number = 10): Promise<Score[]> {
+        try {
+            const response = await fetch(`${this.API_URL}/scores?limit=${limit}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                mode: 'cors'
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error getting scores:', error);
+            return []; // Return empty array on error
+        }
     }
-} 
+
+    public async clearScores(): Promise<void> {
+        try {
+            const response = await fetch(`${this.API_URL}/scores/clear`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            console.log('All scores cleared');
+        } catch (error) {
+            console.error('Error clearing scores:', error);
+            // Don't throw here, just log the error
+        }
+    }
+}
+
+// Export a singleton instance
+export const database = GameDatabase.getInstance(); 

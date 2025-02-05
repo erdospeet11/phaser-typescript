@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel - Legends of Smash Arena</title>
+    <script src="admin.js"></script>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .admin-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(74, 74, 74, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .button {
+            background: #4a4a4a;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #6a6a6a;
+        }
+        .stats-panel {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .rule-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .rule-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+        .rule-item input {
+            width: 80px;
+            padding: 5px;
+            border-radius: 3px;
+            border: none;
+            background: #333;
+            color: white;
+        }
+        .save-rules {
+            width: 100%;
+            margin-top: 10px;
+            padding: 15px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Admin Panel</h1>
+            <button class="button" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="stats-panel">
+            <h2>Game Rules</h2>
+            <div class="rule-grid">
+                <div class="rule-item">
+                    <label>Player Base Health:</label>
+                    <input type="number" id="playerHealth" min="1" max="1000">
+                </div>
+                <div class="rule-item">
+                    <label>Player Base Speed:</label>
+                    <input type="number" id="playerSpeed" min="0.1" max="5" step="0.1">
+                </div>
+                <div class="rule-item">
+                    <label>Player Base Attack:</label>
+                    <input type="number" id="playerAttack" min="1" max="100">
+                </div>
+                <div class="rule-item">
+                    <label>Enemy Base Health:</label>
+                    <input type="number" id="enemyHealth" min="1" max="500">
+                </div>
+                <div class="rule-item">
+                    <label>Enemy Base Speed:</label>
+                    <input type="number" id="enemySpeed" min="0.1" max="5" step="0.1">
+                </div>
+                <div class="rule-item">
+                    <label>Enemy Base Attack:</label>
+                    <input type="number" id="enemyAttack" min="1" max="50">
+                </div>
+                <div class="rule-item">
+                    <label>Max Enemies:</label>
+                    <input type="number" id="maxEnemies" min="1" max="20">
+                </div>
+                <div class="rule-item">
+                    <label>Spawn Interval (ms):</label>
+                    <input type="number" id="spawnInterval" min="500" max="10000" step="500">
+                </div>
+            </div>
+            <button class="button save-rules" onclick="saveRules()">Save Rules</button>
+        </div>
+
+        <div class="stats-panel">
+            <h2>Admin Controls</h2>
+            <button class="button" onclick="resetRules()">Reset Rules to Default</button>
+            <button class="button" onclick="resetScores()">Reset All Scores</button>
+        </div>
+    </div>
+</body>
+</html> 

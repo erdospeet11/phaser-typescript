@@ -10,11 +10,19 @@ import { Pickup } from '../pickups/Pickup';
 import { RoomManager } from '../managers/RoomManager';
 import { ObstacleEnemy } from '../enemies/ObstacleEnemy';
 import { TentacleBoss } from '../enemies/TentacleBoss';
-import { ItemPickup } from '../pickups/ItemPickup';
-import { Item } from '../items/Item';
+import { BombPickup } from '../pickups/BombPickup';
 import { ItemRoom } from '../rooms/ItemRoom';
 import { BossRoom } from '../rooms/BossRoom';
 import { LineEnemy } from '../enemies/LineEnemy';
+import { FireballProjectile } from '../projectiles/FireballProjectile';
+import { ArrowProjectile } from '../projectiles/ArrowProjectile';
+
+interface ArenaSceneData {
+    roomPosition: { x: number, y: number };
+    roomType: 'start' | 'normal' | 'boss' | 'item';
+    levelType: 'forest' | 'dungeon' | 'hell';
+    entryDirection?: string; // Make it optional since it might not always be provided
+}
 
 export class ArenaScene extends Phaser.Scene {
     private player!: Player;
@@ -24,7 +32,7 @@ export class ArenaScene extends Phaser.Scene {
     private pickups!: Phaser.GameObjects.Group;
     private max_enemies: number = 2;
     private characterSheet!: CharacterSheetScene;
-    private portals: {[key: string]: Phaser.GameObjects.Sprite} = {};
+    private portals: { [key: string]: Phaser.GameObjects.Sprite } = {};
     protected roomPosition: { x: number, y: number };
     private roomType: 'start' | 'normal' | 'boss' | 'item';
     private roomManager: RoomManager;
@@ -37,36 +45,9 @@ export class ArenaScene extends Phaser.Scene {
     private readonly ROOM_HEIGHT_TILES = 18;
     private readonly ROOM_WIDTH = this.ROOM_WIDTH_TILES * this.TILE_SIZE;
     private readonly ROOM_HEIGHT = this.ROOM_HEIGHT_TILES * this.TILE_SIZE;
-    public readonly AVAILABLE_ITEMS = [
-        new Item(
-            'Ancient Sword',
-            'A powerful sword that increases attack',
-            'sword-item',
-            { attack: 15 },
-            'rare'
-        ),
-        new Item(
-            'Magic Shield',
-            'A mystical shield that boosts defense',
-            'shield-item',
-            { defense: 10 },
-            'rare'
-        ),
-        new Item(
-            'Swift Boots',
-            'Enchanted boots that increase speed',
-            'boots-item',
-            { speed: 0.3 },
-            'rare'
-        ),
-        new Item(
-            'Heart Crystal',
-            'Increases maximum health',
-            'crystal-item',
-            { maxHealth: 25 },
-            'epic'
-        )
-    ];
+    private currentFloorSprite: string = 'forest-floor';
+    private currentWallSprite: string = 'forest-wall';
+    private levelType: string = 'dungeon';  // Default to dungeon
 
     constructor() {
         super({ key: 'ArenaScene' });
@@ -75,36 +56,63 @@ export class ArenaScene extends Phaser.Scene {
         this.roomManager = RoomManager.getInstance();
     }
 
-    init(data: { roomPosition?: { x: number, y: number }, roomType?: 'start' | 'normal' | 'boss' | 'item', entryDirection?: string }) {
+    init(data: ArenaSceneData) {
         if (data.roomType === 'start') {
             this.roomManager.resetVisitedRooms();
         }
-        if (data.roomPosition) {
-            this.roomPosition = data.roomPosition;
+
+        // Set level type first
+        if (data.levelType) {
+            this.levelType = data.levelType;
         }
-        if (data.roomType) {
-            this.roomType = data.roomType;
+
+        // Then determine sprites based on level type
+        let floorSprite = 'forest-floor';
+        let wallSprite = 'forest-wall';
+
+        if (this.levelType === 'dungeon') {
+            floorSprite = 'dungeon-floor';
+            wallSprite = 'dungeon-wall';
+        } else if (this.levelType === 'hell') {
+            floorSprite = 'hell-floor';
+            wallSprite = 'hell-wall';
         }
+
+        // Store these for use in create()
+        this.currentFloorSprite = floorSprite;
+        this.currentWallSprite = wallSprite;
+
+        // Set other data
+        if (data.roomType) this.roomType = data.roomType;
+        if (data.roomPosition) this.roomPosition = data.roomPosition;
         if (data.entryDirection) {
             this.entryDirection = data.entryDirection;
         }
     }
 
     preload() {
-        this.load.image('floor', 'assets/tile-grass.png');
-        this.load.image('floor-simple', 'assets/tile.png');
+        // Load common assets
         this.load.image('tree', 'assets/tree.png');
         this.load.image('projectile', 'assets/fireball.png');
-        this.load.image('health-pickup', 'assets/health_pickup.png');
         this.load.image('custom-cursor', 'assets/cursor.png');
         this.load.image('fireball', 'assets/fireball.png');
         this.load.image('coin-pickup', 'assets/coin_pickup.png');
         this.load.image('portal', 'assets/portal.png');
         this.load.image('speed-pickup', 'assets/speed_pickup.png');
+        this.load.image('score-pickup', 'assets/score-pickup.png');
+        this.load.image('bomb-pickup', 'assets/bomb-pickup.png');
+        this.load.image('health-pickup', 'assets/health-pickup.png');
         this.load.image('voidball', 'assets/void-ball.png');
         this.load.image('character-sheet-bg', 'assets/sheet_background.png');
         this.load.image('sniper-enemy', 'assets/sniper-enemy.png');
 
+        // Load level-specific assets
+        this.load.image('forest-floor', 'assets/tile.png');
+        this.load.image('forest-wall', 'assets/tree.png');
+        this.load.image('dungeon-floor', 'assets/dungeon-floor.png');
+        this.load.image('dungeon-wall', 'assets/dungeon-wall.png');
+        this.load.image('hell-floor', 'assets/hell-floor.png');
+        this.load.image('hell-wall', 'assets/hell-wall.png');
 
         //Players
         this.load.image('player', 'assets/player5.png');
@@ -113,9 +121,8 @@ export class ArenaScene extends Phaser.Scene {
         this.load.image('player-archer', 'assets/player-archer.png');
         this.load.image('player-thing', 'assets/player-thing.png');
 
+        this.load.image('boxingdeer-boss', 'assets/boxingdeer-boss.png');
 
-
-        this.load.image('wall', 'assets/wall.png');
         //Enemies
         this.load.image('enemy', 'assets/enemy.png');
         this.load.image('ranged-enemy', 'assets/ranged-enemy.png');
@@ -129,6 +136,7 @@ export class ArenaScene extends Phaser.Scene {
         //Items
 
         //Animations
+        /*
         this.load.spritesheet(
             'stone-spike', 
             'assets/stone-spike-spritesheet.png', 
@@ -145,12 +153,13 @@ export class ArenaScene extends Phaser.Scene {
                 frameHeight: 16
             }
         );
+        */
 
         //Load items
         this.load.image('sword-item', 'assets/items/sword-item.png');
-        this.load.image('shield-item', 'assets/items/shield-item.png');
-        this.load.image('boots-item', 'assets/items/boots-item.png');
-        this.load.image('crystal-item', 'assets/items/crystal-item.png');
+        //this.load.image('shield-item', 'assets/items/shield-item.png');
+        //this.load.image('boots-item', 'assets/items/boots-item.png');
+        //this.load.image('crystal-item', 'assets/items/crystal-item.png');
 
         // NPC assets
         this.load.image('npc', 'assets/shopkeeper-npc.png');
@@ -160,18 +169,48 @@ export class ArenaScene extends Phaser.Scene {
 
         // Chest sprites
         this.load.image('chest-closed', 'assets/chest-closed.png');
+
+        // Weapons
+        this.load.image('iron-sword', 'assets/iron-sword.png');
+        this.load.image('sword-slash', 'assets/sword-slash.png');
+        this.load.image('longbow', 'assets/longbow.png');
+        this.load.image('void-spellbook', 'assets/void-spellbook.png');
+        
+        // Projectiles
+        this.load.image('fireball', 'assets/fireball.png');
+        this.load.image('arrow', 'assets/arrow.png');
+        this.load.image('voidball', 'assets/voidball.png');
+
+        this.load.image('strength-pickup', 'assets/strength-pickup.png');
+
+        this.load.image('boxing-glove', 'assets/boxing-glove.png');
+
+        this.load.image('spikes', 'assets/spikes.png');
+
+        this.load.image('lava-puddle', 'assets/lava-puddle.png');
+
+        // Load player class sprites
+        this.load.image('player-warrior', 'assets/player-warrior.png');
+        this.load.image('player-mage', 'assets/player-mage.png');
+        this.load.image('player-archer', 'assets/player-archer.png');
+        this.load.image('player-thing', 'assets/player-thing.png');
+
+        // Load weapon images
+        this.load.image('fire-spellbook', 'assets/fire-spellbook.png');
+        this.load.image('iron-sword', 'assets/iron-sword.png');
+        this.load.image('longbow', 'assets/longbow.png');
+        // Add any other necessary images
     }
 
     create() {
-        //this.physics.world.createDebugGraphic();
+        // Create the floor
+        this.add.tileSprite(200, 150, 400, 300, this.currentFloorSprite);
+        
+        // Create the walls
+        this.createArenaWalls(this.currentWallSprite);
+        this.createScatteredDecorations();
 
         this.input.setDefaultCursor('url(assets/cursor.png), auto');
-
-        this.add.tileSprite(200, 150, 400, 300, 'floor-simple');
-
-        this.createScatteredGrass();
-
-        this.createArenaWalls();
 
         // Get spawn position from RoomManager
         const spawnPosition = this.roomManager.getSpawnPosition(this.entryDirection);
@@ -223,36 +262,46 @@ export class ArenaScene extends Phaser.Scene {
             // Flash screen
             this.cameras.main.flash(500, 0, 0, 255);
         });
+
+        // Add M key handler for skill tree
+        this.input.keyboard!.on('keydown-M', () => {
+            if (this.scene.isVisible('SkillTreeScene')) {
+                this.scene.stop('SkillTreeScene');
+                this.scene.resume();
+            } else {
+                this.scene.pause();
+                this.scene.launch('SkillTreeScene');
+                this.scene.bringToTop('SkillTreeScene');
+            }
+        });
     }
 
-    private createArenaWalls(): void {
+    private createArenaWalls(wallSprite: string): void {
         this.walls = this.physics.add.staticGroup();
 
-        // Horizontal walls
         for (let x = 0; x < this.ROOM_WIDTH_TILES; x++) {
             this.walls.create(
-                x * this.TILE_SIZE + this.TILE_SIZE/2,
-                this.TILE_SIZE/2,
-                'tree'
+                x * this.TILE_SIZE + this.TILE_SIZE / 2,
+                this.TILE_SIZE / 2,
+                wallSprite
             );
             this.walls.create(
-                x * this.TILE_SIZE + this.TILE_SIZE/2,
-                this.ROOM_HEIGHT - this.TILE_SIZE/2,
-                'tree'
+                x * this.TILE_SIZE + this.TILE_SIZE / 2,
+                this.ROOM_HEIGHT - this.TILE_SIZE / 2,
+                wallSprite
             );
         }
 
-        // Vertical walls
-        for (let y = 1; y < this.ROOM_HEIGHT_TILES - 1; y++) {
+        for (let y = 0; y < this.ROOM_HEIGHT_TILES; y++) {
             this.walls.create(
-                this.TILE_SIZE/2,
-                y * this.TILE_SIZE + this.TILE_SIZE/2,
-                'tree'
+                this.TILE_SIZE / 2,
+                y * this.TILE_SIZE + this.TILE_SIZE / 2,
+                wallSprite
             );
             this.walls.create(
-                this.ROOM_WIDTH - this.TILE_SIZE/2,
-                y * this.TILE_SIZE + this.TILE_SIZE/2,
-                'tree'
+                this.ROOM_WIDTH - this.TILE_SIZE / 2,
+                y * this.TILE_SIZE + this.TILE_SIZE / 2,
+                wallSprite
             );
         }
     }
@@ -278,25 +327,38 @@ export class ArenaScene extends Phaser.Scene {
     public handleProjectileEnemyCollision(projectile: any, enemy: any): void {
         const projectileObj = projectile as Projectile;
         const enemyObj = enemy as Enemy;
-        const damage = projectileObj.getDamage();
-        
-        // Floating Damage
-        new FloatingDamage(
-            this,
-            enemy.x,
-            enemy.y - 20,
-            damage,
-            false
-        );
-        
+
+        if (projectile instanceof FireballProjectile) {
+            // Use FireballProjectile's special collision handling
+            (projectile as FireballProjectile).handleEnemyCollision(enemyObj);
+        } else if (projectile instanceof ArrowProjectile) {
+            // Use ArrowProjectile's special collision handling
+            (projectile as ArrowProjectile).handleEnemyCollision(enemyObj);
+        } else {
+            // Regular projectile damage
+            const damage = projectileObj.getDamage();
+            
+            // Floating Damage
+            new FloatingDamage(
+                this,
+                enemy.x,
+                enemy.y - 20,
+                damage,
+                false
+            );
+            
+            enemyObj.damage(damage);
+        }
+
         projectileObj.destroy();
         
-        if (enemyObj.damage(damage)) {
+        if (!enemyObj.active) {
             this.player.addScore(100);
         }
     }
 
     update() {
+        console.log(this.enemies.getLength());
         // Update player
         this.player.update();
         
@@ -350,16 +412,10 @@ export class ArenaScene extends Phaser.Scene {
                     this.player,
                     (enemy as RangedEnemy).getProjectiles(),
                     (player, projectile) => {
-                        const damage = 10;
                         const playerObj = player as Player;
-                        new FloatingDamage(
-                            this,
-                            playerObj.x,
-                            playerObj.y - 20,
-                            damage,
-                            false
-                        );
-                        playerObj.damage(damage);
+                        // Apply damage
+                        playerObj.damage(10);
+
                         (projectile as Projectile).destroy();
                     }
                 );
@@ -410,7 +466,7 @@ export class ArenaScene extends Phaser.Scene {
             this
         );
 
-        // Pickups and pla
+        // Pickups and player
         this.physics.add.overlap(
             this.player,
             this.pickups,
@@ -439,17 +495,17 @@ export class ArenaScene extends Phaser.Scene {
         const randomNum = Phaser.Math.Between(1, 100);
         let enemy;
 
-        if (randomNum <= 80) {
-            const spawnPoint = this.getRandomSpawnPoint();
-            enemy = new LineEnemy(this, spawnPoint.x, spawnPoint.y);
-        } else if (randomNum <= 40) {
-            const spawnPoint = this.getRandomSpawnPoint();
-            enemy = new RangedEnemy(this, spawnPoint.x, spawnPoint.y);
-        } else if (randomNum <= 70) {
-            enemy = ObstacleEnemy.spawnNearPlayer(this, this.player);
-        } else {
+        if (randomNum <= 60) {  // Regular enemy: 60%
             const spawnPoint = this.getRandomSpawnPoint();
             enemy = new Enemy(this, spawnPoint.x, spawnPoint.y);
+        } else if (randomNum <= 80) {  // Line enemy: 20%
+            const spawnPoint = this.getRandomSpawnPoint();
+            enemy = new LineEnemy(this, spawnPoint.x, spawnPoint.y);
+        } else if (randomNum <= 90) {  // Ranged enemy: 10%
+            const spawnPoint = this.getRandomSpawnPoint();
+            enemy = new RangedEnemy(this, spawnPoint.x, spawnPoint.y);
+        } else {  // Obstacle enemy: 10%
+            enemy = ObstacleEnemy.spawnNearPlayer(this, this.player);
         }
 
         this.enemies.add(enemy);
@@ -460,7 +516,10 @@ export class ArenaScene extends Phaser.Scene {
                 this.player,
                 enemy.getProjectiles(),
                 (player, projectile) => {
-                    (player as Player).damage(10);
+                    const playerObj = player as Player;
+                    // Apply damage
+                    playerObj.damage(10);
+
                     (projectile as Projectile).destroy();
                 }
             );
@@ -516,6 +575,11 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     private createPortals(): void {
+        // Don't create portals in boss rooms
+        if (this.roomType === 'boss') {
+            return;
+        }
+
         const availablePortals = this.roomManager.getAvailablePortals(this.roomPosition);
         
         availablePortals.forEach(portal => {
@@ -594,11 +658,21 @@ export class ArenaScene extends Phaser.Scene {
         return this.walls;
     }
 
-    private createScatteredGrass(): void {
-        const NUM_GRASS = 30; // Number of grass sprites to scatter
-        const PADDING = 30; // Distance from walls
+    private createScatteredDecorations(): void {
+        const NUM_DECORATIONS = 30;
+        const PADDING = 30;
+        
+        // Choose decoration based on level type
+        let decorationSprite;
+        if (this.levelType === 'dungeon') {
+            decorationSprite = 'spikes';
+        } else if (this.levelType === 'hell') {
+            decorationSprite = 'lava-puddle';
+        } else {
+            decorationSprite = 'grass';
+        }
 
-        for (let i = 0; i < NUM_GRASS; i++) {
+        for (let i = 0; i < NUM_DECORATIONS; i++) {
             const x = Phaser.Math.Between(
                 PADDING, 
                 this.ROOM_WIDTH - PADDING
@@ -608,8 +682,37 @@ export class ArenaScene extends Phaser.Scene {
                 this.ROOM_HEIGHT - PADDING
             );
 
-            const grass = this.add.sprite(x, y, 'grass')
-                .setDepth(0)
+            const decoration = this.add.sprite(x, y, decorationSprite)
+                .setDepth(0);
+                
+            // Add special effects based on decoration type
+            if (decorationSprite === 'spikes') {
+                decoration.setTint(0xcccccc);
+            } else if (decorationSprite === 'lava-puddle') {
+                // Add glowing effect for lava
+                decoration.setTint(0xff6600);
+                // Optional: Add a pulsing effect
+                this.tweens.add({
+                    targets: decoration,
+                    alpha: 0.8,
+                    duration: 1000,
+                    yoyo: true,
+                    repeat: -1,
+                    ease: 'Sine.easeInOut'
+                });
+            }
         }
+    }
+
+    public getEnemies(): Phaser.GameObjects.Group {
+        return this.enemies;
+    }
+
+    public getRangedEnemies(): Phaser.GameObjects.Group {
+        return this.rangedEnemies;
+    }
+
+    public getLevelType(): string {
+        return this.levelType;
     }
 } 

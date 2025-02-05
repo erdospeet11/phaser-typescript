@@ -31,7 +31,7 @@ export class HeroSelectScene extends Phaser.Scene {
             description: 'Skilled with bow and arrow'
         },
         { 
-            key: 'Thing', 
+            key: 'THING', 
             sprite: 'player-thing',
             name: 'T̵̥̄h̸͉̏i̴̟̊n̸͇̈́g̵͕̋',
             description: '???'
@@ -77,11 +77,13 @@ export class HeroSelectScene extends Phaser.Scene {
             fontSize: '32px',
             color: '#ffffff',
             fontStyle: 'bold',
+            fontFamily: 'Arial, sans-serif',
+            resolution: 2,
             shadow: {
                 offsetX: 2,
                 offsetY: 2,
                 color: '#000000',
-                blur: 2,
+                blur: 0,
                 fill: true
             }
         }).setOrigin(0.5);
@@ -90,7 +92,9 @@ export class HeroSelectScene extends Phaser.Scene {
         this.hoverText = this.add.text(centerX, 100, '', {
             fontSize: '24px',
             color: '#ffffff',
-            align: 'center'
+            align: 'center',
+            fontFamily: 'Arial, sans-serif',
+            resolution: 2
         })
         .setOrigin(0.5)
         .setVisible(false);
@@ -139,10 +143,35 @@ export class HeroSelectScene extends Phaser.Scene {
     }
 
     private selectClass(classKey: string) {
-        // TODO: store selected class, might want to use GameManager
-        localStorage.setItem('selectedClass', classKey);
-        
-        // Proceed to level select
-        this.scene.start('LevelSelectScene');
+        try {
+            console.log(`Selected class: ${classKey}`); // Debugging log
+            localStorage.setItem('selectedClass', classKey);
+            this.scene.stop();
+            this.scene.start('LevelSelectScene');
+        } catch (error) {
+            console.error('Error during class selection:', error);
+            this.scene.start('MainMenuScene');
+        }
+    }
+
+    shutdown() {
+        // Clean up resources in shutdown
+        if (this.backgrounds) {
+            this.backgrounds.forEach(bg => {
+                if (bg && bg.active) {
+                    bg.destroy();
+                }
+            });
+            this.backgrounds = [];
+        }
+
+        if (this.hoverText && this.hoverText.active) {
+            this.hoverText.destroy();
+        }
+
+        // Clear all events
+        this.input.removeAllListeners();
+        this.tweens.killAll();
+        this.time.removeAllEvents();
     }
 } 

@@ -3,11 +3,13 @@ import { ArenaScene } from './scenes/ArenaScene';
 import { PauseScene } from './scenes/PauseScene';
 import { MainMenuScene } from './scenes/MainMenuScene';
 import { SettingsScene } from './scenes/SettingsScene';
-import { DungeonScene } from './scenes/DungeonScene';
 import { LevelSelectScene } from './scenes/LevelSelectScene';
 import { CharacterSheetScene } from './ui/CharacterSheetScene';
 import { EndGameScene } from './scenes/EndGameScene';
 import { HeroSelectScene } from './scenes/HeroSelectScene';
+import { LeaderboardScene } from './scenes/LeaderboardScene';
+import { SkillTreeScene } from './scenes/SkillTreeScene';
+import { LevelUpScene } from './scenes/LevelUpScene';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
@@ -17,22 +19,21 @@ const config: Phaser.Types.Core.GameConfig = {
         default: 'arcade',
         arcade: {
             gravity: { x: 0, y: 0 },
-            debug: true,
-            fixedStep: false,
-            fps: 300,
-            debugShowBody: true,
+            debug: false
         }
     },
     scene: [
         MainMenuScene,
         HeroSelectScene,
+        LeaderboardScene,
         CharacterSheetScene,
         LevelSelectScene,
+        LevelUpScene,
         SettingsScene,
         ArenaScene,
         PauseScene,
-        DungeonScene,
-        EndGameScene
+        EndGameScene,
+        SkillTreeScene
     ],
     scale: {
         mode: Scale.FIT,
@@ -40,12 +41,8 @@ const config: Phaser.Types.Core.GameConfig = {
     },
     pixelArt: true,
     antialias: false,
-    zoom: 2,
-    render: {
-        antialias: false,
-        pixelArt: true,
-        roundPixels: true
-    }
+    zoom: 2
 };
 
-const game = new Phaser.Game(config);
+// Initialize the game
+new Phaser.Game(config);

@@ -51,17 +51,18 @@ export class EndGameScene extends Phaser.Scene {
             
             // Reset both managers
             gameManager.reset();
-            roomManager.reset();  // This will reset level to 1 and clear visited rooms
+            roomManager.reset();
             
             // Start ArenaScene with initial room configuration
-            this.scene.start('ArenaScene', {
-                roomPosition: { x: 0, y: 1 },  // Start position
-                roomType: 'start',
-                entryDirection: 'default'
-            });
+            this.scene.start('HeroSelectScene');
         });
 
         restartButton.on('pointerover', () => restartButton.setTint(0x999999));
         restartButton.on('pointerout', () => restartButton.clearTint());
+
+        // Save score regardless of victory or defeat
+        const playerName = localStorage.getItem('playerName') || 'Unknown';
+        const db = GameDatabase.getInstance();
+        await db.saveScore(playerName, this.gameData.score);
     }
 } 

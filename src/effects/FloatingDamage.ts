@@ -3,12 +3,20 @@ export class FloatingDamage extends Phaser.GameObjects.Text {
     private fadeSpeed: number = 500;
     private isCritical: boolean = false;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, damage: number, isCritical: boolean) {
-        // Create text with damage value
-        super(scene, x, y, damage.toString(), {
+    constructor(
+        scene: Phaser.Scene, 
+        x: number, 
+        y: number, 
+        damage: number, 
+        isCritical: boolean,
+        emoji: string = '',
+        color: number = 0xffffff
+    ) {
+        // Create text with damage value and optional emoji
+        super(scene, x, y, `${emoji}${damage}`, {
             fontFamily: 'Arial',
             fontSize: '16px',
-            color: isCritical ? '#ff0000' : '#ffffff',
+            color: `#${color.toString(16)}`,
             stroke: '#000000',
             strokeThickness: 2
         });

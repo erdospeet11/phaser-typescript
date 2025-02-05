@@ -146,9 +146,19 @@ export class LevelSelectScene extends Phaser.Scene {
         const roomManager = RoomManager.getInstance();
         roomManager.setCurrentLevel(levelNumber);
         
+        let levelType = 'normal';
+        if (levelNumber === 1) {
+            levelType = 'forest';
+        } else if (levelNumber === 2) {
+            levelType = 'dungeon';
+        } else if (levelNumber === 3) {
+            levelType = 'hell';
+        }
+
         this.scene.start('ArenaScene', {
             roomPosition: { x: 0, y: 1 },
-            roomType: 'start'
+            roomType: 'start',
+            levelType: levelType
         });
     }
 } 

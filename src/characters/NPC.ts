@@ -48,11 +48,11 @@ export class NPC extends Phaser.GameObjects.Sprite {
                         
                         if (event.key === '1' && player.getCoins() >= 50) {
                             player.heal(20);
-                            player.addCoins(-50);
+                            player.addCoins(-5);
                         }
                         else if (event.key === '2' && player.getCoins() >= 100) {
                             player.modifyAttack(5);
-                            player.addCoins(-100);
+                            player.addCoins(-10);
                         }
                     };
 

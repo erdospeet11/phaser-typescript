@@ -1,9 +1,16 @@
 export class Projectile extends Phaser.Physics.Arcade.Sprite {
-    private speed: number = 300;
+    protected speed: number = 300;
     private damage: number = 20;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, spriteKey: string = 'projectile') {
+    constructor(
+        scene: Phaser.Scene, 
+        x: number, 
+        y: number, 
+        spriteKey: string = 'projectile',
+        attack: number = 20
+    ) {
         super(scene, x, y, spriteKey);
+        this.damage = attack;  // Use the attack value passed in
         
         scene.add.existing(this);
         scene.physics.add.existing(this);
@@ -12,6 +19,10 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
         const body = this.body as Phaser.Physics.Arcade.Body;
         body.setSize(8, 8);
         body.setOffset(4, 4);
+    }
+
+    setSpeed(speed: number): void {
+        this.speed = speed;
     }
 
     fire(direction: { x: number, y: number }): void {

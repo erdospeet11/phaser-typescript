@@ -93,18 +93,6 @@ export class CharacterSheetScene extends Phaser.Scene {
             this.cameras.main.centerY - 90
         );
 
-        // Bottom Stats Panel
-        const skillsBackground = this.add.rectangle(
-            this.cameras.main.centerX,
-            this.cameras.main.centerY + 103,
-            375,
-            70,
-            0xe8a26b
-        ).setDepth(999)
-        .setStrokeStyle(2, 0x000000);
-
-        this.createSkillGrid();
-
         this.scene.setVisible(true);
         console.log('Scene set visible');
 
@@ -112,45 +100,6 @@ export class CharacterSheetScene extends Phaser.Scene {
 
         this.player.on('healthChanged', () => this.updateStats());
         this.player.on('scoreChanged', () => this.updateStats());
-    }
-
-    private createSkillGrid(): void {
-        const gridConfig = {
-            rows: 2,
-            cols: 12,
-            rectWidth: 25,
-            rectHeight: 25,
-            spacing: 6,
-            startX: this.cameras.main.centerX - 184,
-            startY: this.cameras.main.centerY + 75
-        };
-
-        for (let row = 0; row < gridConfig.rows; row++) {
-            for (let col = 0; col < gridConfig.cols; col++) {
-                const x = gridConfig.startX + col * (gridConfig.rectWidth + gridConfig.spacing);
-                const y = gridConfig.startY + row * (gridConfig.rectHeight + gridConfig.spacing);
-                
-                // Background Panel
-                const rect = this.add.rectangle(
-                    x,
-                    y,
-                    gridConfig.rectWidth,
-                    gridConfig.rectHeight,
-                    0x9e6639
-                )
-                .setOrigin(0, 0)
-                .setDepth(999);
-
-                // TEST: add a sprite for test in first cell
-                if (row === 0 && col === 0) {
-                    const sprite = this.add.sprite(
-                        x + gridConfig.rectWidth/2,
-                        y + gridConfig.rectHeight/2,
-                        'fireball'
-                    ).setDepth(999);
-                }
-            }
-        }
     }
 
     private createStatsPanel(x: number, y: number): Phaser.GameObjects.Container {
@@ -181,9 +130,12 @@ export class CharacterSheetScene extends Phaser.Scene {
     }
 
     public updateStats(): void {
-        if (!this.player) return;
+        // Only update if scene is active and player exists
+        if (!this.player || !this.scene.isActive()) return;
         
         const texts = this.statsPanel.getAll() as Phaser.GameObjects.Text[];
+        if (!texts || texts.length === 0) return;  // Add safety check for texts array
+
         texts[0].setText(`Health: ${this.player.getHealth()}/${this.player.getMaxHealth()}`);
         texts[1].setText(`Attack: ${this.player.getAttack()}`);
         texts[2].setText(`Defense: ${this.player.getDefense()}`);
