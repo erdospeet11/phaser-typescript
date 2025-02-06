@@ -18,6 +18,7 @@ export class LevelUpScene extends Scene {
     init(data: { player: Player }) {
         this.player = data.player;
         this.options = this.getRandomPerks();
+        console.log('LevelUpScene initialized with options:', this.options);
     }
 
     create() {
@@ -27,6 +28,9 @@ export class LevelUpScene extends Scene {
         if (this.scene.isActive('ArenaScene')) {
             this.scene.pause('ArenaScene');
         }
+
+        // Bring LevelUpScene to the top
+        this.scene.bringToTop();
 
         // Semi-transparent dark background
         this.add.rectangle(0, 0, width, height, 0x000000, 0.7)
@@ -42,31 +46,41 @@ export class LevelUpScene extends Scene {
         .setOrigin(0.5)
         .setDepth(999);
 
-        // Create three perk options
-        this.options.forEach((option, index) => {
-            const y = height * (0.35 + index * 0.2);
-            const container = this.add.container(width / 2, y);
+        // Create three perk options horizontally
+        const optionWidth = width * 0.25; // Adjust width for each option
+        const optionHeight = 120; // Increase height for each option
+        const spacing = width * 0.1; // Spacing between options
 
-            const background = this.add.rectangle(0, 0, width * 0.6, 80, 0x444444)
+        this.options.forEach((option, index) => {
+            const x = (width / 2) - (optionWidth + spacing) + index * (optionWidth + spacing);
+            const y = height * 0.5; // Center vertically
+
+            const container = this.add.container(x, y);
+
+            const background = this.add.rectangle(0, 0, optionWidth, optionHeight, 0x444444)
                 .setInteractive()
                 .on('pointerover', () => background.setFillStyle(0x666666))
                 .on('pointerout', () => background.setFillStyle(0x444444))
                 .on('pointerdown', () => this.selectPerk(option));
 
-            const title = this.add.text(0, -15, option.name, {
-                fontSize: '20px',
+            const title = this.add.text(0, -30, option.name, {
+                fontSize: '13px',
                 color: '#ffffff',
                 fontStyle: 'bold'
             }).setOrigin(0.5);
 
-            const description = this.add.text(0, 15, option.description, {
-                fontSize: '16px',
-                color: '#cccccc'
+            const description = this.add.text(0, 10, option.description, {
+                fontSize: '15px', // Further reduced font size
+                color: '#cccccc',
+                wordWrap: { width: optionWidth - 20 }, // Enable word wrapping
+                resolution: 1
             }).setOrigin(0.5);
 
             container.add([background, title, description]);
             container.setDepth(999);
         });
+
+        console.log('LevelUpScene created with options displayed.');
     }
 
     private getRandomPerks(): PerkOption[] {

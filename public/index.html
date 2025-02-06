@@ -2,113 +2,31 @@
 <html>
 <head>
     <title>Legends of Smash Arena</title>
-    <style>
-        body {
-            margin: 0;
-            background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            text-align: center;
-            color: white;
-            padding: 20px;
-            background: rgba(74, 74, 74, 0.3);
-            border-radius: 10px;
-        }
-        .play-button {
-            background: #4a4a4a;
-            border: none;
-            color: white;
-            padding: 15px 32px;
-            font-size: 16px;
-            margin: 20px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-        .play-button:hover {
-            background: #6a6a6a;
-        }
-        .play-button:disabled {
-            background: #333;
-            cursor: not-allowed;
-        }
-        input {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border: none;
-            width: 200px;
-            font-size: 16px;
-        }
-        .error {
-            color: #ff4444;
-            font-size: 14px;
-            height: 20px;
-            margin-top: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="index.css">
+    <script src="index.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Legends of Smash Arena</h1>
+        <h1 style="font-weight: bold; color: rgb(117, 33, 173);">Legends of Smash Arena</h1>
         <div>
             <input type="text" id="playerName" placeholder="Enter your name" maxlength="15"><br>
             <input type="password" id="playerPassword" placeholder="Enter your password" maxlength="15"><br>
             <div id="errorText" class="error"></div>
         </div>
         <button id="playButton" class="play-button" disabled>Play</button>
+        <p>New player? <span id="registerLink" class="register-link">Register here</span></p>
     </div>
 
-    <script>
-        const nameInput = document.getElementById('playerName');
-        const passwordInput = document.getElementById('playerPassword');
-        const playButton = document.getElementById('playButton');
-        const errorText = document.getElementById('errorText');
-
-        function validateInputs() {
-            const name = nameInput.value.trim();
-            const password = passwordInput.value.trim();
-
-            if (name.length < 3) {
-                errorText.textContent = 'Name must be at least 3 characters';
-                playButton.disabled = true;
-                return false;
-            }
-
-            if (password.length < 3) {
-                errorText.textContent = 'Password must be at least 3 characters';
-                playButton.disabled = true;
-                return false;
-            }
-
-            errorText.textContent = '';
-            playButton.disabled = false;
-            return true;
-        }
-
-        nameInput.addEventListener('input', validateInputs);
-        passwordInput.addEventListener('input', validateInputs);
-
-        playButton.addEventListener('click', () => {
-            const name = nameInput.value.trim();
-            const password = passwordInput.value.trim();
-
-            if (name === 'admin' && password === 'admin') {
-                // Redirect to admin page
-                window.location.href = 'admin.html';
-                return;
-            }
-
-            if (validateInputs()) {
-                localStorage.setItem('playerName', name);
-                window.location.href = 'game.html';
-            }
-        });
-    </script>
+    <div id="registerPopup" class="popup">
+        <div class="popup-content">
+            <span class="close">&times;</span>
+            <h2>Register</h2>
+            <input type="text" id="registerName" placeholder="Enter your name" maxlength="15"><br>
+            <input type="password" id="registerPassword" placeholder="Enter your password" maxlength="15"><br>
+            <input type="password" id="confirmPassword" placeholder="Confirm your password" maxlength="15"><br>
+            <div id="registerErrorText" class="error"></div>
+            <button id="registerButton" class="register-button" disabled>Register</button>
+        </div>
+    </div>
 </body>
-</html> 
+</html>

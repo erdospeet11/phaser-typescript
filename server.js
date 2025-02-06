@@ -12,7 +12,7 @@ const dbs = {
 
 // Add CORS middleware with proper configuration
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:9001');
+    res.header('Access-Control-Allow-Origin', '*'); // Allow all origins for development
     res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     res.header('Access-Control-Allow-Credentials', 'true');
@@ -79,6 +79,32 @@ app.post('/api/scores/clear', (req, res) => {
             return;
         }
         res.json({ message: 'All scores cleared' });
+    });
+});
+
+app.post('/api/register', (req, res) => {
+    const { username, password } = req.body;
+    dbs.scores.run('INSERT INTO users (username, password) VALUES (?, ?)', [username, password], (err) => {
+        if (err) {
+            res.status(500).send(err.message);
+            return;
+        }
+        res.status(201).json({ message: 'User registered successfully' });
+    });
+});
+
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+    dbs.scores.get('SELECT * FROM users WHERE username = ? AND password = ?', [username, password], (err, row) => {
+        if (err) {
+            res.status(500).send(err.message);
+            return;
+        }
+        if (row) {
+            res.status(200).json({ message: 'Login successful' });
+        } else {
+            res.status(401).json({ message: 'Invalid username or password' });
+        }
     });
 });
 

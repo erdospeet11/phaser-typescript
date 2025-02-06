@@ -5,6 +5,8 @@ import { Weapon } from './weapons/Weapon';
 import { RangedWeapon } from './weapons/RangedWeapon';
 import { MeleeWeapon } from './weapons/MeleeWeapon';
 import { StatusEffect } from './effects/StatusEffect';
+import { TeleportAbility } from './abilities/TeleportAbility';
+import { Ability } from './abilities/Ability';
 const CLASSES = {
   MAGE: new RangedWeapon(
     'Fire Tome',
@@ -47,7 +49,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   protected lastShootTime: number = 0;
   protected shootCooldown: number = 250;
   protected facing: number = 0;
-  protected dashAbility: DashAbility;
+  protected dashAbility!: Ability;
   private gameManager: GameManager;
   protected weaponSprite!: Phaser.GameObjects.Sprite;
   public isInvulnerable: boolean = false;
@@ -60,6 +62,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private level: number = 1;
   private experienceToNextLevel: number = 100;
   private criticalChance: number = 0.05; // 5% base crit chance
+  private isShooting: boolean = false; // New property to track shooting state
+  private experienceBar!: Phaser.GameObjects.Graphics; // New property for the experience bar
+  private healthText!: Phaser.GameObjects.Text; // New property for health text
 
   constructor(scene: Phaser.Scene, x: number, y: number, player_class: string) {
     const spriteKey = `player-${player_class.toLowerCase()}`;
@@ -113,17 +118,30 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Add left-click binding for shooting
     scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (pointer.leftButtonDown()) {
-        this.shoot();
+        this.isShooting = true;
       }
     });
 
-    // Add dash ability
-    this.dashAbility = new DashAbility(scene, this);
+    scene.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.leftButtonReleased()) {
+        this.isShooting = false;
+      }
+    });
 
-    // Add space key binding for dash
+    // Initialize ability based on class
+    if (player_class === 'MAGE') {
+      this.dashAbility = new TeleportAbility(scene, this);
+    } else {
+      this.dashAbility = new DashAbility(scene, this);
+    }
+
+    // Add space key binding for dash or teleport
     scene.input.keyboard!.on('keydown-SPACE', () => {
       this.dashAbility.use();
     });
+
+    // Create the experience bar
+    this.createExperienceBar();
   }
 
   private createStatsDisplay(): void {
@@ -131,7 +149,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.scoreText = this.scene.add.text(
         10,
         10,
-        `🏆Score: ${this.gameManager.getScore()}`,
+        `🏆 ${this.gameManager.getScore()}`,
         {
             fontSize: '14px',
             fontFamily: 'Arial',
@@ -158,7 +176,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.goldText = this.scene.add.text(
         this.scene.cameras.main.width - 10,
         10,
-        `💰Gold: ${this.gameManager.getGold()}`,
+        `💰 ${this.gameManager.getGold()}`,
         {
             fontSize: '14px',
             fontFamily: 'Arial',
@@ -181,11 +199,36 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     .setScrollFactor(0)
     .setDepth(1000);
 
+    // Create health text (center top)
+    this.healthText = this.scene.add.text(
+        this.scene.cameras.main.width / 2,
+        10,
+        `❤️ ${this.getHealth()}/${this.getMaxHealth()}`,
+        {
+            fontSize: '14px',
+            fontFamily: 'Arial',
+            color: '#ffffff',
+            padding: { x: 0, y: 0 },
+            align: 'center',
+            shadow: {
+                offsetX: 1,
+                offsetY: 1,
+                color: '#000000',
+                blur: 1,
+                stroke: true,
+                fill: true
+            },
+            stroke: '#000000',
+            strokeThickness: 1
+        }
+    )
+    .setOrigin(0.5, 0) // Center the text
+    .setScrollFactor(0)
+    .setDepth(1000);
+
     // Create weapon display in bottom right
     const padding = 5;
-    const squareSize = 32;
-    
-    // Add semi-transparent background square
+    const squareSize = 24; // Reduced size
     const weaponBackground = this.scene.add.rectangle(
         this.scene.cameras.main.width - padding,
         this.scene.cameras.main.height - padding,
@@ -197,18 +240,41 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     .setOrigin(1, 1)
     .setScrollFactor(0)
     .setDepth(999)
-    .setScale(2);
+    .setScale(1.5); // Adjusted scale
 
     // Add weapon sprite using current weapon's sprite
     this.weaponSprite = this.scene.add.sprite(
-        this.scene.cameras.main.width - padding - squareSize,
-        this.scene.cameras.main.height - padding - squareSize,
+        this.scene.cameras.main.width - padding - squareSize / 2,
+        this.scene.cameras.main.height - padding - squareSize / 2,
         this.currentWeapon.spriteKey
     )
-    .setOrigin(0.5, 0.5)
+    .setOrigin(0.75,0.75) // Center the sprite
     .setScrollFactor(0)
     .setDepth(1000)
-    .setScale(2);
+    .setScale(1.5); // Adjusted scale
+  }
+
+  private createExperienceBar(): void {
+    this.experienceBar = this.scene.add.graphics();
+    this.experienceBar.setScrollFactor(0);
+    this.experienceBar.setDepth(1000);
+    this.updateExperienceBar();
+  }
+
+  private updateExperienceBar(): void {
+    const barWidth = this.scene.cameras.main.width - 70; // Reduced width
+    const barHeight = 10; // Reduced height
+    const x = 20; // Adjusted position
+    const y = this.scene.cameras.main.height - barHeight - 10; // Lowered position
+
+    const percentage = this.experience / this.experienceToNextLevel;
+
+    this.experienceBar.clear();
+    this.experienceBar.fillStyle(0x222222, 1);
+    this.experienceBar.fillRect(x, y, barWidth, barHeight);
+
+    this.experienceBar.fillStyle(0x00ff00, 1);
+    this.experienceBar.fillRect(x, y, barWidth * percentage, barHeight);
   }
 
   update() {
@@ -246,10 +312,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Update the stats texts with GameManager values
     if (this.scoreText) {
-        this.scoreText.setText(`🏆Score: ${this.gameManager.getScore()}`);
+        this.scoreText.setText(`🏆 ${this.gameManager.getScore()}`);
     }
     if (this.goldText) {
-        this.goldText.setText(`💰Gold: ${this.gameManager.getGold()}`);
+        this.goldText.setText(`💰 ${this.gameManager.getGold()}`);
+    }
+
+    // Handle continuous shooting
+    if (this.isShooting) {
+        const currentTime = this.scene.time.now;
+        if (currentTime - this.lastShootTime >= this.shootCooldown) {
+            this.shoot();
+            this.lastShootTime = currentTime;
+        }
     }
   }
 
@@ -259,6 +334,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.gameManager.damage(amount);
     
+    // Update health text immediately
+    this.updateUIText();
+
     // Make player invulnerable and flash red
     this.setTint(0xff0000);
     this.isInvulnerable = true;
@@ -350,12 +428,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   private shoot(): void {
-    const currentTime = this.scene.time.now;
-    if (currentTime - this.lastShootTime < this.currentWeapon.cooldown) {
-      return;
-    }
-    this.lastShootTime = currentTime;
-
     // Use the weapon
     this.currentWeapon.use(
       this.scene,
@@ -403,11 +475,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public updateUIText(): void {
     if (this.scoreText) {
-      this.scoreText.setText(`🏆Score: ${this.gameManager.getScore()}`);
+      this.scoreText.setText(`🏆 ${this.gameManager.getScore()}`);
     }
     if (this.goldText) {
-      this.goldText.setText(`💰Gold: ${this.gameManager.getGold()}`);
+      this.goldText.setText(`💰 ${this.gameManager.getGold()}`);
     }
+    if (this.healthText) {
+      this.healthText.setText(`❤️ ${this.getHealth()}/${this.getMaxHealth()}`);
+    }
+    this.updateExperienceBar();
   }
 
   // Add method to change weapons
@@ -428,6 +504,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.experience >= this.experienceToNextLevel) {
         this.levelUp();
     }
+    this.updateExperienceBar();
   }
 
   public increaseAttack(multiplier: number): void {
@@ -461,6 +538,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.level++;
     this.experience -= this.experienceToNextLevel;
     this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * 1.2);
+    this.updateExperienceBar();
     this.scene.scene.launch('LevelUpScene', { player: this });
   }
 
