@@ -206,6 +206,9 @@ export class ArenaScene extends Phaser.Scene {
 
         this.load.image('devil', 'assets/devil.png');
         this.load.image('demon', 'assets/demon.png');
+
+        // Add this line with other asset loads
+        this.load.image('tent', 'assets/tent.png');
     }
 
     create() {

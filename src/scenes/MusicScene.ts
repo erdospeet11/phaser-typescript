@@ -17,9 +17,15 @@ export class MusicScene extends Phaser.Scene {
         this.music.play();
     }
 
+    setVolume(volume: number) {
+        if (this.music) {
+            (this.music as Phaser.Sound.WebAudioSound).setVolume(volume);
+        }
+    }
+
     destroy() {
         if (this.music) {
             this.music.destroy();
         }
     }
-} 
+}

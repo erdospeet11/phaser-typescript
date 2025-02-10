@@ -1,16 +1,13 @@
 ## TODO for Friday, Saturday, Sunday
 - [] fix the shop (prices, style)
-- [] last boss for hell
-- [] tweak mob drops
 - [] fix the map (there is an instance of getting stuck)
-- [] admin
-- [] change charactersheet
+- [] use admin rules
+- [] items
 
 # LAST
 - [] sql database just like in datafetch
 - [] test cases
 
-another room?
 items for strengthening your build
 
 Ability                                Special

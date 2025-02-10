@@ -2,6 +2,7 @@ export class SettingsScene extends Phaser.Scene {
     private backgrounds: Phaser.GameObjects.TileSprite[] = [];
     private scrollSpeeds: number[] = [0.5, 1, 1.5];
     private ttime: number = 0;
+    private musicScene?: Phaser.Scene;
 
     constructor() {
         super({ key: 'SettingsScene' });
@@ -18,6 +19,9 @@ export class SettingsScene extends Phaser.Scene {
     }
 
     create() {
+        // Get reference to MusicScene
+        this.musicScene = this.scene.get('MusicScene');
+
         // Create background layers after ensuring image is loaded
         this.load.once('complete', () => {
             for (let i = 0; i < 3; i++) {
@@ -68,7 +72,11 @@ export class SettingsScene extends Phaser.Scene {
         ).setOrigin(0.5);
 
         // Music Volume Slider
-        this.createVolumeSlider(100);
+        this.createVolumeSlider(100, (volume: number) => {
+            if (this.musicScene) {
+                (this.musicScene as any).setVolume(volume);
+            }
+        });
 
         this.add.text(
             this.cameras.main.centerX,
@@ -82,7 +90,9 @@ export class SettingsScene extends Phaser.Scene {
         ).setOrigin(0.5);
 
         // SFX Volume Slider
-        this.createVolumeSlider(160);
+        this.createVolumeSlider(160, () => {
+            // TODO: Implement SFX volume control
+        });
 
         // Back Button
         this.createButton(
@@ -93,7 +103,7 @@ export class SettingsScene extends Phaser.Scene {
         );
     }
 
-    private createVolumeSlider(yPosition: number) {
+    private createVolumeSlider(yPosition: number, onVolumeChange: (volume: number) => void) {
         const width = 150;  // Reduced width
         const height = 10;  // Reduced height
         const x = this.cameras.main.centerX - width / 2;
@@ -125,7 +135,7 @@ export class SettingsScene extends Phaser.Scene {
                 const newX = Phaser.Math.Clamp(dragX, x, x + width);
                 gameObject.x = newX;
                 const volume = (newX - x) / width;
-                console.log(`Volume set to: ${volume}`);
+                onVolumeChange(volume);
             }
         });
     }
