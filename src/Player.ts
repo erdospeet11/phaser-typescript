@@ -7,6 +7,9 @@ import { MeleeWeapon } from './weapons/MeleeWeapon';
 import { StatusEffect } from './effects/StatusEffect';
 import { TeleportAbility } from './abilities/TeleportAbility';
 import { Ability } from './abilities/Ability';
+import { SlashAbility } from './abilities/SlashAbility';
+import { FireballProjectile } from './projectiles/FireballProjectile';
+import { ArrowProjectile } from './projectiles/ArrowProjectile';
 const CLASSES = {
   MAGE: new RangedWeapon(
     'Fire Tome',
@@ -24,11 +27,19 @@ const CLASSES = {
   ),
 
   ARCHER: new RangedWeapon(
-    'Longbow',
+    'Bow',
     'longbow',
     'arrow',
-    10,
-    250
+    15,
+    300
+  ),
+
+  THING: new RangedWeapon(
+    'Void Orb',
+    'void-orb',
+    'standing-projectile',
+    25,  // Higher base damage
+    400  // Longer cooldown to balance the standing effect
   )
 }
 
@@ -110,8 +121,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       maxSize: 10,
       runChildUpdate: true,
       createCallback: (proj) => {
-        // Set the fireball sprite when projectile is created
-        (proj as Projectile).setTexture('fireball');
+        // Set the appropriate projectile texture based on class
+        if (player_class === 'MAGE') {
+          (proj as Projectile).setTexture('fireball');
+        } else if (player_class === 'ARCHER') {
+          (proj as Projectile).setTexture('arrow');
+        } else if (player_class === 'THING') {
+          (proj as Projectile).setTexture('standing-projectile');
+        } else {
+          (proj as Projectile).setTexture('sword-slash');
+        }
       }
     });
 
@@ -131,6 +150,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Initialize ability based on class
     if (player_class === 'MAGE') {
       this.dashAbility = new TeleportAbility(scene, this);
+    } else if (player_class === 'WARRIOR') {
+      this.dashAbility = new SlashAbility(scene, this);
     } else {
       this.dashAbility = new DashAbility(scene, this);
     }
@@ -428,14 +449,24 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   private shoot(): void {
-    // Use the weapon
-    this.currentWeapon.use(
-      this.scene,
-      this.x,
-      this.y,
-      this.facing,
-      this.attack
-    );
+    // Use the weapon with the correct projectile type
+    if (this.player_class === 'ARCHER') {
+      (this.currentWeapon as RangedWeapon).use(
+        this.scene,
+        this.x,
+        this.y,
+        this.facing,
+        this.attack
+      );
+    } else {
+      this.currentWeapon.use(
+        this.scene,
+        this.x,
+        this.y,
+        this.facing,
+        this.attack
+      );
+    }
   }
 
   public getProjectiles(): Phaser.GameObjects.Group {

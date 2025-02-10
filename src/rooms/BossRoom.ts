@@ -4,6 +4,7 @@ import { BoxingDeerBoss } from '../enemies/BoxingDeerBoss';
 import { ArenaScene } from '../scenes/ArenaScene';
 import { Player } from '../Player';
 import { Projectile } from '../Projectile';
+import { DevilBoss } from '../enemies/DevilBoss';
 
 export class BossRoom extends Room {
     setup(): void {
@@ -14,6 +15,12 @@ export class BossRoom extends Room {
         let boss;
         if (levelType === 'forest') {
             boss = new BoxingDeerBoss(
+                this.scene,
+                this.scene.cameras.main.centerX,
+                this.scene.cameras.main.centerY
+            );
+        } else if (levelType === 'hell') {
+            boss = new DevilBoss(
                 this.scene,
                 this.scene.cameras.main.centerX,
                 this.scene.cameras.main.centerY

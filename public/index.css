@@ -32,11 +32,11 @@ body {
 }
 
 .play-button:hover, .register-button:hover {
-    background: rgb(78, 0, 88);
+    background: rgb(112, 0, 186);
 }
 
 .play-button:disabled, .register-button:disabled {
-    background: #333;
+    background: rgb(112, 0, 186);
     cursor: not-allowed;
 }
 
@@ -57,7 +57,7 @@ input {
 }
 
 .register-link {
-    color: #4a90e2;
+    color: rgb(112, 0, 186);
     cursor: pointer;
     text-decoration: underline;
 }

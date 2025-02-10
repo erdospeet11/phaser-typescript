@@ -2,6 +2,7 @@ import { Projectile } from '../Projectile';
 import { Weapon } from './Weapon';
 import { FireballProjectile } from '../projectiles/FireballProjectile';
 import { ArrowProjectile } from '../projectiles/ArrowProjectile';
+import { StandingProjectile } from '../projectiles/StandingProjectile';
 
 export class RangedWeapon extends Weapon {
     readonly projectileKey: string;
@@ -43,6 +44,9 @@ export class RangedWeapon extends Weapon {
                 break;
             case 'arrow':
                 projectile = new ArrowProjectile(scene, x, y, this.projectileKey, attack);
+                break;
+            case 'standing-projectile':
+                projectile = new StandingProjectile(scene, x, y, this.projectileKey, attack);
                 break;
             default:
                 projectile = new Projectile(scene, x, y, this.projectileKey, attack);

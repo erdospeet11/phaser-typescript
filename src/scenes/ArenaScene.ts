@@ -16,6 +16,7 @@ import { BossRoom } from '../rooms/BossRoom';
 import { LineEnemy } from '../enemies/LineEnemy';
 import { FireballProjectile } from '../projectiles/FireballProjectile';
 import { ArrowProjectile } from '../projectiles/ArrowProjectile';
+import { SlashAbility } from '../abilities/SlashAbility';
 
 interface ArenaSceneData {
     roomPosition: { x: number, y: number };
@@ -48,6 +49,7 @@ export class ArenaScene extends Phaser.Scene {
     private currentFloorSprite: string = 'forest-floor';
     private currentWallSprite: string = 'forest-wall';
     private levelType: string = 'dungeon';  // Default to dungeon
+    private playerProjectiles!: Phaser.GameObjects.Group;
 
     constructor() {
         super({ key: 'ArenaScene' });
@@ -184,6 +186,7 @@ export class ArenaScene extends Phaser.Scene {
         this.load.image('strength-pickup', 'assets/strength-pickup.png');
 
         this.load.image('boxing-glove', 'assets/boxing-glove.png');
+        this.load.image('standing-projectile', 'assets/standing-projectile.png');
 
         this.load.image('spikes', 'assets/spikes.png');
 
@@ -200,6 +203,9 @@ export class ArenaScene extends Phaser.Scene {
         this.load.image('iron-sword', 'assets/iron-sword.png');
         this.load.image('longbow', 'assets/longbow.png');
         // Add any other necessary images
+
+        this.load.image('devil', 'assets/devil.png');
+        this.load.image('demon', 'assets/demon.png');
     }
 
     create() {
@@ -274,6 +280,18 @@ export class ArenaScene extends Phaser.Scene {
                 this.scene.bringToTop('SkillTreeScene');
             }
         });
+
+        // Add this after initializing enemies group
+        this.playerProjectiles = this.add.group();
+
+        // Add collision detection for player projectiles and enemies
+        this.physics.add.overlap(
+            this.playerProjectiles,
+            this.enemies,
+            this.handleProjectileEnemyCollision,
+            undefined,
+            this
+        );
     }
 
     private createArenaWalls(wallSprite: string): void {
@@ -325,36 +343,30 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     public handleProjectileEnemyCollision(projectile: any, enemy: any): void {
-        const projectileObj = projectile as Projectile;
-        const enemyObj = enemy as Enemy;
+        const proj = projectile as Projectile;
+        const en = enemy as Enemy;
 
-        if (projectile instanceof FireballProjectile) {
-            // Use FireballProjectile's special collision handling
-            (projectile as FireballProjectile).handleEnemyCollision(enemyObj);
-        } else if (projectile instanceof ArrowProjectile) {
-            // Use ArrowProjectile's special collision handling
-            (projectile as ArrowProjectile).handleEnemyCollision(enemyObj);
+        if (proj instanceof FireballProjectile) {
+            proj.handleEnemyCollision(en);
+        } else if (proj instanceof ArrowProjectile) {
+            proj.handleEnemyCollision(en);
         } else {
-            // Regular projectile damage
-            const damage = projectileObj.getDamage();
-            
-            // Floating Damage
+            const damage = proj.getDamage();
+            en.damage(damage);
+
+            // Add floating damage number
             new FloatingDamage(
                 this,
-                enemy.x,
-                enemy.y - 20,
+                en.x,
+                en.y - 20,
                 damage,
-                false
+                false,
+                '',
+                0xff0000
             );
-            
-            enemyObj.damage(damage);
         }
 
-        projectileObj.destroy();
-        
-        if (!enemyObj.active) {
-            this.player.addScore(100);
-        }
+        proj.destroy();
     }
 
     update() {
@@ -714,5 +726,9 @@ export class ArenaScene extends Phaser.Scene {
 
     public getLevelType(): string {
         return this.levelType;
+    }
+
+    public getPlayerProjectiles(): Phaser.GameObjects.Group {
+        return this.playerProjectiles;
     }
 } 

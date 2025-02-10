@@ -34,7 +34,7 @@ export class ArrowProjectile extends Projectile {
             enemy.y - 20,
             damage,
             this.isPowerShot,
-            this.isPowerShot ? '🎯' : '',
+            this.isPowerShot ? '🎯' : '🏹', // Show arrow emoji for regular shots, target for power shots
             this.isPowerShot ? 0xFFD700 : 0xffffff // Gold color for power shots
         );
     }

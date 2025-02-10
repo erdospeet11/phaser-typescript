@@ -3,7 +3,8 @@
 - [] last boss for hell
 - [] tweak mob drops
 - [] fix the map (there is an instance of getting stuck)
-
+- [] admin
+- [] change charactersheet
 
 # LAST
 - [] sql database just like in datafetch
