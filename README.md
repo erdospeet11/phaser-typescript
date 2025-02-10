@@ -10,7 +10,6 @@
 - [] sql database just like in datafetch
 - [] test cases
 
-skill tree?
 another room?
 items for strengthening your build
 

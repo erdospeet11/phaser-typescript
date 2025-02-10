@@ -7,7 +7,6 @@ export class SlashAbility extends Ability {
     private player: Player;
     private readonly SLASH_DAMAGE = 200;
     private readonly SLASH_SIZE = 32;
-    private readonly SLASH_COOLDOWN = 10000; 
     private readonly SLASH_ANGLES = [45, 135, 225, 315];
 
     constructor(scene: Phaser.Scene, player: Player) {

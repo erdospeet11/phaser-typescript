@@ -10,6 +10,8 @@ import { Ability } from './abilities/Ability';
 import { SlashAbility } from './abilities/SlashAbility';
 import { FireballProjectile } from './projectiles/FireballProjectile';
 import { ArrowProjectile } from './projectiles/ArrowProjectile';
+
+//DEFINED NUMBERS FOR THE CLASSES
 const CLASSES = {
   MAGE: new RangedWeapon(
     'Fire Tome',
@@ -595,5 +597,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   public addEffect(effect: StatusEffect): void {
     this.activeEffects.push(effect);
     effect.apply();
+  }
+
+  public getExperience(): number {
+    return this.experience;
+  }
+
+  public getExperienceToNextLevel(): number {
+    return this.experienceToNextLevel;
   }
 } 

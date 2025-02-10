@@ -269,18 +269,6 @@ export class ArenaScene extends Phaser.Scene {
             this.cameras.main.flash(500, 0, 0, 255);
         });
 
-        // Add M key handler for skill tree
-        this.input.keyboard!.on('keydown-M', () => {
-            if (this.scene.isVisible('SkillTreeScene')) {
-                this.scene.stop('SkillTreeScene');
-                this.scene.resume();
-            } else {
-                this.scene.pause();
-                this.scene.launch('SkillTreeScene');
-                this.scene.bringToTop('SkillTreeScene');
-            }
-        });
-
         // Add this after initializing enemies group
         this.playerProjectiles = this.add.group();
 

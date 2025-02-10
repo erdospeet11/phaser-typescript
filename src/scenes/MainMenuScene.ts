@@ -86,6 +86,11 @@ export class MainMenuScene extends Phaser.Scene {
                 }
             }
         ).setOrigin(1, 1);
+
+        // Make sure MusicScene runs in parallel
+        if (!this.scene.isActive('MusicScene')) {
+            this.scene.launch('MusicScene');
+        }
     }
 
     private createButton(yPosition: number, text: string, onClick: () => void) {

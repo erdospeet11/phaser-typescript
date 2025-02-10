@@ -5,15 +5,14 @@ import { FloatingDamage } from '../effects/FloatingDamage';
 export class StandingProjectile extends Projectile {
     private readonly ACCELERATION = 5;
     private readonly MAX_SPEED = 10;
-    private readonly DECELERATION = -300;
-    private readonly FLIGHT_TIME = 200; // Time in ms before starting to decelerate
-    private readonly LIFETIME = 30000; // 30 seconds total lifetime
+    private readonly DECELERATION = -600;
+    private readonly FLIGHT_TIME = 1;
+    private readonly LIFETIME = 30000;
     private flightTimer: number = 0;
     private isDecelerating: boolean = false;
     private isStopped: boolean = false;
 
     constructor(scene: Phaser.Scene, x: number, y: number, spriteKey?: string, attack: number = 25) {
-        super(scene, x, y, spriteKey || 'standing-projectile', attack);
         super(scene, x, y, spriteKey || 'standing-projectile', attack);
 
         // Destroy after lifetime
@@ -41,12 +40,12 @@ export class StandingProjectile extends Projectile {
                 );
             }
         } else if (!this.isDecelerating) {
-            // Start deceleration
+            //Start deceleration
             this.isDecelerating = true;
         }
 
         if (this.isDecelerating) {
-            // Deceleration phase
+            // Deceleration
             if (speed > 0) {
                 const direction = currentVelocity.normalize();
                 const newSpeed = Math.max(speed + (this.DECELERATION * delta / 1000), 0);

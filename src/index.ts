@@ -8,8 +8,8 @@ import { CharacterSheetScene } from './ui/CharacterSheetScene';
 import { EndGameScene } from './scenes/EndGameScene';
 import { HeroSelectScene } from './scenes/HeroSelectScene';
 import { LeaderboardScene } from './scenes/LeaderboardScene';
-import { SkillTreeScene } from './scenes/SkillTreeScene';
 import { LevelUpScene } from './scenes/LevelUpScene';
+import { MusicScene } from './scenes/MusicScene';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
@@ -33,7 +33,7 @@ const config: Phaser.Types.Core.GameConfig = {
         ArenaScene,
         PauseScene,
         EndGameScene,
-        SkillTreeScene
+        MusicScene
     ],
     scale: {
         mode: Scale.FIT,

@@ -2,11 +2,6 @@ import { Player } from "../Player";
 
 export class CharacterSheetScene extends Phaser.Scene {
     private player!: Player;
-    private silverOverlay!: Phaser.GameObjects.Rectangle;
-    private statsPanel!: Phaser.GameObjects.Container;
-    private background!: Phaser.GameObjects.Rectangle;
-    private playerName!: Phaser.GameObjects.Text;
-    private spritePreview!: Phaser.GameObjects.Sprite;
 
     constructor() {
         super({ key: 'CharacterSheetScene' });
@@ -14,132 +9,70 @@ export class CharacterSheetScene extends Phaser.Scene {
 
     create(data: { player: Player }) {
         this.player = data.player;
+        const { width, height } = this.cameras.main;
+        const playerName = localStorage.getItem('playerName') || 'ERROR';
 
-        // Add keyboard event for closing
-        this.input.keyboard!.on('keydown-C', () => {
-            console.log('Closing CharacterSheetScene');
-            this.scene.resume('ArenaScene');
-            this.scene.stop();
-        });
+        this.input.keyboard!.on('keydown-C', () => this.closeSheet());
+        this.input.keyboard!.on('keydown-ESC', () => this.closeSheet());
 
-        // Add keyboard event for ESC as well
-        this.input.keyboard!.on('keydown-ESC', () => {
-            console.log('Closing CharacterSheetScene with ESC');
-            this.scene.resume('ArenaScene');
-            this.scene.stop();
-        });
-
-        // Create dark overlay
-        this.silverOverlay = this.add.rectangle(
-            0, 
-            0, 
-            800,
-            600,
-            0xA86632
-        )
-        .setOrigin(0)
-        .setScrollFactor(0)
-        .setDepth(998);
-
-        // Add player name at top
-        this.playerName = this.add.text(
-            this.cameras.main.centerX,
-            this.cameras.main.centerY - 130,
-            'Darius',
-            {
-                fontSize: '24px',
-                color: '#ffffff',
-                backgroundColor: '#e8a26b',
-                padding: { x: 10, y: 5 },
-                fontStyle: 'bold',
-                stroke: '#000000',
-                strokeThickness: 2,
-            }
-        ).setOrigin(0.5, 0.5)
+        this.add.rectangle(0, 0, width, height, 0x000000, 0.7)
+            .setOrigin(0)
+            .setDepth(998);
+        
+        this.add.text(width * 0.25, height * 0.2, playerName, {
+            fontSize: '20px',
+            color: '#ffffff',
+            fontStyle: 'bold'
+        })
+        .setOrigin(0.5)
         .setDepth(999);
 
-        // Left Panel
-        const spritePanel = this.add.rectangle(
-            this.cameras.main.centerX - 120,
-            this.cameras.main.centerY - 30,
-            100,
-            150,
-            0xe8a26b
-        ).setDepth(999)
-        .setStrokeStyle(2, 0x000000);
-
-        // Player Sprite Preview
-        this.spritePreview = this.add.sprite(
-            this.cameras.main.centerX - 120,
-            this.cameras.main.centerY - 35,
-            'player'
-        )
-        .setScale(2)
-        .setDepth(999);
-
-        // Right Panel
-        const statsBackground = this.add.rectangle(
-            this.cameras.main.centerX + 80,
-            this.cameras.main.centerY - 30,
-            200,
-            150,
-            0xe8a26b
-        ).setDepth(999)
-        .setStrokeStyle(2, 0x000000);
-
-        // Stats Panel
-        this.statsPanel = this.createStatsPanel(
-            this.cameras.main.centerX - 10,
-            this.cameras.main.centerY - 90
-        );
-
-        this.scene.setVisible(true);
-        console.log('Scene set visible');
-
-        this.updateStats();
-
-        this.player.on('healthChanged', () => this.updateStats());
-        this.player.on('scoreChanged', () => this.updateStats());
-    }
-
-    private createStatsPanel(x: number, y: number): Phaser.GameObjects.Container {
-        const container = this.add.container(x, y);
-        container.setDepth(999);
+        this.add.sprite(width * 0.25, height * 0.4, this.player.texture.key)
+            .setScale(3)
+            .setDepth(999);
 
         const stats = [
-            { label: 'Health', value: '100/100' },
-            { label: 'Attack', value: '10' },
-            { label: 'Defense', value: '5' },
-            { label: 'Speed', value: '100' },
-            { label: 'Score', value: '0' }
+            { label: 'Level', value: '1' },
+            { label: 'Experience', value: `${this.player.getExperience()}/${this.player.getExperienceToNextLevel()}` },
+            { label: 'Health', value: `${this.player.getHealth()}/${this.player.getMaxHealth()}` },
+            { label: 'Attack', value: this.player.getAttack().toString() },
+            { label: 'Speed', value: this.player.getSpeed().toString() }
         ];
 
         stats.forEach((stat, index) => {
-            const yOffset = index * 25 + 10;
-            const text = this.add.text(0, yOffset, `${stat.label}: ${stat.value}`, {
-                fontSize: '16px',
+            this.add.text(width * 0.6, height * 0.25 + (index * 30), stat.label, {
+                fontSize: '12px',
                 color: '#ffffff',
-                fontStyle: 'bold',
-                stroke: '#000000',
-                strokeThickness: 2
-            });
-            container.add(text);
+                fontStyle: 'bold'
+            })
+            .setDepth(999);
+
+            this.add.text(width * 0.8, height * 0.25 + (index * 30), stat.value, {
+                fontSize: '12px',
+                color: '#ffff00',
+                fontStyle: 'bold'
+            })
+            .setDepth(999);
         });
 
-        return container;
+        const closeButton = this.add.text(width - 20, 20, '✕', {
+            fontSize: '20px',
+            color: '#ffffff'
+        })
+        .setOrigin(1, 0)
+        .setDepth(999)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerup', () => this.closeSheet())
+        .on('pointerover', () => closeButton.setTint(0xff0000))
+        .on('pointerout', () => closeButton.clearTint());
     }
 
-    public updateStats(): void {
-        // Only update if scene is active and player exists
-        if (!this.player || !this.scene.isActive()) return;
-        
-        const texts = this.statsPanel.getAll() as Phaser.GameObjects.Text[];
-        if (!texts || texts.length === 0) return;  // Add safety check for texts array
+    private closeSheet(): void {
+        this.scene.resume('ArenaScene');
+        this.scene.stop();
+    }
 
-        texts[0].setText(`Health: ${this.player.getHealth()}/${this.player.getMaxHealth()}`);
-        texts[1].setText(`Attack: ${this.player.getAttack()}`);
-        texts[2].setText(`Defense: ${this.player.getDefense()}`);
-        texts[3].setText(`Speed: ${this.player.getSpeed()}`);
-        texts[4].setText(`Score: ${this.player.getScore()}`);
+    private updateStats(): void {
+        // Add any stat update logic here if needed
     }
 } 
