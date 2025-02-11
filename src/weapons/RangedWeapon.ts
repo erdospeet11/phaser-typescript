@@ -40,16 +40,16 @@ export class RangedWeapon extends Weapon {
         // Check projectile type based on projectileKey
         switch (this.projectileKey) {
             case 'fireball':
-                projectile = new FireballProjectile(scene, x, y, this.projectileKey, attack);
+                projectile = new FireballProjectile(scene, x, y, this.projectileKey, this.damage);
                 break;
             case 'arrow':
-                projectile = new ArrowProjectile(scene, x, y, this.projectileKey, attack);
+                projectile = new ArrowProjectile(scene, x, y, this.projectileKey, this.damage);
                 break;
             case 'standing-projectile':
-                projectile = new StandingProjectile(scene, x, y, this.projectileKey, attack);
+                projectile = new StandingProjectile(scene, x, y, this.projectileKey, this.damage);
                 break;
             default:
-                projectile = new Projectile(scene, x, y, this.projectileKey, attack);
+                projectile = new Projectile(scene, x, y, this.projectileKey, this.damage);
         }
         
         this.projectiles.add(projectile);

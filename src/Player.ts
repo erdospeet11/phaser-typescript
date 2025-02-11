@@ -3,7 +3,6 @@ import { DashAbility } from './abilities/DashAbility';
 import { GameManager } from './managers/GameManager';
 import { Weapon } from './weapons/Weapon';
 import { RangedWeapon } from './weapons/RangedWeapon';
-import { MeleeWeapon } from './weapons/MeleeWeapon';
 import { StatusEffect } from './effects/StatusEffect';
 import { TeleportAbility } from './abilities/TeleportAbility';
 import { Ability } from './abilities/Ability';
@@ -40,7 +39,7 @@ const CLASSES = {
     'Void Orb',
     'void-orb',
     'standing-projectile',
-    25,  // Higher base damage
+    60,  // Higher base damage
     400  // Longer cooldown to balance the standing effect
   )
 }
@@ -550,11 +549,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     console.log(`Speed increased by ${multiplier * 100}%. New speed: ${this.speed}`);
   }
 
-  public increaseMaxHealth(multiplier: number): void {
-    const increase = this.maxHealth * multiplier;
-    this.maxHealth += increase;
-    this.health += increase; // Also increase current health
-    this.updateUIText();
+  public increaseMaxHealth(amount: number): void {
+    this.gameManager.increaseMaxHealth(amount);  // Use GameManager instead of direct modification
+    this.updateUIText();  // Update the UI to show new health values
   }
 
   public increaseAttackSpeed(multiplier: number): void {

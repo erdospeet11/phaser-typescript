@@ -1,11 +1,12 @@
 ## TODO for Friday, Saturday, Sunday
+70-80%
+- [] clean up current classes to final
+- [] make the attributes on level up sync, using gamemanager
 - [] fix the shop (prices, style)
 - [] fix the map (there is an instance of getting stuck)
+100%
 - [] use admin rules
 - [] items
-
-# LAST
-- [] sql database just like in datafetch
 - [] test cases
 
 items for strengthening your build

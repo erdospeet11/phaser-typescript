@@ -1,22 +1,16 @@
 import { Player } from "../Player";
 import { Enemy } from "../enemies/Enemy";
 import { Projectile } from "../Projectile";
-import { HealthPickup } from "../pickups/HealthPickup";
 import { RangedEnemy } from '../enemies/RangedEnemy';
 import { FloatingDamage } from '../effects/FloatingDamage';
-import { CharacterSheetScene } from '../ui/CharacterSheetScene';
-import { CoinPickup } from '../pickups/CoinPickup';
 import { Pickup } from '../pickups/Pickup';
 import { RoomManager } from '../managers/RoomManager';
 import { ObstacleEnemy } from '../enemies/ObstacleEnemy';
-import { TentacleBoss } from '../enemies/TentacleBoss';
-import { BombPickup } from '../pickups/BombPickup';
 import { ItemRoom } from '../rooms/ItemRoom';
 import { BossRoom } from '../rooms/BossRoom';
 import { LineEnemy } from '../enemies/LineEnemy';
 import { FireballProjectile } from '../projectiles/FireballProjectile';
 import { ArrowProjectile } from '../projectiles/ArrowProjectile';
-import { SlashAbility } from '../abilities/SlashAbility';
 
 interface ArenaSceneData {
     roomPosition: { x: number, y: number };
@@ -32,13 +26,11 @@ export class ArenaScene extends Phaser.Scene {
     private rangedEnemies!: Phaser.GameObjects.Group;
     private pickups!: Phaser.GameObjects.Group;
     private max_enemies: number = 2;
-    private characterSheet!: CharacterSheetScene;
     private portals: { [key: string]: Phaser.GameObjects.Sprite } = {};
     protected roomPosition: { x: number, y: number };
     private roomType: 'start' | 'normal' | 'boss' | 'item';
     private roomManager: RoomManager;
     private obstacleEnemy!: ObstacleEnemy;
-    private boss?: TentacleBoss;
     private entryDirection: string = 'default';
     private portalsSpawned: boolean = false;
     private readonly TILE_SIZE = 16;
@@ -137,31 +129,8 @@ export class ArenaScene extends Phaser.Scene {
         this.load.image('wind-spellbook', 'assets/wind-spellbook.png');
         //Items
 
-        //Animations
-        /*
-        this.load.spritesheet(
-            'stone-spike', 
-            'assets/stone-spike-spritesheet.png', 
-            { 
-                frameWidth: 16, 
-                frameHeight: 16 
-            }
-        );
-        this.load.spritesheet(
-            'explosion',
-            'assets/explosion-spritesheet.png',
-            {
-                frameWidth: 16,
-                frameHeight: 16
-            }
-        );
-        */
-
         //Load items
         this.load.image('sword-item', 'assets/items/sword-item.png');
-        //this.load.image('shield-item', 'assets/items/shield-item.png');
-        //this.load.image('boots-item', 'assets/items/boots-item.png');
-        //this.load.image('crystal-item', 'assets/items/crystal-item.png');
 
         // NPC assets
         this.load.image('npc', 'assets/shopkeeper-npc.png');

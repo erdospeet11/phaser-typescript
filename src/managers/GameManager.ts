@@ -60,6 +60,11 @@ export class GameManager {
         this.health = Math.max(this.health - amount, 0);
     }
 
+    public increaseMaxHealth(amount: number): void {
+        this.maxHealth += amount;
+        this.health = this.maxHealth;
+    } 
+
     // Reset method for new game
     public reset(): void {
         this.score = 0;

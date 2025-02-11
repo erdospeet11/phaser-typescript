@@ -97,8 +97,8 @@ export class LevelUpScene extends Scene {
             },
             {
                 name: '❤️ Vitality',
-                description: '+25% Max Health',
-                effect: (player) => player.increaseMaxHealth(0.25)
+                description: '+5 Max Health',
+                effect: (player) => player.increaseMaxHealth(5)
             },
             {
                 name: '⚡ Attack Speed',
@@ -120,6 +120,7 @@ export class LevelUpScene extends Scene {
 
     private selectPerk(option: PerkOption) {
         option.effect(this.player);
+        console.log('Perk selected:', option.name);
         // Only resume if ArenaScene exists and is paused
         if (this.scene.get('ArenaScene') && this.scene.isPaused('ArenaScene')) {
             this.scene.resume('ArenaScene');

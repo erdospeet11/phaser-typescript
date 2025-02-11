@@ -1,5 +1,3 @@
-import { Player } from '../Player';
-
 interface ClassOption {
     key: string;
     sprite: string;
