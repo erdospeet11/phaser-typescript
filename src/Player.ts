@@ -9,6 +9,9 @@ import { Ability } from './abilities/Ability';
 import { SlashAbility } from './abilities/SlashAbility';
 import { FireballProjectile } from './projectiles/FireballProjectile';
 import { ArrowProjectile } from './projectiles/ArrowProjectile';
+import { Helmet } from './items/Helmet';
+import { Boot } from './items/Boot';
+import { Outfit } from './items/Outfit';
 
 //DEFINED NUMBERS FOR THE CLASSES
 const CLASSES = {
@@ -68,15 +71,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private invulnerabilityDuration: number = 1000;
   private currentWeapon: Weapon;
   private player_class: string;
-  private readonly MAX_ITEMS = 10;
   private activeEffects: StatusEffect[] = [];
   private experience: number = 0;
   private level: number = 1;
   private experienceToNextLevel: number = 100;
-  private criticalChance: number = 0.05; // 5% base crit chance
-  private isShooting: boolean = false; // New property to track shooting state
-  private experienceBar!: Phaser.GameObjects.Graphics; // New property for the experience bar
-  private healthText!: Phaser.GameObjects.Text; // New property for health text
+  private criticalChance: number = 0.05;
+  private isShooting: boolean = false;
+  private experienceBar!: Phaser.GameObjects.Graphics;
+  private healthText!: Phaser.GameObjects.Text;
+
+  private helmet!: Helmet;
+  private boot!: Boot;
+  private outfit!: Outfit;
 
   constructor(scene: Phaser.Scene, x: number, y: number, player_class: string) {
     const spriteKey = `player-${player_class.toLowerCase()}`;

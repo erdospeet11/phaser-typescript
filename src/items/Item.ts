@@ -1,4 +1,4 @@
-import { Player } from "../src/Player";
+import { Player } from "../Player";
 
 export class Item {
     constructor(public name: string, public description: string, public icon: string) {
@@ -7,8 +7,7 @@ export class Item {
         this.icon = icon;
     }
 
-
     public use(player: Player): void {
-        console.log(`${this.name} used by ${player.name}`);
+        console.log(`${this.name} used by ${player}`);
     }
 }
