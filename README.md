@@ -1,10 +1,10 @@
-## TODO for Friday, Saturday, Sunday
-70-80%
+## TODO for Today
+#70-80%
 - [] clean up current classes to final
 - [] make the attributes on level up sync, using gamemanager
 - [] fix the shop (prices, style)
 - [] fix the map (there is an instance of getting stuck)
-100%
+#100%
 - [] use admin rules
 - [] items
 - [] test cases
