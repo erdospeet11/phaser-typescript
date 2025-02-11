@@ -24,20 +24,18 @@ export class LevelUpScene extends Scene {
     create() {
         const { width, height } = this.cameras.main;
 
-        // Only pause ArenaScene if it's running
+        //only pause ArenaScene if it's running
         if (this.scene.isActive('ArenaScene')) {
             this.scene.pause('ArenaScene');
         }
 
-        // Bring LevelUpScene to the top
         this.scene.bringToTop();
 
-        // Semi-transparent dark background
+        //background
         this.add.rectangle(0, 0, width, height, 0x000000, 0.7)
             .setOrigin(0)
             .setDepth(998);
 
-        // Level up text
         this.add.text(width / 2, height * 0.2, 'LEVEL UP!', {
             fontSize: '32px',
             color: '#ffff00',
@@ -46,14 +44,14 @@ export class LevelUpScene extends Scene {
         .setOrigin(0.5)
         .setDepth(999);
 
-        // Create three perk options horizontally
-        const optionWidth = width * 0.25; // Adjust width for each option
-        const optionHeight = 120; // Increase height for each option
-        const spacing = width * 0.1; // Spacing between options
+        //create three perk options horizontally
+        const optionWidth = width * 0.25;
+        const optionHeight = 120;
+        const spacing = width * 0.1;
 
         this.options.forEach((option, index) => {
             const x = (width / 2) - (optionWidth + spacing) + index * (optionWidth + spacing);
-            const y = height * 0.5; // Center vertically
+            const y = height * 0.5;
 
             const container = this.add.container(x, y);
 
@@ -70,9 +68,9 @@ export class LevelUpScene extends Scene {
             }).setOrigin(0.5);
 
             const description = this.add.text(0, 10, option.description, {
-                fontSize: '15px', // Further reduced font size
+                fontSize: '15px',
                 color: '#cccccc',
-                wordWrap: { width: optionWidth - 20 }, // Enable word wrapping
+                wordWrap: { width: optionWidth - 20 },
                 resolution: 1
             }).setOrigin(0.5);
 
@@ -112,7 +110,7 @@ export class LevelUpScene extends Scene {
             }
         ];
 
-        // Shuffle and pick 3 random perks
+        //shuffle and pick 3 random perks
         return allPerks
             .sort(() => Math.random() - 0.5)
             .slice(0, 3);
@@ -121,7 +119,7 @@ export class LevelUpScene extends Scene {
     private selectPerk(option: PerkOption) {
         option.effect(this.player);
         console.log('Perk selected:', option.name);
-        // Only resume if ArenaScene exists and is paused
+        //only resume if ArenaScene exists and is paused
         if (this.scene.get('ArenaScene') && this.scene.isPaused('ArenaScene')) {
             this.scene.resume('ArenaScene');
         }

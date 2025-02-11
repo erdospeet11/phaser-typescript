@@ -12,7 +12,7 @@ export class FloatingDamage extends Phaser.GameObjects.Text {
         emoji: string = '',
         color: number = 0xffffff
     ) {
-        // Create text with damage value and optional emoji
+        //text with damage value and optional emoji
         super(scene, x, y, `${emoji}${damage}`, {
             fontFamily: 'Arial',
             fontSize: '16px',
@@ -27,7 +27,7 @@ export class FloatingDamage extends Phaser.GameObjects.Text {
     }
 
     private startFloating(): void {
-        // Upward tween
+        //tween
         this.scene.tweens.add({
             targets: this,
             y: this.y - 50,

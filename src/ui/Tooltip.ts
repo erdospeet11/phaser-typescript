@@ -7,12 +7,10 @@ export class Tooltip {
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
 
-        // Background
         this.background = scene.add.rectangle(0, 0, 0, 0, 0x000000, 0.7)
             .setOrigin(0.5)
             .setVisible(false);
 
-        // Text
         this.text = scene.add.text(0, 0, '', {
             fontSize: '12px',
             color: '#ffffff',
@@ -32,17 +30,14 @@ export class Tooltip {
     show(x: number, y: number, content: string): void {
         this.text.setText(content);
 
-        // Adjust background size to fit text
         const textWidth = this.text.width + this.padding * 2;
         const textHeight = this.text.height + this.padding;
         this.background.setSize(textWidth, textHeight);
 
-        // Position both elements
         const tooltipY = y - 30;
         this.background.setPosition(x, tooltipY);
         this.text.setPosition(x, tooltipY);
 
-        // Make visible
         this.background.setVisible(true);
         this.text.setVisible(true);
     }

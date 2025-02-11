@@ -9,7 +9,7 @@ export class RangedEnemy extends Enemy {
     private projectileSprite: string;
     private burstCount: number = 0;
     private maxBurst: number = 0;
-    private burstDelay: number = 200; // 200ms between each shot in burst
+    private burstDelay: number = 200;
 
     constructor(scene: Phaser.Scene, x: number, y: number, spriteKey: string = 'ranged-enemy', projectileKey: string = 'projectile') {
         super(scene, x, y);
@@ -17,18 +17,17 @@ export class RangedEnemy extends Enemy {
         this.setTexture(spriteKey);
         this.projectileSprite = projectileKey;
         
-        // It does not move
+        //stationary
         const body = this.body as Phaser.Physics.Arcade.Body;
         body.setImmovable(true);
         body.setVelocity(0, 0);
         
-        // Create projectile with group
+        //create projectile with group
         this.projectiles = scene.add.group({
             classType: Projectile,
             maxSize: 10,
             runChildUpdate: true,
             createCallback: (proj) => {
-                // Set custom projectile sprite
                 (proj as Projectile).setTexture(this.projectileSprite);
             }
         });
@@ -37,29 +36,27 @@ export class RangedEnemy extends Enemy {
     update(player: Player): void {
         this.updateHealthBar();
 
-        // Shoot
         const currentTime = this.scene.time.now;
         if (currentTime - this.lastShootTime >= this.shootCooldown && this.burstCount === 0) {
-            // Start a new burst
-            this.maxBurst = Phaser.Math.Between(2, 3); // Randomly choose 2 or 3 shots
+            //start a new burst
+            this.maxBurst = Phaser.Math.Between(2, 3);
             this.shoot(player);
             this.burstCount = 1;
             this.lastShootTime = currentTime;
         } else if (this.burstCount > 0 && this.burstCount < this.maxBurst && 
                   currentTime - this.lastShootTime >= this.burstDelay) {
-            // Continue burst
+            //continue burst
             this.shoot(player);
             this.burstCount++;
             this.lastShootTime = currentTime;
             
-            // Reset burst when complete
+            //reset
             if (this.burstCount >= this.maxBurst) {
                 this.burstCount = 0;
-                this.lastShootTime = currentTime; // Start cooldown for next burst
+                this.lastShootTime = currentTime;
             }
         }
 
-        // Update facing direction
         const dx = player.x - this.x;
         this.setFlipX(dx < 0);
     }

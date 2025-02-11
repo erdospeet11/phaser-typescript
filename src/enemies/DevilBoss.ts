@@ -18,13 +18,13 @@ export class DevilBoss extends Enemy {
         this.entity_state = 'chasing';
         this.stateTimer = 0;
         
-        // Higher stats for final boss
+        //higher stats for final boss
         this.health = 1000;
         this.maxHealth = 1000;
         this.speed = 0.6;
 
         const body = this.body as Phaser.Physics.Arcade.Body;
-        body.setSize(40, 35); // Adjusted for 46x41 sprite
+        body.setSize(40, 35);
         body.setOffset(3, 3);
         body.setCollideWorldBounds(true);
         this.setScale(2);

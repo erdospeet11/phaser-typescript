@@ -14,7 +14,6 @@ export class LeaderboardScene extends Phaser.Scene {
     }
 
     async create() {
-        // Parallax background
         for (let i = 0; i < 2; i++) {
             const bg = this.add.tileSprite(
                 0,
@@ -29,7 +28,6 @@ export class LeaderboardScene extends Phaser.Scene {
             this.backgrounds.push(bg);
         }
 
-        // Title with pixel font style
         this.add.text(
             this.cameras.main.centerX,
             10,
@@ -48,17 +46,16 @@ export class LeaderboardScene extends Phaser.Scene {
             }
         ).setOrigin(0.5);
 
-        // Get top 5 scores
+        //get top 5 score
         const db = GameDatabase.getInstance();
         const scores = await db.getTopScores(5);
 
-        // Display scores with monospace font and smaller size
+        //display scores
         scores.forEach((score, index) => {
             const rankPrefix = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
             const date = new Date(score.date).toLocaleDateString();
-            const yPos = 60 + (index * 40); // Increased spacing between scores
+            const yPos = 60 + (index * 40);
 
-            // Score text
             this.add.text(
                 this.cameras.main.centerX,
                 yPos,
@@ -66,7 +63,7 @@ export class LeaderboardScene extends Phaser.Scene {
                 {
                     fontSize: '14px',
                     color: '#ffffff',
-                    fontFamily: 'monospace', // Using monospace font
+                    fontFamily: 'monospace',
                     shadow: {
                         offsetX: 1,
                         offsetY: 1,
@@ -77,7 +74,6 @@ export class LeaderboardScene extends Phaser.Scene {
                 }
             ).setOrigin(0.5);
 
-            // Date in smaller size
             this.add.text(
                 this.cameras.main.centerX,
                 yPos + 15,
@@ -90,7 +86,6 @@ export class LeaderboardScene extends Phaser.Scene {
             ).setOrigin(0.5);
         });
 
-        // Back button with smaller size
         this.createButton(
             this.cameras.main.height - 10,
             'Back',
@@ -100,8 +95,8 @@ export class LeaderboardScene extends Phaser.Scene {
 
     private createButton(yPosition: number, text: string, onClick: () => void) {
         const button = this.add.graphics();
-        const buttonWidth = 100; // Reduced width
-        const buttonHeight = 20; // Reduced height
+        const buttonWidth = 100;
+        const buttonHeight = 20;
         const cornerRadius = 8;
         const normalColor = 0x4a4a4a;
         const hoverColor = 0x6a6a6a;
@@ -134,7 +129,7 @@ export class LeaderboardScene extends Phaser.Scene {
             yPosition,
             text,
             {
-                fontSize: '10px', // Smaller font size
+                fontSize: '10px',
                 color: '#ffffff',
                 fontStyle: 'bold',
                 fontFamily: 'monospace'

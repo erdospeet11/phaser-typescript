@@ -7,7 +7,6 @@ export class TeleportAbility extends Ability {
     private readonly PARTICLE_TINT = 0x9933ff;
 
     constructor(scene: Phaser.Scene, player: Player) {
-        //cooldown is 2 seconds
         super(scene, 2000);
         this.player = player;
     }
@@ -15,21 +14,17 @@ export class TeleportAbility extends Ability {
     use(): void {
         if (!this.canUse()) return;
 
-        // Create particle effect at starting position
         this.createTeleportEffect(this.player.x, this.player.y);
 
-        // Get cursor position in world coordinates
         const pointer = this.scene.input.activePointer;
         const targetX = pointer.x + this.scene.cameras.main.scrollX;
         const targetY = pointer.y + this.scene.cameras.main.scrollY;
 
-        // Instantly teleport player
         this.player.setPosition(targetX, targetY);
         
-        // Create particle effect at destination
         this.createTeleportEffect(targetX, targetY);
 
-        // Reset velocity to prevent any lingering momentum
+        //reset velocity
         const body = this.player.body as Phaser.Physics.Arcade.Body;
         body.setVelocity(0, 0);
 

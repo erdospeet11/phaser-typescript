@@ -18,14 +18,12 @@ export class EndGameScene extends Phaser.Scene {
         const centerX = width / 2;
         const centerY = height / 2;
 
-        // Victory or Game Over
         const message = this.gameData.victory ? 'Victory!' : 'Game Over';
         this.add.text(centerX, centerY - 100, message, {
             fontSize: '48px',
             color: this.gameData.victory ? '#00ff00' : '#ff0000'
         }).setOrigin(0.5);
 
-        // Score and Gold
         this.add.text(centerX, centerY, `Final Score: ${this.gameData.score}`, {
             fontSize: '24px',
             color: '#ffffff'
@@ -36,7 +34,6 @@ export class EndGameScene extends Phaser.Scene {
             color: '#ffffff'
         }).setOrigin(0.5);
 
-        // Restart Button
         const restartButton = this.add.text(centerX, centerY + 100, 'Play Again', {
             fontSize: '32px',
             color: '#ffffff',
@@ -49,18 +46,18 @@ export class EndGameScene extends Phaser.Scene {
             const gameManager = GameManager.getInstance();
             const roomManager = RoomManager.getInstance();
             
-            // Reset both managers
+            //reset managers
             gameManager.reset();
             roomManager.reset();
             
-            // Start ArenaScene with initial room configuration
+            //start hero select
             this.scene.start('HeroSelectScene');
         });
 
         restartButton.on('pointerover', () => restartButton.setTint(0x999999));
         restartButton.on('pointerout', () => restartButton.clearTint());
 
-        // Save score regardless of victory or defeat
+        //save score
         const playerName = localStorage.getItem('playerName') || 'Unknown';
         const db = GameDatabase.getInstance();
         await db.saveScore(playerName, this.gameData.score);

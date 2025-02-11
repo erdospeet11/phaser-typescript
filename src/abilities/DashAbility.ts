@@ -4,7 +4,7 @@ import { Player } from '../Player';
 export class DashAbility extends Ability {
     private player: Player;
     private readonly DASH_SPEED = 150;
-    private readonly DASH_DURATION = 200;  // milliseconds
+    private readonly DASH_DURATION = 200;
     private readonly DASH_MULTIPLIER = 2.5;
     private readonly GHOST_ALPHA = 0.3;
     private readonly GHOST_TINT = 0x4444ff;
@@ -22,7 +22,7 @@ export class DashAbility extends Ability {
         const body = this.player.body as Phaser.Physics.Arcade.Body;
         let dashDirection = new Phaser.Math.Vector2(0, 0);
 
-        // Get dash direction
+        //direction
         const keys = this.scene.input.keyboard!.keys;
         if (keys[Phaser.Input.Keyboard.KeyCodes.A].isDown) dashDirection.x -= 1;
         if (keys[Phaser.Input.Keyboard.KeyCodes.D].isDown) dashDirection.x += 1;
@@ -40,12 +40,12 @@ export class DashAbility extends Ability {
 
         dashDirection.normalize();
         
-        // Use DASH_MULTIPLIER for distance calculation
+        //calculate distance
         const dashDistance = this.DASH_SPEED * this.DASH_MULTIPLIER;
         const targetX = this.player.x + (dashDirection.x * dashDistance);
         const targetY = this.player.y + (dashDirection.y * dashDistance);
 
-        // Create ghost trail
+        //ghost trail
         const ghostInterval = this.DASH_DURATION / this.NUM_GHOSTS;
         for (let i = 0; i < this.NUM_GHOSTS; i++) {
             this.scene.time.delayedCall(i * ghostInterval, () => {
@@ -53,7 +53,7 @@ export class DashAbility extends Ability {
             });
         }
 
-        // Use DASH_DURATION for the tween
+        //tween
         this.scene.tweens.add({
             targets: this.player,
             x: targetX,

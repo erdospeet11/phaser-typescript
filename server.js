@@ -7,12 +7,12 @@ const port = 3000;
 // Create database connections
 const dbs = {
     scores: new sqlite3.Database('./scores.db'),
-    game: new sqlite3.Database('./game.db')  // Add another database
+    game: new sqlite3.Database('./game.db')
 };
 
-// Add CORS middleware with proper configuration
+// Add CORS middleware and allow all origins for development
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*'); // Allow all origins for development
+    res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     res.header('Access-Control-Allow-Credentials', 'true');
@@ -25,7 +25,7 @@ app.use(express.json());
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Initialize databases with their tables
+// Initialize databases
 dbs.scores.serialize(() => {
     dbs.scores.run(`CREATE TABLE IF NOT EXISTS scores (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -136,14 +136,14 @@ app.post('/api/game/:playerId', (req, res) => {
     );
 });
 
-// Cleanup function for when the server shuts down
+// Cleanup on shutdown
 function cleanup() {
     console.log('Closing database connections...');
     Object.values(dbs).forEach(db => db.close());
     process.exit(0);
 }
 
-// Handle cleanup on server shutdown
+// Handle cleanup on shutdown
 process.on('SIGINT', cleanup);
 process.on('SIGTERM', cleanup);
 

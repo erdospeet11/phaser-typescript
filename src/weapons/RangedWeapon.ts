@@ -37,7 +37,7 @@ export class RangedWeapon extends Weapon {
     use(scene: Phaser.Scene, x: number, y: number, facing: number, attack: number): void {
         let projectile;
         
-        // Check projectile type based on projectileKey
+        //check projectile type based on projectileKey
         switch (this.projectileKey) {
             case 'fireball':
                 projectile = new FireballProjectile(scene, x, y, this.projectileKey, this.damage);
@@ -54,13 +54,12 @@ export class RangedWeapon extends Weapon {
         
         this.projectiles.add(projectile);
         
-        // Calculate direction from facing angle
+        //calculate direction
         const direction = {
             x: Math.cos(facing),
             y: Math.sin(facing)
         };
         
-        // Fire the projectile
         projectile.fire(direction);
     }
 

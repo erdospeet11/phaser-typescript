@@ -6,7 +6,6 @@ export class ItemRoom extends Room {
     private readonly NUM_TENTS = 10;
 
     setup(): void {
-        // Create NPC
         const npc = new NPC(
             this.scene,
             this.scene.cameras.main.centerX - 50,
@@ -14,9 +13,9 @@ export class ItemRoom extends Room {
         );
         npc.setupInteraction(this.scene.getPlayer());
 
-        // Add scattered tents
+        //scatter tents
         for (let i = 0; i < this.NUM_TENTS; i++) {
-            const margin = 50; // Keep tents away from edges
+            const margin = 50;
             const x = Phaser.Math.Between(margin, this.scene.cameras.main.width - margin);
             const y = Phaser.Math.Between(margin, this.scene.cameras.main.height - margin);
             

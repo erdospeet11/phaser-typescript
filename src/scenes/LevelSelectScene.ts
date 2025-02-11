@@ -14,7 +14,7 @@ export class LevelSelectScene extends Phaser.Scene {
     }
 
     create() {
-        // Parallax background
+        //parallax background
         for (let i = 0; i < 2; i++) {
             const bg = this.add.tileSprite(
                 0,
@@ -29,7 +29,6 @@ export class LevelSelectScene extends Phaser.Scene {
             this.backgrounds.push(bg);
         }
 
-        // Title
         this.add.text(
             this.cameras.main.centerX,
             50,
@@ -48,7 +47,6 @@ export class LevelSelectScene extends Phaser.Scene {
             }
         ).setOrigin(0.5);
 
-        // Level button
         const levelConfigs = [
             { text: '🌳Evil Forest🌳', y: 150 },
             { text: '🏰Dungeons of Khaos🏰', y: 200 },
@@ -59,7 +57,6 @@ export class LevelSelectScene extends Phaser.Scene {
             this.createButton(config.y, config.text, () => this.startLevel(index + 1));
         });
 
-        // Back button
         this.createButton(350, 'Back to Menu', () => this.scene.start('MainMenuScene'));
     }
 

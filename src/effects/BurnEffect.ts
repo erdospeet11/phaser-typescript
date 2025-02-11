@@ -4,7 +4,7 @@ import { FloatingDamage } from './FloatingDamage';
 
 export class BurnEffect extends StatusEffect {
     private tickTimer: Phaser.Time.TimerEvent;
-    private readonly tickInterval = 1000; // 1 second between ticks
+    private readonly tickInterval = 1000;
     private readonly damage: number;
     private readonly enemy: Enemy;
 
@@ -13,10 +13,10 @@ export class BurnEffect extends StatusEffect {
         this.damage = damage;
         this.enemy = enemy;
         
-        // Visual effect - orange tint
+        //vfx
         enemy.setTint(0xFFA500);
         
-        // Set up damage ticks
+        //damage ticks
         this.tickTimer = scene.time.addEvent({
             delay: this.tickInterval,
             callback: this.applyBurnDamage,
@@ -29,7 +29,6 @@ export class BurnEffect extends StatusEffect {
         if (this.enemy && this.enemy.active) {
             this.enemy.damage(this.damage);
             
-            // Show floating damage
             new FloatingDamage(
                 this.scene,
                 this.enemy.x,

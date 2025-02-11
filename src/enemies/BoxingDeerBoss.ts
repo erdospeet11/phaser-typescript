@@ -15,11 +15,10 @@ export class BoxingDeerBoss extends Enemy {
         
         scene.physics.add.existing(this);
         
-        // Set boss stats
         this.health = 1000;
         this.maxHealth = 1000;
-        this.speed = 0.6;  // Faster than tentacle boss
-        this.attack = 25;  // Higher damage
+        this.speed = 0.6;
+        this.attack = 25;
 
         // Initialize state
         this.entity_state = 'chasing';
@@ -31,14 +30,13 @@ export class BoxingDeerBoss extends Enemy {
             'boxing-glove',
             'boxing-glove',
             this.attack,
-            0 // No cooldown for boss
+            0
         );
         this.weapon.initializeProjectiles(scene);
 
-        // Set up physics body
         const body = this.body as Phaser.Physics.Arcade.Body;
-        body.setSize(24, 24);  // Adjust hitbox size as needed
-        body.setOffset(4, 4);  // Adjust offset as needed
+        body.setSize(24, 24);
+        body.setOffset(4, 4);
         body.setCollideWorldBounds(true);
         this.setScale(1.5);
 
@@ -59,7 +57,7 @@ export class BoxingDeerBoss extends Enemy {
             const body = this.body as Phaser.Physics.Arcade.Body;
             body.setVelocity(0, 0);
             
-            // Only shoot if we just entered the shooting state
+            //only shoot if we just entered the shooting state
             if (this.justEnteredShootingState) {
                 this.shootInAllDirections();
                 this.justEnteredShootingState = false;
@@ -78,14 +76,14 @@ export class BoxingDeerBoss extends Enemy {
 
     private shootInAllDirections(): void {
         const directions = [
-            0,           // East
-            Math.PI/4,   // Northeast
-            Math.PI/2,   // North
-            3*Math.PI/4, // Northwest
-            Math.PI,     // West
-            5*Math.PI/4, // Southwest
-            3*Math.PI/2, // South
-            7*Math.PI/4  // Southeast
+            0,           
+            Math.PI/4,   
+            Math.PI/2,   
+            3*Math.PI/4,
+            Math.PI,    
+            5*Math.PI/4,
+            3*Math.PI/2, 
+            7*Math.PI/4
         ];
 
         directions.forEach(angle => {
@@ -108,7 +106,6 @@ export class BoxingDeerBoss extends Enemy {
                 dirY * this.speed * 100
             );
 
-            // Flip sprite based on movement direction
             this.setFlipX(dirX < 0);
         }
     }

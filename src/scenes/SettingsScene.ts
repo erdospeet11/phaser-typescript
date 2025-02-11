@@ -13,16 +13,16 @@ export class SettingsScene extends Phaser.Scene {
     }
 
     init() {
-        // Reset arrays and variables when entering scene
+        // Reset arrays and variables when entering
         this.backgrounds = [];
         this.ttime = 0;
     }
 
     create() {
-        // Get reference to MusicScene
+        // Get reference
         this.musicScene = this.scene.get('MusicScene');
 
-        // Create background layers after ensuring image is loaded
+        // Create background layers
         this.load.once('complete', () => {
             for (let i = 0; i < 3; i++) {
                 const bg = this.add.tileSprite(
@@ -89,7 +89,6 @@ export class SettingsScene extends Phaser.Scene {
             }
         ).setOrigin(0.5);
 
-        // SFX Volume Slider
         this.createVolumeSlider(160, () => {
             // TODO: Implement SFX volume control
         });
@@ -104,8 +103,8 @@ export class SettingsScene extends Phaser.Scene {
     }
 
     private createVolumeSlider(yPosition: number, onVolumeChange: (volume: number) => void) {
-        const width = 150;  // Reduced width
-        const height = 10;  // Reduced height
+        const width = 150;
+        const height = 10;
         const x = this.cameras.main.centerX - width / 2;
         const y = yPosition;
 
@@ -122,11 +121,10 @@ export class SettingsScene extends Phaser.Scene {
         const knob = this.add.circle(
             x + width * 0.8,
             y,
-            height / 1.5,  // Slightly smaller than height
+            height / 1.5,
             0x6a6a6a
         ).setInteractive();
 
-        // Make the knob draggable
         this.input.setDraggable(knob);
 
         // Constrain the knob to the slider width

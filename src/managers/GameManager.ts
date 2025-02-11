@@ -14,7 +14,6 @@ export class GameManager {
         return GameManager.instance;
     }
 
-    // Score methods
     public getScore(): number {
         return this.score;
     }
@@ -23,7 +22,6 @@ export class GameManager {
         this.score += amount;
     }
 
-    // Gold methods
     public getGold(): number {
         return this.gold;
     }

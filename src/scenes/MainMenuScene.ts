@@ -53,7 +53,7 @@ export class MainMenuScene extends Phaser.Scene {
         const startButton = this.createButton(
             this.cameras.main.centerY,
             'Start Game',
-            () => this.scene.start('HeroSelectScene')
+            () => this.heroSelect()
         );
 
         const leaderboardButton = this.createButton(
@@ -65,7 +65,7 @@ export class MainMenuScene extends Phaser.Scene {
         const settingsButton = this.createButton(
             this.cameras.main.centerY + 120,
             'Settings',
-            () => this.scene.start('SettingsScene')
+            () => this.openSettings()
         );
 
         // Version number
@@ -87,7 +87,7 @@ export class MainMenuScene extends Phaser.Scene {
             }
         ).setOrigin(1, 1);
 
-        // Make sure MusicScene runs in parallel
+        // Make MusicScene runs in parallel
         if (!this.scene.isActive('MusicScene')) {
             this.scene.launch('MusicScene');
         }
@@ -175,7 +175,7 @@ export class MainMenuScene extends Phaser.Scene {
         });
     }
 
-    private startGame() {
+    private heroSelect() {
         this.scene.start('HeroSelectScene');
     }
 

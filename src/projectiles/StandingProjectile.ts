@@ -15,7 +15,6 @@ export class StandingProjectile extends Projectile {
     constructor(scene: Phaser.Scene, x: number, y: number, spriteKey?: string, attack: number = 25) {
         super(scene, x, y, spriteKey || 'standing-projectile', attack);
 
-        // Destroy after lifetime
         scene.time.delayedCall(this.LIFETIME, () => {
             this.destroy();
         });
@@ -30,7 +29,7 @@ export class StandingProjectile extends Projectile {
         const speed = currentVelocity.length();
 
         if (this.flightTimer <= this.FLIGHT_TIME) {
-            // Acceleration phase
+            //acceleration
             if (speed < this.MAX_SPEED) {
                 const direction = currentVelocity.normalize();
                 const newSpeed = Math.min(speed + (this.ACCELERATION * delta / 1000), this.MAX_SPEED);
@@ -40,12 +39,12 @@ export class StandingProjectile extends Projectile {
                 );
             }
         } else if (!this.isDecelerating) {
-            //Start deceleration
+            //start decceleration
             this.isDecelerating = true;
         }
 
         if (this.isDecelerating) {
-            // Deceleration
+            //decceleration
             if (speed > 0) {
                 const direction = currentVelocity.normalize();
                 const newSpeed = Math.max(speed + (this.DECELERATION * delta / 1000), 0);
@@ -66,15 +65,14 @@ export class StandingProjectile extends Projectile {
         const damage = this.getDamage();
         enemy.damage(damage);
 
-        // Show floating damage
         new FloatingDamage(
             this.scene,
             enemy.x,
             enemy.y - 20,
             damage,
             false,
-            '✨', // Sparkle emoji for standing projectile
-            0x00ffff // Cyan color
+            '✨',
+            0x00ffff
         );
 
         this.destroy();

@@ -30,23 +30,22 @@ export class StrengthPickup extends Pickup {
     }
 
     collect(player: Player): void {
-        // If there's an active timer, destroy it
+        //if there's an active timer, destroy it
         if (StrengthPickup.currentTimer) {
             StrengthPickup.currentTimer.destroy();
         }
 
-        // Store base attack if not already stored
+        //store base attack if not already stored
         if (StrengthPickup.baseAttack === null) {
             StrengthPickup.baseAttack = player.getAttack();
             console.log('Base attack:', StrengthPickup.baseAttack);
         }
 
-        // Double the attack
         const doubledAttack = StrengthPickup.baseAttack * 2;
         console.log('Setting attack to:', doubledAttack);
         player.setAttack(doubledAttack);
 
-        // Create new timer
+        //new timer
         StrengthPickup.currentTimer = this.scene.time.delayedCall(this.duration, () => {
             if (StrengthPickup.baseAttack !== null) {
                 console.log('Resetting attack to:', StrengthPickup.baseAttack);
@@ -57,7 +56,6 @@ export class StrengthPickup extends Pickup {
             StrengthPickup.baseAttack = null;
         });
 
-        // Visual effect - red tint for strength
         player.setTint(0xff0000);
 
         this.tooltip.hide();

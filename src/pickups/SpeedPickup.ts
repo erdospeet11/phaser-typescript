@@ -11,20 +11,19 @@ export class SpeedPickup extends Pickup {
     }
 
     collect(player: Player): void {
-        // If there's an active timer, destroy it
+        //if there's an active timer, destroy it
         if (SpeedPickup.currentTimer) {
             SpeedPickup.currentTimer.destroy();
         }
 
-        // Store base speed if not already stored
+        //store base speed if not already stored
         if (SpeedPickup.baseSpeed === null) {
             SpeedPickup.baseSpeed = player.getSpeed();
         }
 
-        // Set speed to base speed + 1
         player.setSpeed(SpeedPickup.baseSpeed + 1);
 
-        // Create new timer
+        //new timer
         SpeedPickup.currentTimer = this.scene.time.delayedCall(this.duration, () => {
             if (SpeedPickup.baseSpeed !== null) {
                 player.setSpeed(SpeedPickup.baseSpeed);
@@ -34,7 +33,6 @@ export class SpeedPickup extends Pickup {
             SpeedPickup.baseSpeed = null;
         });
 
-        // Visual effect
         player.setTint(0x00ffff);
 
         this.destroy();

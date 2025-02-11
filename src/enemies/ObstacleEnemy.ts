@@ -16,12 +16,12 @@ export class ObstacleEnemy extends Enemy {
         this.attack = 15;
         this.speed = 0;
         
-        // It does not move
+        //stationary
         const body = this.body as Phaser.Physics.Arcade.Body;
         body.setImmovable(true);
         body.setVelocity(0, 0);
 
-        // Set up teleport timer
+        //set up teleport timer
         this.teleportTimer = this.scene.time.delayedCall(3000, () => {
             this.teleportNearPlayer();
         });
@@ -45,7 +45,7 @@ export class ObstacleEnemy extends Enemy {
 
         this.setPosition(newX, newY);
 
-        // Reset timer for next teleport
+        //reset timer for next teleport
         this.teleportTimer = this.scene.time.delayedCall(3000, () => {
             this.teleportNearPlayer();
         });

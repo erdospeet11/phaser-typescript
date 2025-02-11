@@ -12,28 +12,25 @@ export class LineEnemy extends Enemy {
         
         this.setTexture('sniper-enemy');
         
-        // Initialize
         this.health = 50;
         this.maxHealth = 100;
         this.attack = 10;
         this.speed = 0;
         
-        // It doesn't move
+        //stationary
         const body = this.body as Phaser.Physics.Arcade.Body;
         body.setImmovable(true);
         body.setVelocity(0, 0);
 
-        // Create line
         this.line = scene.add.graphics();
     }
 
     update(player: Phaser.GameObjects.Sprite): void {
         super.updateHealthBar();
 
-        // Get player as proper type
-        const playerObj = (this.scene as ArenaScene).getPlayer();  // Get player directly from scene
+        const playerObj = (this.scene as ArenaScene).getPlayer();
 
-        // Update line position
+        //update line position
         this.line.clear();
         this.line.lineStyle(2, 0xff0000);
         this.line.beginPath();
@@ -41,12 +38,12 @@ export class LineEnemy extends Enemy {
         this.line.lineTo(playerObj.x, playerObj.y);
         this.line.strokePath();
 
-        // Check if line intersects with player
+        //check intersection
         const distance = Phaser.Math.Distance.Between(this.x, this.y, playerObj.x, playerObj.y);
         const angle = Phaser.Math.Angle.Between(this.x, this.y, playerObj.x, playerObj.y);
         const intersects = this.checkLineIntersectsPlayer(playerObj, distance, angle);
 
-        // Apply or remove slow effect
+        //slow effect
         if (intersects && !this.isSlowingPlayer) {
             const originalSpeed = playerObj.getSpeed();
             playerObj.setSpeed(originalSpeed * this.SLOW_FACTOR);
@@ -61,12 +58,12 @@ export class LineEnemy extends Enemy {
     private checkLineIntersectsPlayer(player: Player, distance: number, angle: number): boolean {
         const COLLISION_THRESHOLD = 20;
         const playerAngle = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y);
-        return Math.abs(angle - playerAngle) < 0.1; // Small threshold for angle difference
+        return Math.abs(angle - playerAngle) < 0.1;
     }
 
     destroy(): void {
-        // Reset player speed if being slowed when destroyed
-        if (this.isSlowingPlayer && this.scene) {  // Check if scene exists
+        //reset player speed if being slowed when destroyed
+        if (this.isSlowingPlayer && this.scene) {
             try {
                 const player = (this.scene as ArenaScene).getPlayer();
                 const originalSpeed = player.getSpeed() / this.SLOW_FACTOR;

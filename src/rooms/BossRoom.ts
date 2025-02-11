@@ -8,10 +8,10 @@ import { DevilBoss } from '../enemies/DevilBoss';
 
 export class BossRoom extends Room {
     setup(): void {
-        // Get the level type from ArenaScene
+        //get the level type
         const levelType = (this.scene as ArenaScene).getLevelType();
 
-        // Choose boss based on level type
+        //choose boss based on level type
         let boss;
         if (levelType === 'forest') {
             boss = new BoxingDeerBoss(
@@ -26,7 +26,7 @@ export class BossRoom extends Room {
                 this.scene.cameras.main.centerY
             );
         } else {
-            // Default to TentacleBoss for dungeon and any other levels
+            //default
             boss = new TentacleBoss(
                 this.scene,
                 this.scene.cameras.main.centerX,
@@ -34,10 +34,8 @@ export class BossRoom extends Room {
             );
         }
 
-        // Add boss to enemies group
         this.scene.addEnemy(boss);
 
-        // Setup colliders
         this.scene.physics.add.collider(boss, this.scene.getWalls());
         this.scene.physics.add.collider(
             this.scene.getPlayer().getProjectiles(),
@@ -47,7 +45,7 @@ export class BossRoom extends Room {
             this.scene
         );
 
-        // Add additional collider setup for BoxingDeerBoss
+        //add additional collider setup for BoxingDeerBoss
         if (boss instanceof BoxingDeerBoss) {
             this.scene.physics.add.collider(
                 this.scene.getPlayer(),

@@ -1,7 +1,3 @@
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-import path from 'path';
-
 interface Score {
     player_name: string;
     score: number;
@@ -11,7 +7,6 @@ interface Score {
 export class GameDatabase {
     private static instance: GameDatabase;
     private readonly API_URL = 'http://localhost:3000/api';
-    private readonly GAME_API_URL = 'http://localhost:3000/api/game';
 
     private constructor() {}
 
@@ -37,7 +32,6 @@ export class GameDatabase {
             console.log('GameDatabase API connection established');
         } catch (error) {
             console.error('Failed to connect to API:', error);
-            // Don't throw here, just log the error
         }
     }
 
@@ -59,7 +53,6 @@ export class GameDatabase {
             console.log(`Score saved: ${playerName} - ${score}`);
         } catch (error) {
             console.error('Error saving score:', error);
-            // Don't throw here, just log the error
         }
     }
 
@@ -98,10 +91,8 @@ export class GameDatabase {
             console.log('All scores cleared');
         } catch (error) {
             console.error('Error clearing scores:', error);
-            // Don't throw here, just log the error
         }
     }
 }
 
-// Export a singleton instance
 export const database = GameDatabase.getInstance(); 

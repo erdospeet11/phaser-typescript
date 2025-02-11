@@ -29,7 +29,6 @@ export class SlashAbility extends Ability {
         const slashX = this.player.x + Math.cos(radianAngle) * (this.SLASH_SIZE / 2);
         const slashY = this.player.y + Math.sin(radianAngle) * (this.SLASH_SIZE / 2);
 
-        //Slash
         const slash = this.scene.add.sprite(slashX, slashY, 'sword-slash');
         slash.setRotation(radianAngle);
         slash.setScale(2);

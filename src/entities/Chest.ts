@@ -19,7 +19,6 @@ export class Chest extends Phaser.GameObjects.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this, true);
 
-        // Create detection zone
         this.detectionZone = scene.add.zone(x, y, this.DETECTION_RADIUS * 2, this.DETECTION_RADIUS * 2);
         scene.physics.world.enable(this.detectionZone);
         
@@ -73,7 +72,6 @@ export class Chest extends Phaser.GameObjects.Sprite {
         if (this.isOpen) return;
         this.isOpen = true;
 
-        // Random number between 1 and 100
         const random = Phaser.Math.Between(1, 100);
 
         let pickup;
@@ -93,13 +91,12 @@ export class Chest extends Phaser.GameObjects.Sprite {
 
         (this.scene as ArenaScene).addPickup(pickup);
 
-        // Clean up event listeners before destroying
+        // Clean up event listeners
         if (this.handleKeyPress) {
             window.removeEventListener('keydown', this.handleKeyPress);
             this.handleKeyPress = null;
         }
 
-        // Destroy after creating pickup
         this.destroy();
     }
 

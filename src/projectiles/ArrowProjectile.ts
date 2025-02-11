@@ -19,7 +19,7 @@ export class ArrowProjectile extends Projectile {
             this.setScale(this.POWER_SHOT_SCALE);
             this.setDamage(this.getDamage() * this.POWER_SHOT_MULTIPLIER);
             this.setSpeed(this.speed * this.POWER_SHOT_SPEED_REDUCTION);
-            this.setTint(0xFFD700); // Golden tint for power shots
+            this.setTint(0xFFD700);
         }
     }
 
@@ -27,15 +27,14 @@ export class ArrowProjectile extends Projectile {
         const damage = this.getDamage();
         enemy.damage(damage);
 
-        // Show floating damage
         new FloatingDamage(
             this.scene,
             enemy.x,
             enemy.y - 20,
             damage,
             this.isPowerShot,
-            this.isPowerShot ? '🎯' : '🏹', // Show arrow emoji for regular shots, target for power shots
-            this.isPowerShot ? 0xFFD700 : 0xffffff // Gold color for power shots
+            this.isPowerShot ? '🎯' : '🏹',
+            this.isPowerShot ? 0xFFD700 : 0xffffff
         );
     }
 } 

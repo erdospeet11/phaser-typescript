@@ -16,7 +16,7 @@ export class NPC extends Phaser.GameObjects.Sprite {
         body.setImmovable(true);
         body.setSize(16, 16);
 
-        // Create shop text
+        //shop text
         this.shopText = scene.add.text(x-60, y-60, 
             'Press E to shop\n1: Health +20 (50g)\n2: Attack +5 (100g)', {
             fontSize: '12px',
@@ -24,7 +24,7 @@ export class NPC extends Phaser.GameObjects.Sprite {
             padding: { x: 4, y: 4 }
         }).setVisible(false);
 
-        // Create detection zone
+        //detection zone
         this.detectionZone = scene.add.zone(x, y, this.DETECTION_RADIUS * 2, this.DETECTION_RADIUS * 2);
         scene.physics.world.enable(this.detectionZone);
         
@@ -33,7 +33,7 @@ export class NPC extends Phaser.GameObjects.Sprite {
     }
 
     setupInteraction(player: Player): void {
-        // Show shop interface when player enters zone
+        //show shop interface when player enters zone
         this.scene.physics.add.overlap(
             player,
             this.detectionZone,
@@ -42,9 +42,8 @@ export class NPC extends Phaser.GameObjects.Sprite {
                     this.isInteracting = true;
                     this.shopText.setVisible(true);
 
-                    // Handle shop inputs
                     this.handleShop = (event: KeyboardEvent) => {
-                        if (!this.scene) return; // Guard against undefined scene
+                        if (!this.scene) return;
                         
                         if (event.key === '1' && player.getCoins() >= 50) {
                             player.heal(20);
@@ -56,20 +55,19 @@ export class NPC extends Phaser.GameObjects.Sprite {
                         }
                     };
 
-                    // Add keyboard listener
                     window.addEventListener('keydown', this.handleShop);
                 }
             }
         );
 
-        // Hide shop interface when player exits zone
+        //hide shop interface upon leaving
         this.scene.events.on('update', () => {
             if (this.scene && this.isInteracting && !this.scene.physics.overlap(player, this.detectionZone)) {
                 this.cleanupInteraction();
             }
         });
 
-        // Cleanup on scene shutdown
+        //cleanup
         this.scene.events.once('shutdown', () => {
             this.cleanupInteraction();
         });
