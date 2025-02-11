@@ -9,22 +9,18 @@ export class Tooltip {
 
         this.background = scene.add.rectangle(0, 0, 0, 0, 0x000000, 0.7)
             .setOrigin(0.5)
-            .setVisible(false);
+            .setVisible(false)
+            .setDepth(1000);
 
         this.text = scene.add.text(0, 0, '', {
-            fontSize: '12px',
+            fontSize: '10px',
             color: '#ffffff',
             align: 'center',
-            shadow: {
-                offsetX: 1,
-                offsetY: 1,
-                color: '#000000',
-                blur: 1,
-                fill: true
-            }
+            wordWrap: { width: 150 }
         })
         .setOrigin(0.5)
-        .setVisible(false);
+        .setVisible(false)
+        .setDepth(1000);
     }
 
     show(x: number, y: number, content: string): void {
@@ -34,7 +30,7 @@ export class Tooltip {
         const textHeight = this.text.height + this.padding;
         this.background.setSize(textWidth, textHeight);
 
-        const tooltipY = y - 30;
+        const tooltipY = y - textHeight - 5;
         this.background.setPosition(x, tooltipY);
         this.text.setPosition(x, tooltipY);
 

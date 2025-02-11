@@ -6,7 +6,7 @@ export class MusicScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.audio('background-music', 'assets/background-music.mp3');
+        this.load.audio('background-music', 'assets/music/background-music.mp3');
     }
 
     create() {

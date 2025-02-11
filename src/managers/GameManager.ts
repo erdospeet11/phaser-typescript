@@ -4,6 +4,13 @@ export class GameManager {
     private gold: number = 0;
     private health: number = 100;
     private maxHealth: number = 100;
+    private attack: number = 10;
+    private defense: number = 5;
+    private speed: number = 1;
+    private experience: number = 0;
+    private level: number = 1;
+    private experienceToNextLevel: number = 100;
+    private playerClass: string = '';
 
     private constructor() {}
 
@@ -61,12 +68,74 @@ export class GameManager {
     public increaseMaxHealth(amount: number): void {
         this.maxHealth += amount;
         this.health = this.maxHealth;
-    } 
+    }
 
-    // Reset method for new game
+    public getAttack(): number {
+        return this.attack;
+    }
+
+    public setAttack(value: number): void {
+        this.attack = value;
+    }
+
+    public getDefense(): number {
+        return this.defense;
+    }
+
+    public setDefense(value: number): void {
+        this.defense = value;
+    }
+
+    public getSpeed(): number {
+        return this.speed;
+    }
+
+    public setSpeed(value: number): void {
+        this.speed = value;
+    }
+
+    public getExperience(): number {
+        return this.experience;
+    }
+
+    public setExperience(value: number): void {
+        this.experience = value;
+    }
+
+    public getLevel(): number {
+        return this.level;
+    }
+
+    public setLevel(value: number): void {
+        this.level = value;
+    }
+
+    public getExperienceToNextLevel(): number {
+        return this.experienceToNextLevel;
+    }
+
+    public setExperienceToNextLevel(value: number): void {
+        this.experienceToNextLevel = value;
+    }
+
+    public getPlayerClass(): string {
+        return this.playerClass;
+    }
+
+    public setPlayerClass(value: string): void {
+        this.playerClass = value;
+    }
+
+    //reset method for new game
     public reset(): void {
         this.score = 0;
         this.gold = 0;
         this.health = this.maxHealth;
+        this.attack = 10;
+        this.defense = 5;
+        this.speed = 1;
+        this.experience = 0;
+        this.level = 1;
+        this.experienceToNextLevel = 100;
     }
 } 
