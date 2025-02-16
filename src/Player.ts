@@ -12,6 +12,7 @@ import { ArrowProjectile } from './projectiles/ArrowProjectile';
 import { Helmet } from './items/Helmet';
 import { Boot } from './items/Boot';
 import { Outfit } from './items/Outfit';
+import { Item } from './items/Item';
 
 //DEFINED NUMBERS FOR THE CLASSES
 const CLASSES = {
@@ -84,12 +85,22 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private boot!: Boot;
   private outfit!: Outfit;
 
+  private equippedItems: {
+    helmet: Item | null;
+    outfit: Item | null;
+    boots: Item | null;
+  } = {
+    helmet: null,
+    outfit: null,
+    boots: null
+  };
+
   constructor(scene: Phaser.Scene, x: number, y: number, player_class: string) {
     const spriteKey = `player-${player_class.toLowerCase()}`;
     super(scene, x, y, spriteKey);
     
     this.gameManager = GameManager.getInstance();
-    this.gameManager.setInitialClassStats(player_class);  // Set class-specific stats
+    this.gameManager.setInitialClassStats(player_class);
 
     this.player_class = player_class;
     
@@ -628,5 +639,28 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public getLevel(): number {
     return this.level;
+  }
+
+  public equipItem(item: Item): void {
+    if (item instanceof Helmet) {
+        if (this.equippedItems.helmet) {
+            this.modifyDefense(-this.equippedItems.helmet.getDefenseBonus());
+        }
+        this.equippedItems.helmet = item;
+    } else if (item instanceof Outfit) {
+        if (this.equippedItems.outfit) {
+            this.modifyDefense(-this.equippedItems.outfit.getDefenseBonus());
+        }
+        this.equippedItems.outfit = item;
+    } else if (item instanceof Boot) {
+        if (this.equippedItems.boots) {
+            this.modifyDefense(-this.equippedItems.boots.getDefenseBonus());
+        }
+        this.equippedItems.boots = item;
+    }
+  }
+
+  public getEquippedItems(): typeof this.equippedItems {
+    return this.equippedItems;
   }
 } 

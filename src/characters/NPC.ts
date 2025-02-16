@@ -3,7 +3,7 @@ import { Player } from '../Player';
 export class NPC extends Phaser.GameObjects.Sprite {
     private detectionZone: Phaser.GameObjects.Zone;
     private readonly DETECTION_RADIUS = 50;
-    private shopText: Phaser.GameObjects.Text;
+    private shopPanel: Phaser.GameObjects.Container;
     private handleShop: ((event: KeyboardEvent) => void) | null = null;
     private isInteracting: boolean = false;
 
@@ -16,15 +16,35 @@ export class NPC extends Phaser.GameObjects.Sprite {
         body.setImmovable(true);
         body.setSize(16, 16);
 
-        //shop text
-        this.shopText = scene.add.text(x-60, y-60, 
-            'Press E to shop\n1: Health +20 (50g)\n2: Attack +5 (100g)', {
-            fontSize: '12px',
-            backgroundColor: '#000000',
-            padding: { x: 4, y: 4 }
-        }).setVisible(false);
+        this.shopPanel = scene.add.container(x - 80, y - 100);
 
-        //detection zone
+        const panel = scene.add.rectangle(0, 0, 160, 70, 0x333333, 0.8)
+            .setOrigin(0, 0)
+            .setStrokeStyle(1, 0xffffff);
+        
+        const divider = scene.add.line(80, 0, 0, 0, 0, 70, 0xffffff)
+            .setOrigin(0.5, 0);
+
+        const xpText = scene.add.text(10, 15, '1: Buy 50 XP\n10 gold', {
+            fontSize: '8px',
+            color: '#ffffff',
+            align: 'center'
+        });
+        const xpIcon = scene.add.sprite(30, 45, 'xp-potion')
+            .setScale(1.5);
+
+        const healthText = scene.add.text(90, 15, '2: Full Health\n15 gold', {
+            fontSize: '8px',
+            color: '#ffffff',
+            align: 'center'
+        });
+        const healthIcon = scene.add.sprite(110, 45, 'health-potion')
+            .setScale(1.5);
+
+        this.shopPanel.add([panel, divider, xpText, xpIcon, healthText, healthIcon]);
+        this.shopPanel.setDepth(1000);
+        this.shopPanel.setVisible(false);
+
         this.detectionZone = scene.add.zone(x, y, this.DETECTION_RADIUS * 2, this.DETECTION_RADIUS * 2);
         scene.physics.world.enable(this.detectionZone);
         
@@ -33,25 +53,26 @@ export class NPC extends Phaser.GameObjects.Sprite {
     }
 
     setupInteraction(player: Player): void {
-        //show shop interface when player enters zone
         this.scene.physics.add.overlap(
             player,
             this.detectionZone,
             () => {
                 if (!this.isInteracting) {
                     this.isInteracting = true;
-                    this.shopText.setVisible(true);
+                    this.shopPanel.setVisible(true);
 
                     this.handleShop = (event: KeyboardEvent) => {
                         if (!this.scene) return;
                         
-                        if (event.key === '1' && player.getCoins() >= 50) {
-                            player.heal(20);
-                            player.addCoins(-5);
-                        }
-                        else if (event.key === '2' && player.getCoins() >= 100) {
-                            player.modifyAttack(5);
+                        if (event.key === '1' && player.getCoins() >= 1) {
+                            player.gainExperience(50);
                             player.addCoins(-10);
+                            console.log('bought xp boost');
+                        }
+                        else if (event.key === '2' && player.getCoins() >= 1) {
+                            player.heal(player.getMaxHealth());
+                            player.addCoins(-15);
+                            console.log('bought health restore');
                         }
                     };
 
@@ -60,14 +81,12 @@ export class NPC extends Phaser.GameObjects.Sprite {
             }
         );
 
-        //hide shop interface upon leaving
         this.scene.events.on('update', () => {
             if (this.scene && this.isInteracting && !this.scene.physics.overlap(player, this.detectionZone)) {
                 this.cleanupInteraction();
             }
         });
 
-        //cleanup
         this.scene.events.once('shutdown', () => {
             this.cleanupInteraction();
         });
@@ -79,15 +98,15 @@ export class NPC extends Phaser.GameObjects.Sprite {
             window.removeEventListener('keydown', this.handleShop);
             this.handleShop = null;
         }
-        if (this.shopText) {
-            this.shopText.setVisible(false);
+        if (this.shopPanel) {
+            this.shopPanel.setVisible(false);
         }
     }
 
     destroy(): void {
         this.cleanupInteraction();
-        if (this.shopText) {
-            this.shopText.destroy();
+        if (this.shopPanel) {
+            this.shopPanel.destroy();
         }
         if (this.detectionZone) {
             this.detectionZone.destroy();

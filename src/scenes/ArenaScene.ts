@@ -132,6 +132,8 @@ export class ArenaScene extends Phaser.Scene {
         this.load.image('npc', 'assets/shopkeeper-npc.png');
         this.load.image('speech-bubble', 'assets/speech-bubble.png');
         this.load.image('grass', 'assets/grass.png');
+        this.load.image('health-potion', 'assets/health-potion.png');
+        this.load.image('xp-potion', 'assets/xp-potion.png');
 
         // Chest sprites
         this.load.image('chest-closed', 'assets/chest-closed.png');

@@ -4,16 +4,16 @@ import { Outfit } from "./Outfit";
 
 //defined items for the game
 export const ITEMS = {
-    diamondOutfit: new Outfit(),
-    diamondBoot: new Boot(),
-    diamondHelmet: new Helmet(),
-    emeraldOutfit: new Outfit(),
-    emeraldBoot: new Boot(),
-    emeraldHelmet: new Helmet(),
-    ironOutfit: new Outfit(),
-    ironBoot: new Boot(),
-    ironHelmet: new Helmet(),
-    leatherOutfit: new Outfit(),
-    leatherBoot: new Boot(),
-    leatherHelmet: new Helmet(),
+    diamondOutfit: new Outfit('diamond'),
+    diamondBoot: new Boot('diamond'),
+    diamondHelmet: new Helmet('diamond'),
+    emeraldOutfit: new Outfit('emerald'),
+    emeraldBoot: new Boot('emerald'),
+    emeraldHelmet: new Helmet('emerald'),
+    ironOutfit: new Outfit('iron'),
+    ironBoot: new Boot('iron'),
+    ironHelmet: new Helmet('iron'),
+    leatherOutfit: new Outfit('leather'),
+    leatherBoot: new Boot('leather'),
+    leatherHelmet: new Helmet('leather'),
 }

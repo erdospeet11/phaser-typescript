@@ -1,9 +1,14 @@
+import { Item, ItemTier } from "./Item";
 import { Player } from "../Player";
-import { Item } from "./Item";
 
 export class Helmet extends Item {
-    constructor() {
-        super('Helmet', 'A protective helmet', 'helmet');
+    constructor(tier: ItemTier = 'leather') {
+        super(
+            'Helmet', 
+            `A ${tier} helmet that provides defense`, 
+            `${tier}-helmet`,
+            tier
+        );
     }
 
     public use(player: Player): void {
