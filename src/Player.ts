@@ -19,7 +19,7 @@ const CLASSES = {
     'Fire Tome',
     'fire-spellbook',
     'fireball',
-    10,
+    4,
     250
   ),
   WARRIOR: new RangedWeapon(
@@ -42,8 +42,8 @@ const CLASSES = {
     'Void Orb',
     'void-orb',
     'standing-projectile',
-    60,  // Higher base damage
-    400  // Longer cooldown to balance the standing effect
+    60,
+    400 
   )
 }
 
@@ -89,36 +89,48 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     super(scene, x, y, spriteKey);
     
     this.gameManager = GameManager.getInstance();
+    this.gameManager.setInitialClassStats(player_class);  // Set class-specific stats
 
     this.player_class = player_class;
     
     scene.add.existing(this);
     scene.physics.add.existing(this);
     
-    // Configure physics body
+    //configure physics body
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.setCollideWorldBounds(true);
-    // Adjust hitbox size to match new sprite size (assuming original was 16x16)
-    body.setSize(8, 8);  // Half of original size
+    body.setSize(8, 8);
     body.setBounce(0);
     body.setImmovable(false);
     
-    this.health = 100;
-    this.maxHealth = 100;
-    this.attack = this.baseAttack;
-    this.defense = 5;
-    this.speed = 1;
-    this.money = 0;
+    //get all stats from GameManager
+    this.level = this.gameManager.getLevel();
+    this.experience = this.gameManager.getExperience();
+    this.experienceToNextLevel = this.gameManager.getExperienceToNextLevel();
+    this.health = this.gameManager.getHealth();
+    this.maxHealth = this.gameManager.getMaxHealth();
+    this.attack = this.gameManager.getAttack();
+    this.defense = this.gameManager.getDefense();
+    this.speed = this.gameManager.getSpeed();
+    this.money = this.gameManager.getGold();
     
-    // Set up keyboard input
+    //base attack for powerups
+    this.baseAttack = this.attack;
+    
+    //keyboard input
     this.cursors = scene.input.keyboard!.createCursorKeys();
     scene.input.keyboard!.addKeys('W,A,S,D');
 
-    // Set initial weapon based on class
+    //set initial weapon based on class
     this.currentWeapon = CLASSES[player_class as keyof typeof CLASSES];
     (this.currentWeapon as RangedWeapon).initializeProjectiles(scene);
     this.shootCooldown = this.currentWeapon.cooldown;
-
+    
+    //set player's attack based on weapon damage
+    this.attack = this.currentWeapon.damage;
+    this.baseAttack = this.currentWeapon.damage;
+    this.gameManager.setAttack(this.attack);  // Sync with GameManager
+    
     // Create the stats text AFTER weapon is initialized
     this.createStatsDisplay();
 
@@ -308,10 +320,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   update() {
     const body = this.body as Phaser.Physics.Arcade.Body;
     
-    // Reset velocity at the start of each update
+    //reset velocity at the start of each update
     body.setVelocity(0);
 
-    // Handle WASD movement
+    //movement
     if (this.scene.input.keyboard!.keys[Phaser.Input.Keyboard.KeyCodes.A].isDown) {
       body.setVelocityX(-this.speed * 75);
     }
@@ -389,6 +401,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public handleDeath(): void {
+    GameManager.destroyInstance();  // Destroy GameManager instance
     this.scene.scene.start('EndGameScene', { 
         victory: false,
         score: this.gameManager.getScore(),
@@ -406,24 +419,22 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   addPowerup(duration: number): void {
-    // Clear existing powerup if any
     if (this.powerupTimer) {
       this.powerupTimer.destroy();
     }
 
-    // Apply powerup
     this.isPoweredUp = true;
-    this.attack = this.baseAttack * 2;  // Double attack during powerup
+    this.attack = this.baseAttack * 2;
     
-    // Optional: Add visual effect
-    this.setTint(0xff0000);  // Red tint during powerup
+    //vfx effect
+    this.setTint(0xff0000);
 
-    // Set timer to end powerup
+    //timer
     this.powerupTimer = this.scene.time.delayedCall(duration * 1000, () => {
       this.endPowerup();
     });
 
-    // Emit event for UI updates
+    //emit ui update event
     this.emit('powerupStarted', duration);
   }
 
@@ -456,23 +467,22 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   private shoot(): void {
-    // Use the weapon with the correct projectile type
     if (this.player_class === 'ARCHER') {
-      (this.currentWeapon as RangedWeapon).use(
-        this.scene,
-        this.x,
-        this.y,
-        this.facing,
-        this.attack
-      );
+        (this.currentWeapon as RangedWeapon).use(
+            this.scene,
+            this.x,
+            this.y,
+            this.facing,
+            this.attack
+        );
     } else {
-      this.currentWeapon.use(
-        this.scene,
-        this.x,
-        this.y,
-        this.facing,
-        this.attack
-      );
+        this.currentWeapon.use(
+            this.scene,
+            this.x,
+            this.y,
+            this.facing,
+            this.attack
+        );
     }
   }
 
@@ -500,6 +510,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public setAttack(value: number): void {
     this.attack = value;
+    this.gameManager.setAttack(value);
     console.log(`Attack set to ${value}`);
   }
 
@@ -509,6 +520,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public setSpeed(value: number): void {
     this.speed = value;
+    this.gameManager.setSpeed(value);
   }
 
   public updateUIText(): void {
@@ -524,7 +536,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.updateExperienceBar();
   }
 
-  // Add method to change weapons
+  //method to change weapons
   public setWeapon(weapon: Weapon): void {
     this.currentWeapon = weapon;
     this.shootCooldown = weapon.cooldown;
@@ -539,29 +551,34 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public gainExperience(amount: number): void {
     this.experience += amount;
-    if (this.experience >= this.experienceToNextLevel) {
+    this.gameManager.setExperience(this.experience);
+    
+    while (this.experience >= this.experienceToNextLevel) {
         this.levelUp();
     }
+    
     this.updateExperienceBar();
   }
 
-  public increaseAttack(multiplier: number): void {
-    this.attack *= (1 + multiplier);
-    console.log(`Attack increased by ${multiplier * 100}%. New attack: ${this.attack}`);
+  public increaseAttack(number: number): void {
+    this.attack += number; 
+    this.gameManager.setAttack(this.attack);
+    console.log(`Attack increased by ${number}.`);
   }
 
   public increaseSpeed(multiplier: number): void {
     this.speed *= (1 + multiplier);
+    this.gameManager.setSpeed(this.speed);  
     console.log(`Speed increased by ${multiplier * 100}%. New speed: ${this.speed}`);
   }
 
   public increaseMaxHealth(amount: number): void {
-    this.gameManager.increaseMaxHealth(amount);  // Use GameManager instead of direct modification
-    this.updateUIText();  // Update the UI to show new health values
+    this.gameManager.increaseMaxHealth(amount);  
+    this.updateUIText();
   }
 
   public increaseAttackSpeed(multiplier: number): void {
-    this.shootCooldown *= (1 - multiplier);  // Reduce cooldown by multiplier
+    this.shootCooldown *= (1 - multiplier);
     console.log(`Attack cooldown reduced by ${multiplier * 100}%. New cooldown: ${this.shootCooldown}ms`);
   }
 
@@ -571,15 +588,27 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   private levelUp(): void {
-    this.level++;
     this.experience -= this.experienceToNextLevel;
-    this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * 1.2);
-    this.updateExperienceBar();
-    this.scene.scene.launch('LevelUpScene', { player: this });
+    this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * 1.5);
+    this.gameManager.setExperienceToNextLevel(this.experienceToNextLevel);
+    
+    //level up scene
+    this.scene.scene.pause();
+    this.scene.scene.launch('LevelUpScene', { 
+        player: this,
+        level: this.level 
+    });
+
+    this.level++;
+    this.gameManager.setLevel(this.level);
+    
+    console.log(`Level up! Now level ${this.level}`);
+    this.updateUIText();
   }
 
   public modifyAttack(amount: number): void {
     this.attack += amount;
+    this.gameManager.setAttack(this.attack);
   }
 
   public modifyDefense(amount: number): void {
@@ -588,6 +617,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public modifySpeed(amount: number): void {
     this.speed += amount;
+    this.gameManager.setSpeed(this.speed);
   }
 
   public modifyMaxHealth(amount: number): void {
@@ -608,5 +638,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public getExperienceToNextLevel(): number {
     return this.experienceToNextLevel;
+  }
+
+  public getLevel(): number {
+    return this.level;
   }
 } 

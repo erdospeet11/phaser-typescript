@@ -4,13 +4,13 @@ const path = require('path');
 const app = express();
 const port = 3000;
 
-// Create database connections
+//database connections
 const dbs = {
     scores: new sqlite3.Database('./scores.db'),
     game: new sqlite3.Database('./game.db')
 };
 
-// Add CORS middleware and allow all origins for development
+//cors middleware for all origins
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
@@ -19,13 +19,10 @@ app.use((req, res, next) => {
     next();
 });
 
-// Middleware to parse JSON
 app.use(express.json());
-
-// Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Initialize databases
+//init databases
 dbs.scores.serialize(() => {
     dbs.scores.run(`CREATE TABLE IF NOT EXISTS scores (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -44,12 +41,12 @@ dbs.game.serialize(() => {
     )`);
 });
 
-// Root endpoint
+//root endpoint
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Scores API endpoints
+//scores endpoints
 app.get('/api/scores', (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     dbs.scores.all('SELECT * FROM scores ORDER BY score DESC LIMIT ?', [limit], (err, rows) => {
@@ -108,7 +105,19 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-// Game data API endpoints (example)
+app.post('/api/admin/login', (req, res) => {
+    const { username, password } = req.body;
+    if (username === 'admin' && password === 'admin') {
+        res.status(200).json({ 
+            message: 'Admin login successful',
+            isAdmin: true 
+        });
+    } else {
+        res.status(401).json({ message: 'Invalid admin credentials' });
+    }
+});
+
+//game endpoints
 app.get('/api/game/:playerId', (req, res) => {
     const { playerId } = req.params;
     dbs.game.get('SELECT data FROM game_data WHERE player_id = ?', [playerId], (err, row) => {
@@ -136,14 +145,17 @@ app.post('/api/game/:playerId', (req, res) => {
     );
 });
 
-// Cleanup on shutdown
+//admin route protection
+app.get('/admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
 function cleanup() {
     console.log('Closing database connections...');
     Object.values(dbs).forEach(db => db.close());
     process.exit(0);
 }
 
-// Handle cleanup on shutdown
 process.on('SIGINT', cleanup);
 process.on('SIGTERM', cleanup);
 

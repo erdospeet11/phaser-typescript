@@ -9,7 +9,7 @@ export class ArrowProjectile extends Projectile {
     private readonly POWER_SHOT_SPEED_REDUCTION = 0.7;
     private isPowerShot: boolean;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, spriteKey?: string, attack: number = 20) {
+    constructor(scene: Phaser.Scene, x: number, y: number, spriteKey: string, attack: number) {
         super(scene, x, y, 'arrow', attack);
         
         ArrowProjectile.arrowCount++;

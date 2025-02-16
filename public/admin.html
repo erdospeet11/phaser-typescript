@@ -119,6 +119,94 @@
         </div>
 
         <div class="stats-panel">
+            <h2>Enemy Configuration</h2>
+            <div class="rule-grid">
+                <!-- Basic Enemy -->
+                <div class="rule-item">
+                    <label>Basic Enemy Health:</label>
+                    <input type="number" id="basicEnemyHealth" min="1" max="500">
+                </div>
+                <div class="rule-item">
+                    <label>Basic Enemy Attack:</label>
+                    <input type="number" id="basicEnemyAttack" min="1" max="100">
+                </div>
+                <div class="rule-item">
+                    <label>Basic Enemy Drop Rate (%):</label>
+                    <input type="number" id="basicEnemyDropRate" min="0" max="100">
+                </div>
+
+                <!-- Ranged Enemy -->
+                <div class="rule-item">
+                    <label>Ranged Enemy Health:</label>
+                    <input type="number" id="rangedEnemyHealth" min="1" max="500">
+                </div>
+                <div class="rule-item">
+                    <label>Ranged Enemy Attack:</label>
+                    <input type="number" id="rangedEnemyAttack" min="1" max="100">
+                </div>
+                <div class="rule-item">
+                    <label>Ranged Enemy Drop Rate (%):</label>
+                    <input type="number" id="rangedEnemyDropRate" min="0" max="100">
+                </div>
+
+                <!-- Line Enemy -->
+                <div class="rule-item">
+                    <label>Line Enemy Health:</label>
+                    <input type="number" id="lineEnemyHealth" min="1" max="500">
+                </div>
+                <div class="rule-item">
+                    <label>Line Enemy Attack:</label>
+                    <input type="number" id="lineEnemyAttack" min="1" max="100">
+                </div>
+                <div class="rule-item">
+                    <label>Line Enemy Drop Rate (%):</label>
+                    <input type="number" id="lineEnemyDropRate" min="0" max="100">
+                </div>
+
+                <!-- Obstacle Enemy -->
+                <div class="rule-item">
+                    <label>Obstacle Enemy Health:</label>
+                    <input type="number" id="obstacleEnemyHealth" min="1" max="1000">
+                </div>
+                <div class="rule-item">
+                    <label>Obstacle Enemy Attack:</label>
+                    <input type="number" id="obstacleEnemyAttack" min="1" max="100">
+                </div>
+                <div class="rule-item">
+                    <label>Obstacle Enemy Drop Rate (%):</label>
+                    <input type="number" id="obstacleEnemyDropRate" min="0" max="100">
+                </div>
+            </div>
+            <button class="button save-rules" onclick="saveEnemyRules()">Save Enemy Rules</button>
+        </div>
+
+        <div class="stats-panel">
+            <h2>Shop Configuration</h2>
+            <div class="rule-grid">
+                <!-- Health Potion -->
+                <div class="rule-item">
+                    <label>Health Potion Cost:</label>
+                    <input type="number" id="healthPotionCost" min="1" max="1000">
+                </div>
+                <div class="rule-item">
+                    <label>Health Restore Amount:</label>
+                    <input type="number" id="healthRestoreAmount" min="1" max="100">
+                </div>
+                
+                <!-- Attack Boost -->
+                <div class="rule-item">
+                    <label>Attack Boost Cost:</label>
+                    <input type="number" id="attackBoostCost" min="1" max="1000">
+                </div>
+                <div class="rule-item">
+                    <label>Attack Boost Amount:</label>
+                    <input type="number" id="attackBoostAmount" min="1" max="50">
+                </div>
+            </div>
+            <button class="button save-rules" onclick="saveShopRules()">Save Shop Rules</button>
+        </div>
+
+        <div class="stats-panel">
             <h2>Admin Controls</h2>
             <button class="button" onclick="resetRules()">Reset Rules to Default</button>
             <button class="button" onclick="resetScores()">Reset All Scores</button>

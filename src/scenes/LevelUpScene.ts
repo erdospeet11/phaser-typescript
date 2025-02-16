@@ -85,8 +85,8 @@ export class LevelUpScene extends Scene {
         const allPerks: PerkOption[] = [
             {
                 name: '💪 Strength',
-                description: '+20% Attack Damage',
-                effect: (player) => player.increaseAttack(0.2)
+                description: '+1 Attack Damage',
+                effect: (player) => player.increaseAttack(1)
             },
             {
                 name: '🏃 Speed',

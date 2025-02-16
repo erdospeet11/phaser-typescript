@@ -36,7 +36,7 @@ export class CharacterSheetScene extends Phaser.Scene {
             .setDepth(999);
 
         const stats = [
-            { label: 'Level', value: '1' },
+            { label: 'Level', value: this.player.getLevel().toString() },
             { label: 'Experience', value: `${this.player.getExperience()}/${this.player.getExperienceToNextLevel()}` },
             { label: 'Health', value: `${this.player.getHealth()}/${this.player.getMaxHealth()}` },
             { label: 'Attack', value: this.player.getAttack().toString() },

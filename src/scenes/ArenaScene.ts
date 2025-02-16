@@ -127,15 +127,10 @@ export class ArenaScene extends Phaser.Scene {
         this.load.image('fire-spellbook', 'assets/fire-spellbook.png');
         this.load.image('ice-spellbook', 'assets/ice-spellbook.png');
         this.load.image('wind-spellbook', 'assets/wind-spellbook.png');
-        //Items
-
-        //Load items
-        this.load.image('sword-item', 'assets/items/sword-item.png');
 
         // NPC assets
         this.load.image('npc', 'assets/shopkeeper-npc.png');
         this.load.image('speech-bubble', 'assets/speech-bubble.png');
-
         this.load.image('grass', 'assets/grass.png');
 
         // Chest sprites
@@ -174,7 +169,6 @@ export class ArenaScene extends Phaser.Scene {
         // Add any other necessary images
 
         this.load.image('devil', 'assets/devil.png');
-        this.load.image('demon', 'assets/demon.png');
 
         // Add this line with other asset loads
         this.load.image('tent', 'assets/tent.png');

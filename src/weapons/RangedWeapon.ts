@@ -12,7 +12,7 @@ export class RangedWeapon extends Weapon {
         name: string,
         spriteKey: string,
         projectileKey: string,
-        damage: number = 10,
+        damage: number,
         cooldown: number = 250
     ) {
         super(name, spriteKey, damage, cooldown);
@@ -35,21 +35,21 @@ export class RangedWeapon extends Weapon {
     }
 
     use(scene: Phaser.Scene, x: number, y: number, facing: number, attack: number): void {
-        let projectile;
+        let projectile: Projectile;
         
         //check projectile type based on projectileKey
         switch (this.projectileKey) {
             case 'fireball':
-                projectile = new FireballProjectile(scene, x, y, this.projectileKey, this.damage);
+                projectile = new FireballProjectile(scene, x, y, this.projectileKey, attack);
                 break;
             case 'arrow':
-                projectile = new ArrowProjectile(scene, x, y, this.projectileKey, this.damage);
+                projectile = new ArrowProjectile(scene, x, y, this.projectileKey, attack);
                 break;
             case 'standing-projectile':
-                projectile = new StandingProjectile(scene, x, y, this.projectileKey, this.damage);
+                projectile = new StandingProjectile(scene, x, y, this.projectileKey, attack);
                 break;
             default:
-                projectile = new Projectile(scene, x, y, this.projectileKey, this.damage);
+                projectile = new Projectile(scene, x, y, this.projectileKey, attack);
         }
         
         this.projectiles.add(projectile);

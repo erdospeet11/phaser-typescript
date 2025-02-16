@@ -1,23 +1,27 @@
 export class GameManager {
-    private static instance: GameManager;
+    private static instance: GameManager | null = null;
     private score: number = 0;
     private gold: number = 0;
     private health: number = 100;
     private maxHealth: number = 100;
-    private attack: number = 10;
+    private attack: number;
     private defense: number = 5;
-    private speed: number = 1;
+    private speed: number;
     private experience: number = 0;
     private level: number = 1;
     private experienceToNextLevel: number = 100;
     private playerClass: string = '';
 
-    private constructor() {}
+    private constructor() {
+        this.attack = 4;  // Default values
+        this.speed = 1;
+    }
 
     public static getInstance(): GameManager {
         if (!GameManager.instance) {
             GameManager.instance = new GameManager();
         }
+        console.log(GameManager.instance);
         return GameManager.instance;
     }
 
@@ -118,24 +122,36 @@ export class GameManager {
         this.experienceToNextLevel = value;
     }
 
-    public getPlayerClass(): string {
-        return this.playerClass;
-    }
-
-    public setPlayerClass(value: string): void {
-        this.playerClass = value;
-    }
-
     //reset method for new game
     public reset(): void {
         this.score = 0;
         this.gold = 0;
         this.health = this.maxHealth;
-        this.attack = 10;
-        this.defense = 5;
-        this.speed = 1;
-        this.experience = 0;
-        this.level = 1;
-        this.experienceToNextLevel = 100;
+    }
+
+    public setMaxHealth(value: number): void {
+        this.maxHealth = value;
+    }
+
+    public static destroyInstance(): void {
+        GameManager.instance = null;
+    }
+
+    public setInitialClassStats(playerClass: string): void {
+        this.playerClass = playerClass;
+        switch (playerClass) {
+            case 'MAGE':
+                this.speed = 1;
+                break;
+            case 'ARCHER':
+                this.speed = 1;
+                break;
+            case 'WARRIOR':
+                this.speed = 1;
+                break;
+            case 'THING':
+                this.speed = 1;
+                break;
+        }
     }
 } 

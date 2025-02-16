@@ -1,4 +1,5 @@
 import { GameDatabase } from '../services/GameDatabase';
+import { GameManager } from '../managers/GameManager';
 
 export class MainMenuScene extends Phaser.Scene {
     private backgrounds: Phaser.GameObjects.TileSprite[] = [];
@@ -15,7 +16,7 @@ export class MainMenuScene extends Phaser.Scene {
     }
 
     async create() {
-        // Parallax background
+        //parallax background
         for (let i = 0; i < 2; i++) {
             const bg = this.add.tileSprite(
                 0,
@@ -30,7 +31,7 @@ export class MainMenuScene extends Phaser.Scene {
             this.backgrounds.push(bg);
         }
 
-        // Title
+        //title
         this.add.text(
             this.cameras.main.centerX,
             50,
@@ -49,7 +50,6 @@ export class MainMenuScene extends Phaser.Scene {
             }
         ).setOrigin(0.5);
 
-        // Create buttons using the createButton method
         const startButton = this.createButton(
             this.cameras.main.centerY,
             'Start Game',
@@ -68,7 +68,6 @@ export class MainMenuScene extends Phaser.Scene {
             () => this.openSettings()
         );
 
-        // Version number
         this.add.text(
             this.cameras.main.width - 10,
             this.cameras.main.height - 10,
@@ -87,7 +86,6 @@ export class MainMenuScene extends Phaser.Scene {
             }
         ).setOrigin(1, 1);
 
-        // Make MusicScene runs in parallel
         if (!this.scene.isActive('MusicScene')) {
             this.scene.launch('MusicScene');
         }
@@ -110,7 +108,7 @@ export class MainMenuScene extends Phaser.Scene {
             cornerRadius
         );
 
-        // Interactive zone
+        //interactive zone
         const hitArea = new Phaser.Geom.Rectangle(
             this.cameras.main.centerX - buttonWidth / 2,
             yPosition - buttonHeight / 2,
@@ -175,7 +173,8 @@ export class MainMenuScene extends Phaser.Scene {
         });
     }
 
-    private heroSelect() {
+    private heroSelect(): void {
+        GameManager.destroyInstance();
         this.scene.start('HeroSelectScene');
     }
 

@@ -58,12 +58,15 @@ export class Enemy extends Phaser.GameObjects.Sprite {
   }
 
   protected handleDeath(): void {
-    //drop experience
+
     const experienceValue = 20;
+    const scoreValue = 5;
     const player = (this.scene as ArenaScene).getPlayer();
+    
     if (player) {
         console.log('Enemy died, dropping experience:', experienceValue);
         player.gainExperience(experienceValue);
+        player.addScore(scoreValue);
     }
 
     var random = Phaser.Math.Between(1, 100);

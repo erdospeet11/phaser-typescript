@@ -12,7 +12,7 @@
       "resolveJsonModule": true,
       "jsx": "preserve",
       "lib": ["dom", "es2015", "es2016", "es2017"],
-      "types": ["phaser"]
+      "types": ["phaser", "jest", "@testing-library/jest-dom"]
     },
     "include": [
       "src/**/*"

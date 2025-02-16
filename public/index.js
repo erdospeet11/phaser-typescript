@@ -100,7 +100,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = nameInput.value.trim();
         const password = passwordInput.value.trim();
 
-        // Send login data to the server
+        //admin login
+        if (name === 'admin') {
+            fetch('http://localhost:3000/api/admin/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username: name, password: password })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to login');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.isAdmin) {
+                    window.location.href = 'admin.html';
+                } else {
+                    alert('Invalid admin credentials');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Login failed. Please check your credentials.');
+            });
+            return;
+        }
+
+        //user login
         fetch('http://localhost:3000/api/login', {
             method: 'POST',
             headers: {
@@ -138,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const name = registerName.value.trim();
             const password = registerPassword.value.trim();
 
-            // Send registration data to the server
+            // Send register to server
             fetch('http://localhost:3000/api/register', {
                 method: 'POST',
                 headers: {
@@ -163,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Close the popup if the user clicks outside of it
+    //close popup
     window.addEventListener('click', (event) => {
         if (event.target === registerPopup) {
             registerPopup.style.display = 'none';

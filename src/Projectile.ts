@@ -7,15 +7,15 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
         x: number, 
         y: number, 
         spriteKey: string = 'projectile',
-        attack: number = 20
+        damage: number = 20
     ) {
         super(scene, x, y, spriteKey);
-        this.damage = attack;
+        this.damage = damage;
         
         scene.add.existing(this);
         scene.physics.add.existing(this);
 
-        // Set up physics body
+        //physics body
         const body = this.body as Phaser.Physics.Arcade.Body;
         body.setSize(8, 8);
         body.setOffset(4, 4);
@@ -29,12 +29,12 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
         this.setActive(true);
         this.setVisible(true);
 
-        // Normalize the direction vector
+        //normalize the direction vector
         const length = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
         direction.x /= length;
         direction.y /= length;
 
-        // Calculate rotation angle
+        //rotation angle
         const angle = Math.atan2(direction.y, direction.x);
         this.setRotation(angle);
 
