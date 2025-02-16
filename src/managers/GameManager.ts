@@ -13,7 +13,7 @@ export class GameManager {
     private playerClass: string = '';
 
     private constructor() {
-        this.attack = 4;  // Default values
+        this.attack = 4;
         this.speed = 1;
     }
 

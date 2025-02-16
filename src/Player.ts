@@ -129,18 +129,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     //set player's attack based on weapon damage
     this.attack = this.currentWeapon.damage;
     this.baseAttack = this.currentWeapon.damage;
-    this.gameManager.setAttack(this.attack);  // Sync with GameManager
+    this.gameManager.setAttack(this.attack);
     
-    // Create the stats text AFTER weapon is initialized
     this.createStatsDisplay();
 
-    // Create projectiles group
+    //projectiles group
     this.projectiles = scene.add.group({
       classType: Projectile,
       maxSize: 10,
       runChildUpdate: true,
       createCallback: (proj) => {
-        // Set the appropriate projectile texture based on class
         if (player_class === 'MAGE') {
           (proj as Projectile).setTexture('fireball');
         } else if (player_class === 'ARCHER') {
@@ -153,7 +151,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
     });
 
-    // Add left-click binding for shooting
     scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (pointer.leftButtonDown()) {
         this.isShooting = true;
@@ -166,7 +163,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
     });
 
-    // Initialize ability based on class
+    //init ability based on class
     if (player_class === 'MAGE') {
       this.dashAbility = new TeleportAbility(scene, this);
     } else if (player_class === 'WARRIOR') {
@@ -175,17 +172,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.dashAbility = new DashAbility(scene, this);
     }
 
-    // Add space key binding for dash or teleport
     scene.input.keyboard!.on('keydown-SPACE', () => {
       this.dashAbility.use();
     });
 
-    // Create the experience bar
     this.createExperienceBar();
   }
 
   private createStatsDisplay(): void {
-    // Create score text (top left)
     this.scoreText = this.scene.add.text(
         10,
         10,
@@ -212,7 +206,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     .setScrollFactor(0)
     .setDepth(1000);
 
-    // Create gold text (top right)
     this.goldText = this.scene.add.text(
         this.scene.cameras.main.width - 10,
         10,
@@ -239,7 +232,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     .setScrollFactor(0)
     .setDepth(1000);
 
-    // Create health text (center top)
     this.healthText = this.scene.add.text(
         this.scene.cameras.main.width / 2,
         10,
@@ -262,13 +254,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             strokeThickness: 1
         }
     )
-    .setOrigin(0.5, 0) // Center the text
+    .setOrigin(0.5, 0)
     .setScrollFactor(0)
     .setDepth(1000);
 
-    // Create weapon display in bottom right
+    //weapon display
     const padding = 5;
-    const squareSize = 24; // Reduced size
+    const squareSize = 24;
     const weaponBackground = this.scene.add.rectangle(
         this.scene.cameras.main.width - padding,
         this.scene.cameras.main.height - padding,
@@ -280,18 +272,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     .setOrigin(1, 1)
     .setScrollFactor(0)
     .setDepth(999)
-    .setScale(1.5); // Adjusted scale
+    .setScale(1.5);
 
-    // Add weapon sprite using current weapon's sprite
+    //weapon sprite
     this.weaponSprite = this.scene.add.sprite(
         this.scene.cameras.main.width - padding - squareSize / 2,
         this.scene.cameras.main.height - padding - squareSize / 2,
         this.currentWeapon.spriteKey
     )
-    .setOrigin(0.75,0.75) // Center the sprite
+    .setOrigin(0.75,0.75)
     .setScrollFactor(0)
     .setDepth(1000)
-    .setScale(1.5); // Adjusted scale
+    .setScale(1.5);
   }
 
   private createExperienceBar(): void {
@@ -302,10 +294,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   private updateExperienceBar(): void {
-    const barWidth = this.scene.cameras.main.width - 70; // Reduced width
-    const barHeight = 10; // Reduced height
-    const x = 20; // Adjusted position
-    const y = this.scene.cameras.main.height - barHeight - 10; // Lowered position
+    const barWidth = this.scene.cameras.main.width - 70;
+    const barHeight = 10;
+    const x = 20;
+    const y = this.scene.cameras.main.height - barHeight - 10;
 
     const percentage = this.experience / this.experienceToNextLevel;
 
@@ -337,7 +329,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       body.setVelocityY(this.speed * 75);
     }
 
-    // Update facing based on mouse position
     const pointer = this.scene.input.activePointer;
     const angle = Phaser.Math.Angle.Between(
       this.x, 
@@ -347,10 +338,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     );
     this.facing = angle;
 
-    // Flip sprite based on mouse position
     this.setFlipX(Math.abs(angle) > Math.PI/2);
 
-    // Update the stats texts with GameManager values
+    //update stats text
     if (this.scoreText) {
         this.scoreText.setText(`🏆 ${this.gameManager.getScore()}`);
     }
@@ -358,7 +348,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.goldText.setText(`💰 ${this.gameManager.getGold()}`);
     }
 
-    // Handle continuous shooting
+    //continuous shooting
     if (this.isShooting) {
         const currentTime = this.scene.time.now;
         if (currentTime - this.lastShootTime >= this.shootCooldown) {
@@ -369,19 +359,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public damage(amount: number): void {
-    // If player is invulnerable, don't take damage
     if (this.isInvulnerable) return;
 
     this.gameManager.damage(amount);
     
-    // Update health text immediately
     this.updateUIText();
 
-    // Make player invulnerable and flash red
     this.setTint(0xff0000);
     this.isInvulnerable = true;
 
-    // Remove invulnerability after duration
     this.scene.time.delayedCall(this.invulnerabilityDuration, () => {
       this.isInvulnerable = false;
       this.clearTint();
@@ -401,7 +387,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public handleDeath(): void {
-    GameManager.destroyInstance();  // Destroy GameManager instance
+    GameManager.destroyInstance();
     this.scene.scene.start('EndGameScene', { 
         victory: false,
         score: this.gameManager.getScore(),
