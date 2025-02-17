@@ -1,3 +1,5 @@
+import { Item } from "../items/Item";
+
 export class GameManager {
     private static instance: GameManager | null = null;
     private score: number = 0;
@@ -5,12 +7,21 @@ export class GameManager {
     private health: number = 100;
     private maxHealth: number = 100;
     private attack: number;
-    private defense: number = 5;
+    private defense: number = 80;
     private speed: number;
     private experience: number = 0;
     private level: number = 1;
     private experienceToNextLevel: number = 100;
     private playerClass: string = '';
+    private equippedItems: {
+        helmet: Item | null;
+        outfit: Item | null;
+        boots: Item | null;
+    } = {
+        helmet: null,
+        outfit: null,
+        boots: null
+    };
 
     private constructor() {
         this.attack = 4;
@@ -88,6 +99,7 @@ export class GameManager {
 
     public setDefense(value: number): void {
         this.defense = value;
+        console.log('Defense updated:', this.defense);  // Debug log
     }
 
     public getSpeed(): number {
@@ -153,5 +165,13 @@ export class GameManager {
                 this.speed = 1;
                 break;
         }
+    }
+
+    setEquippedItems(items: typeof this.equippedItems): void {
+        this.equippedItems = items;
+    }
+
+    getEquippedItems(): typeof this.equippedItems {
+        return this.equippedItems;
     }
 } 

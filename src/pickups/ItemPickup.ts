@@ -34,31 +34,50 @@ export class ItemPickup extends Pickup {
     }
 
     setupInteraction(player: Player): void {
-        this.scene.physics.add.overlap(
+        if (!this.scene) return;
+
+        const overlap = this.scene.physics.add.overlap(
             player,
             this.detectionZone,
             () => {
+                if (!this.scene || !this.active) return;
                 this.interactText.setVisible(true);
                 
-                this.handleKeyPress = (event: KeyboardEvent) => {
-                    if (event.key.toLowerCase() === 'e') {
-                        this.equipItem(player);
-                    }
-                };
-                
-                window.addEventListener('keydown', this.handleKeyPress);
+                if (!this.handleKeyPress) {
+                    this.handleKeyPress = (event: KeyboardEvent) => {
+                        if (!this.scene || !this.active) {
+                            this.cleanupInteraction();
+                            return;
+                        }
+                        if (event.key.toLowerCase() === 'e') {
+                            this.equipItem(player);
+                        }
+                    };
+                    window.addEventListener('keydown', this.handleKeyPress);
+                }
             }
         );
 
         this.scene.events.on('update', () => {
+            if (!this.scene || !this.active) {
+                this.cleanupInteraction();
+                return;
+            }
             if (!this.scene.physics.overlap(player, this.detectionZone)) {
                 this.interactText.setVisible(false);
-                if (this.handleKeyPress) {
-                    window.removeEventListener('keydown', this.handleKeyPress);
-                    this.handleKeyPress = null;
-                }
+                this.cleanupInteraction();
             }
         });
+    }
+
+    private cleanupInteraction(): void {
+        if (this.handleKeyPress) {
+            window.removeEventListener('keydown', this.handleKeyPress);
+            this.handleKeyPress = null;
+        }
+        if (this.interactText) {
+            this.interactText.setVisible(false);
+        }
     }
 
     private equipItem(player: Player): void {

@@ -11,6 +11,7 @@ import { BossRoom } from '../rooms/BossRoom';
 import { LineEnemy } from '../enemies/LineEnemy';
 import { FireballProjectile } from '../projectiles/FireballProjectile';
 import { ArrowProjectile } from '../projectiles/ArrowProjectile';
+import { ItemPickup } from '../pickups/ItemPickup';
 
 interface ArenaSceneData {
     roomPosition: { x: number, y: number };
@@ -174,6 +175,20 @@ export class ArenaScene extends Phaser.Scene {
 
         // Add this line with other asset loads
         this.load.image('tent', 'assets/tent.png');
+
+        this.load.image('leather-outfit', 'assets/items/leather-outfit.png');
+        this.load.image('leather-boot', 'assets/items/leather-boot.png');
+        this.load.image('leather-helmet', 'assets/items/leather-helmet.png');
+        this.load.image('iron-outfit', 'assets/items/iron-outfit.png');
+        this.load.image('iron-boot', 'assets/items/iron-boot.png');
+        this.load.image('iron-helmet', 'assets/items/iron-helmet.png');
+        this.load.image('diamond-outfit', 'assets/items/diamond-outfit.png');
+        this.load.image('diamond-boot', 'assets/items/diamond-boot.png');
+        this.load.image('diamond-helmet', 'assets/items/diamond-helmet.png');
+        this.load.image('emerald-outfit', 'assets/items/emerald-outfit.png');
+        this.load.image('emerald-boot', 'assets/items/emerald-boot.png');
+        this.load.image('emerald-helmet', 'assets/items/emerald-helmet.png');
+        
     }
 
     create() {
@@ -451,6 +466,13 @@ export class ArenaScene extends Phaser.Scene {
             undefined,
             this
         );
+
+        // Add this for item pickups
+        this.pickups.getChildren().forEach((pickup: any) => {
+            if (pickup instanceof ItemPickup) {
+                pickup.setupInteraction(this.player);
+            }
+        });
     }
 
     // ENEMY SPAWNING AND FUNCTIONALITY
@@ -590,6 +612,10 @@ export class ArenaScene extends Phaser.Scene {
 
     public addPickup(pickup: Pickup): void {
         this.pickups.add(pickup);
+        // Set up interaction immediately when adding new pickup
+        if (pickup instanceof ItemPickup) {
+            pickup.setupInteraction(this.player);
+        }
     }
 
     public addEnemy(enemy: Enemy): void {

@@ -13,6 +13,7 @@ import { Helmet } from './items/Helmet';
 import { Boot } from './items/Boot';
 import { Outfit } from './items/Outfit';
 import { Item } from './items/Item';
+import { FloatingDamage } from './effects/FloatingDamage';
 
 //DEFINED NUMBERS FOR THE CLASSES
 const CLASSES = {
@@ -188,6 +189,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     });
 
     this.createExperienceBar();
+
+    // Load equipped items from GameManager
+    this.equippedItems = this.gameManager.getEquippedItems();
+
+    // Get defense from GameManager
+    this.defense = this.gameManager.getDefense();
   }
 
   private createStatsDisplay(): void {
@@ -372,16 +379,34 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   public damage(amount: number): void {
     if (this.isInvulnerable) return;
 
-    this.gameManager.damage(amount);
+    // Check for block based on defense percentage
+    const blockChance = this.defense / 100; // Convert to decimal (5 defense = 0.05)
+    const roll = Math.random();
     
+    if (roll < blockChance) {
+        // Damage blocked!
+        new FloatingDamage(
+            this.scene,
+            this.x,
+            this.y - 20,
+            0,
+            false,
+            '🛡️ BLOCKED!',
+            0x00ff00  // Green color for blocked damage
+        );
+        return;
+    }
+
+    // If not blocked, apply damage normally
+    this.gameManager.damage(amount);
     this.updateUIText();
 
     this.setTint(0xff0000);
     this.isInvulnerable = true;
 
     this.scene.time.delayedCall(this.invulnerabilityDuration, () => {
-      this.isInvulnerable = false;
-      this.clearTint();
+        this.isInvulnerable = false;
+        this.clearTint();
     });
 
     if (this.gameManager.getHealth() <= 0) {
@@ -610,6 +635,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public modifyDefense(amount: number): void {
     this.defense += amount;
+    this.gameManager.setDefense(this.defense);  // Sync with GameManager
   }
 
   public modifySpeed(amount: number): void {
@@ -642,7 +668,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public equipItem(item: Item): void {
+    console.log('Equipping item:', item.name, item instanceof Helmet);
     if (item instanceof Helmet) {
+        console.log('Equipping helmet:', item.getFullName(), item.icon);
         if (this.equippedItems.helmet) {
             this.modifyDefense(-this.equippedItems.helmet.getDefenseBonus());
         }
@@ -658,9 +686,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
         this.equippedItems.boots = item;
     }
+    console.log('Current equipped items:', this.equippedItems);
+
+    // Sync with GameManager
+    this.gameManager.setEquippedItems(this.equippedItems);
   }
 
   public getEquippedItems(): typeof this.equippedItems {
     return this.equippedItems;
+  }
+
+  public getWeapon(): Weapon {
+    return this.currentWeapon;
   }
 } 

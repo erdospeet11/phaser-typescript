@@ -15,6 +15,7 @@ export class Chest extends Phaser.GameObjects.Sprite {
     private isOpen: boolean = false;
     private interactText: Phaser.GameObjects.Text;
     private handleKeyPress: ((event: KeyboardEvent) => void) | null = null;
+    private isPlayerInRange: boolean = false;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, 'chest-closed');
@@ -38,28 +39,29 @@ export class Chest extends Phaser.GameObjects.Sprite {
     }
 
     setupInteraction(player: Player): void {
-        //show
         this.scene.physics.add.overlap(
             player,
             this.detectionZone,
             () => {
                 if (!this.isOpen) {
+                    this.isPlayerInRange = true;
                     this.interactText.setVisible(true);
         
-                    this.handleKeyPress = (event: KeyboardEvent) => {
-                        if (event.key.toLowerCase() === 'e') {
-                            this.openChest(player);
-                        }
-                    };
-                    
-                    window.addEventListener('keydown', this.handleKeyPress);
+                    if (!this.handleKeyPress) {
+                        this.handleKeyPress = (event: KeyboardEvent) => {
+                            if (event.key.toLowerCase() === 'e' && this.isPlayerInRange) {
+                                this.openChest(player);
+                            }
+                        };
+                        window.addEventListener('keydown', this.handleKeyPress);
+                    }
                 }
             }
         );
 
-        //leave
         this.scene.events.on('update', () => {
             if (this.scene && !this.scene.physics.overlap(player, this.detectionZone)) {
+                this.isPlayerInRange = false;
                 this.interactText.setVisible(false);
                 if (this.handleKeyPress) {
                     window.removeEventListener('keydown', this.handleKeyPress);
@@ -73,30 +75,21 @@ export class Chest extends Phaser.GameObjects.Sprite {
         if (this.isOpen) return;
         this.isOpen = true;
 
-        const random = Phaser.Math.Between(1, 100);
+        //get all items
+        const allItems = Object.values(ITEMS);
+        const itemPool = allItems.filter(item => 
+            item.name.includes('Outfit') || 
+            item.name.includes('Helmet') || 
+            item.name.includes('Boot')
+        );
 
-        let pickup;
-        if (random <= 15) {
-            const itemKeys = Object.keys(ITEMS) as Array<keyof typeof ITEMS>;
-            const randomItem = ITEMS[itemKeys[Phaser.Math.Between(0, itemKeys.length - 1)]];
-            pickup = new ItemPickup(this.scene, this.x, this.y, randomItem);
-        } else if (random <= 35) {
-            pickup = new CoinPickup(this.scene, this.x, this.y);
-        } else if (random <= 55) {
-            pickup = new SpeedPickup(this.scene, this.x, this.y);
-        } else if (random <= 70) {
-            pickup = new HealthPickup(this.scene, this.x, this.y);
-        } else if (random <= 80) {
-            pickup = new BombPickup(this.scene, this.x, this.y);
-        } else if (random <= 90) {
-            pickup = new ScorePickup(this.scene, this.x, this.y);
-        } else {
-            pickup = new StrengthPickup(this.scene, this.x, this.y);
-        }
+        //random item
+        const randomIndex = Math.floor(Math.random() * itemPool.length);
+        const selectedItem = itemPool[randomIndex];
+        const pickup = new ItemPickup(this.scene, this.x, this.y, selectedItem);
 
         (this.scene as ArenaScene).addPickup(pickup);
 
-        //clean up event listeners
         if (this.handleKeyPress) {
             window.removeEventListener('keydown', this.handleKeyPress);
             this.handleKeyPress = null;

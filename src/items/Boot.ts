@@ -10,8 +10,4 @@ export class Boot extends Item {
             tier
         );
     }
-
-    public use(player: Player): void {
-        console.log(`${this.name} used by ${player}`);
-    }
 }

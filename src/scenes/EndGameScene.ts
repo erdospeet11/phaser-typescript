@@ -57,9 +57,11 @@ export class EndGameScene extends Phaser.Scene {
         restartButton.on('pointerover', () => restartButton.setTint(0x999999));
         restartButton.on('pointerout', () => restartButton.clearTint());
 
-        //save score
-        const playerName = localStorage.getItem('playerName') || 'Unknown';
-        const db = GameDatabase.getInstance();
-        await db.saveScore(playerName, this.gameData.score);
+        //save score if player won
+        if (this.gameData.victory) {
+            const playerName = localStorage.getItem('playerName') || 'Unknown';
+            const db = GameDatabase.getInstance();
+            await db.saveScore(playerName, this.gameData.score);
+        }
     }
 } 

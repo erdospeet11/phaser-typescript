@@ -27,6 +27,7 @@ export class Item {
     }
 
     public use(player: Player): void {
+        console.log('Using item:', this.name, this.constructor.name);
         player.modifyDefense(this.defenseBonus);
         player.equipItem(this);
     }

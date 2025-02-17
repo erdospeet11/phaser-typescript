@@ -28,6 +28,7 @@ export class HealthPickup extends Pickup {
   collect(player: Player): void {
     if (player.getHealth() < player.getMaxHealth()) {
       player.heal(this.healAmount);
+      player.updateUIText();
       this.tooltip.hide();
       this.destroy();
     }

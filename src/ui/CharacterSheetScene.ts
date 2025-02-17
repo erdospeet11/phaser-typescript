@@ -20,12 +20,12 @@ export class CharacterSheetScene extends Phaser.Scene {
         this.input.keyboard!.on('keydown-ESC', () => this.closeSheet());
 
         this.add.rectangle(0, 0, width, height, 0x000000, 0.7)
-            .setOrigin(0)
-            .setDepth(998);
-        
+        .setOrigin(0)
+        .setDepth(998);
+
         this.add.text(width * 0.25, height * 0.2, playerName, {
             fontSize: '20px',
-            color: '#ffffff',
+                color: '#ffffff',
             fontStyle: 'bold'
         })
         .setOrigin(0.5)
@@ -33,7 +33,7 @@ export class CharacterSheetScene extends Phaser.Scene {
 
         this.add.sprite(width * 0.25, height * 0.4, this.player.texture.key)
             .setScale(3)
-            .setDepth(999);
+        .setDepth(999);
 
         const stats = [
             { label: 'Level', value: this.player.getLevel().toString() },
@@ -112,20 +112,32 @@ export class CharacterSheetScene extends Phaser.Scene {
         .setStrokeStyle(2, 0x666666)
         .setDepth(999);
 
-        this.add.text(
-            x + this.SLOT_SIZE/2,
-            y + this.SLOT_SIZE/2 + 10,
-            slotType,
-            {
-                fontSize: '10px',
-                color: '#ffffff',
-            }
-        )
-        .setOrigin(0.5)
-        .setDepth(999);
+        if (slotType === 'Weapon') {
+            //show player weapon
+            const weapon = this.player.getWeapon();
+            const weaponSprite = this.add.sprite(
+                x + this.SLOT_SIZE/2,
+                y,
+                weapon.spriteKey
+            )
+            .setScale(2)
+            .setDepth(1000);
 
-        //add the appropriate ability sprite and tooltip
-        if (slotType === 'Ability') {
+            slot.setInteractive({ useHandCursor: true })
+                .on('pointerover', () => {
+                    slot.setStrokeStyle(2, 0x00ff00);
+                    this.tooltip.show(
+                        x + this.SLOT_SIZE/2,
+                        y,
+                        `${weapon.name}\nDamage: ${this.player.getAttack()}`
+                    );
+                })
+                .on('pointerout', () => {
+                    slot.setStrokeStyle(2, 0x666666);
+                    this.tooltip.hide();
+                });
+        } else if (slotType === 'Ability') {
+            //show player ability
             const playerClass = localStorage.getItem('selectedClass') || 'MAGE';
             let abilitySprite: string;
             let abilityName: string;
@@ -150,42 +162,79 @@ export class CharacterSheetScene extends Phaser.Scene {
 
             const abilityIcon = this.add.sprite(
                 x + this.SLOT_SIZE/2,
-                y + this.SLOT_SIZE/2 - 20,
+                y,
                 abilitySprite
             )
-            .setOrigin(0.5)
             .setScale(2)
-            .setDepth(999);
+            .setDepth(1000);
 
-            //make slot interactive
-            slot.setInteractive({ useHandCursor: true });
+            slot.setInteractive({ useHandCursor: true })
+                .on('pointerover', () => {
+                    slot.setStrokeStyle(2, 0x00ff00);
+                    this.tooltip.show(
+                        x + this.SLOT_SIZE/2,
+                        y,
+                        `${abilityName}\n${abilityDescription}`
+                    );
+                })
+                .on('pointerout', () => {
+                    slot.setStrokeStyle(2, 0x666666);
+                    this.tooltip.hide();
+                });
+        } else {
+            //handle equipment slots
+            const equippedItems = this.player.getEquippedItems();
+            let equippedItem = null;
 
-            //hover events
-            slot.on('pointerover', () => {
-                slot.setStrokeStyle(2, 0x00ff00);
-                this.tooltip.show(
+            switch(slotType) {
+                case 'Helmet':
+                    equippedItem = equippedItems.helmet;
+                    break;
+                case 'Outfit':
+                    equippedItem = equippedItems.outfit;
+                    break;
+                case 'Boots':
+                    equippedItem = equippedItems.boots;
+                    break;
+            }
+
+            if (equippedItem) {
+                const itemSprite = this.add.sprite(
                     x + this.SLOT_SIZE/2,
                     y,
-                    `${abilityName}\n${abilityDescription}`
-                );
-            });
+                    equippedItem.icon
+                )
+                .setScale(2)
+                .setDepth(1000);
 
-            slot.on('pointerout', () => {
-                slot.setStrokeStyle(2, 0x666666);
-                this.tooltip.hide();
-            });
-
-            return;
+                slot.setInteractive({ useHandCursor: true })
+                    .on('pointerover', () => {
+                        slot.setStrokeStyle(2, 0x00ff00);
+                        this.tooltip.show(
+                            x + this.SLOT_SIZE/2,
+                            y,
+                            `${equippedItem.getFullName()}\nDefense: +${equippedItem.getDefenseBonus()}`
+                        );
+                    })
+                    .on('pointerout', () => {
+                        slot.setStrokeStyle(2, 0x666666);
+                        this.tooltip.hide();
+                    });
+            }
         }
 
-        //default slot event handlers for other slots
-        slot.setInteractive({ useHandCursor: true })
-            .on('pointerover', () => {
-                slot.setStrokeStyle(2, 0x00ff00);
-            })
-            .on('pointerout', () => {
-                slot.setStrokeStyle(2, 0x666666);
-            });
+        //label
+        this.add.text(
+            x + this.SLOT_SIZE/2,
+            y + this.SLOT_SIZE/2 + 10,
+            slotType,
+            {
+                fontSize: '10px',
+                color: '#ffffff',
+            }
+        )
+        .setOrigin(0.5)
+        .setDepth(999);
     }
 
     private closeSheet(): void {
@@ -195,12 +244,25 @@ export class CharacterSheetScene extends Phaser.Scene {
     }
 
     private updateStats(): void {
-        //any stat update logic here if needed
+        //todo: update stats
     }
 
     preload() {
         this.load.image('dash-item', 'assets/items/dash-item.png');
         this.load.image('teleport-item', 'assets/items/teleport-item.png');
         this.load.image('slash-item', 'assets/items/slash-item.png');
+
+        this.load.image('leather-outfit', 'assets/items/leather-outfit.png');
+        this.load.image('leather-boot', 'assets/items/leather-boot.png');
+        this.load.image('leather-helmet', 'assets/items/leather-helmet.png');
+        this.load.image('iron-outfit', 'assets/items/iron-outfit.png');
+        this.load.image('iron-boot', 'assets/items/iron-boot.png');
+        this.load.image('iron-helmet', 'assets/items/iron-helmet.png');
+        this.load.image('diamond-outfit', 'assets/items/diamond-outfit.png');
+        this.load.image('diamond-boot', 'assets/items/diamond-boot.png');
+        this.load.image('diamond-helmet', 'assets/items/diamond-helmet.png');
+        this.load.image('emerald-outfit', 'assets/items/emerald-outfit.png');
+        this.load.image('emerald-boot', 'assets/items/emerald-boot.png');
+        this.load.image('emerald-helmet', 'assets/items/emerald-helmet.png');
     }
 } 
