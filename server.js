@@ -12,10 +12,22 @@ const dbs = {
 
 //cors middleware for all origins
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    //get origin header
+    const origin = req.headers.origin;
+    
+    //allow any request from localhost or 127.0.0.1
+    if (origin && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+        res.header('Access-Control-Allow-Origin', origin);
+    } else {
+        res.header('Access-Control-Allow-Origin', '*');
+    }
+    
     res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    res.header('Access-Control-Allow-Credentials', 'true');
+    
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
     next();
 });
 
@@ -60,12 +72,26 @@ app.get('/api/scores', (req, res) => {
 
 app.post('/api/scores', (req, res) => {
     const { playerName, score } = req.body;
-    dbs.scores.run('INSERT INTO scores (player_name, score) VALUES (?, ?)', [playerName, score], (err) => {
+    
+    console.log('Received score save request:', { playerName, score });
+    
+    if (!playerName || score === undefined) {
+        console.error('Invalid score data:', req.body);
+        return res.status(400).json({ error: 'Invalid score data. playerName and score are required.' });
+    }
+    
+    dbs.scores.run('INSERT INTO scores (player_name, score) VALUES (?, ?)', [playerName, score], function(err) {
         if (err) {
-            res.status(500).send(err.message);
+            console.error('Database error when saving score:', err.message);
+            res.status(500).json({ error: err.message });
             return;
         }
-        res.status(201).json({ message: 'Score saved successfully' });
+        
+        console.log(`Score saved successfully: ${playerName} - ${score}, ID: ${this.lastID}`);
+        res.status(201).json({ 
+            message: 'Score saved successfully',
+            id: this.lastID
+        });
     });
 });
 

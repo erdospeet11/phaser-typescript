@@ -61,7 +61,22 @@ export class EndGameScene extends Phaser.Scene {
         if (this.gameData.victory) {
             const playerName = localStorage.getItem('playerName') || 'Unknown';
             const db = GameDatabase.getInstance();
-            await db.saveScore(playerName, this.gameData.score);
+            try {
+                await db.saveScore(playerName, this.gameData.score);
+                console.log('Score saved successfully to database');
+                
+                this.add.text(centerX, centerY + 150, 'Score saved!', {
+                    fontSize: '16px',
+                    color: '#00ff00'
+                }).setOrigin(0.5);
+            } catch (error) {
+                console.error('Failed to save score:', error);
+                
+                this.add.text(centerX, centerY + 150, 'Failed to save score', {
+                    fontSize: '16px',
+                    color: '#ff0000'
+                }).setOrigin(0.5);
+            }
         }
     }
 } 

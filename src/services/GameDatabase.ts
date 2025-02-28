@@ -19,6 +19,7 @@ export class GameDatabase {
 
     public async initialize(): Promise<void> {
         try {
+            console.log('Initializing GameDatabase connection...');
             const response = await fetch(`${this.API_URL}/scores?limit=1`, {
                 method: 'GET',
                 headers: {
@@ -37,22 +38,27 @@ export class GameDatabase {
 
     public async saveScore(playerName: string, score: number): Promise<void> {
         try {
+            console.log(`Attempting to save score: ${playerName} - ${score}`);
             const response = await fetch(`${this.API_URL}/scores`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                credentials: 'include',
                 mode: 'cors',
                 body: JSON.stringify({ playerName, score })
             });
+            
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorText = await response.text();
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
             }
-            console.log(`Score saved: ${playerName} - ${score}`);
+            
+            const result = await response.json();
+            console.log(`Score saved successfully: ${playerName} - ${score}`, result);
         } catch (error) {
             console.error('Error saving score:', error);
+            throw error;
         }
     }
 
@@ -63,8 +69,7 @@ export class GameDatabase {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
-                },
-                mode: 'cors'
+                }
             });
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -72,7 +77,7 @@ export class GameDatabase {
             return await response.json();
         } catch (error) {
             console.error('Error getting scores:', error);
-            return []; // Return empty array on error
+            return [];
         }
     }
 

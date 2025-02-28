@@ -17,7 +17,7 @@ interface ArenaSceneData {
     roomPosition: { x: number, y: number };
     roomType: 'start' | 'normal' | 'boss' | 'item';
     levelType: 'forest' | 'dungeon' | 'hell';
-    entryDirection?: string; // Make it optional since it might not always be provided
+    entryDirection?: string;
 }
 
 export class ArenaScene extends Phaser.Scene {
@@ -41,12 +41,12 @@ export class ArenaScene extends Phaser.Scene {
     private readonly ROOM_HEIGHT = this.ROOM_HEIGHT_TILES * this.TILE_SIZE;
     private currentFloorSprite: string = 'forest-floor';
     private currentWallSprite: string = 'forest-wall';
-    private levelType: string = 'dungeon';  // Default to dungeon
+    private levelType: string = 'dungeon';
     private playerProjectiles!: Phaser.GameObjects.Group;
 
     constructor() {
         super({ key: 'ArenaScene' });
-        this.roomPosition = { x: 0, y: 1 }; // Start position
+        this.roomPosition = { x: 0, y: 1 };
         this.roomType = 'start';
         this.roomManager = RoomManager.getInstance();
     }
@@ -56,12 +56,10 @@ export class ArenaScene extends Phaser.Scene {
             this.roomManager.resetVisitedRooms();
         }
 
-        // Set level type first
         if (data.levelType) {
             this.levelType = data.levelType;
         }
 
-        // Then determine sprites based on level type
         let floorSprite = 'forest-floor';
         let wallSprite = 'forest-wall';
 
@@ -73,11 +71,9 @@ export class ArenaScene extends Phaser.Scene {
             wallSprite = 'hell-wall';
         }
 
-        // Store these for use in create()
         this.currentFloorSprite = floorSprite;
         this.currentWallSprite = wallSprite;
 
-        // Set other data
         if (data.roomType) this.roomType = data.roomType;
         if (data.roomPosition) this.roomPosition = data.roomPosition;
         if (data.entryDirection) {
@@ -86,7 +82,6 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     preload() {
-        // Load common assets
         this.load.image('tree', 'assets/tree.png');
         this.load.image('projectile', 'assets/fireball.png');
         this.load.image('custom-cursor', 'assets/cursor.png');
@@ -100,82 +95,53 @@ export class ArenaScene extends Phaser.Scene {
         this.load.image('voidball', 'assets/void-ball.png');
         this.load.image('character-sheet-bg', 'assets/sheet_background.png');
         this.load.image('sniper-enemy', 'assets/sniper-enemy.png');
-
-        // Load level-specific assets
         this.load.image('forest-floor', 'assets/tile.png');
         this.load.image('forest-wall', 'assets/tree.png');
         this.load.image('dungeon-floor', 'assets/dungeon-floor.png');
         this.load.image('dungeon-wall', 'assets/dungeon-wall.png');
         this.load.image('hell-floor', 'assets/hell-floor.png');
         this.load.image('hell-wall', 'assets/hell-wall.png');
-
-        //Players
         this.load.image('player', 'assets/player5.png');
         this.load.image('player-mage', 'assets/player-mage.png');
         this.load.image('player-warrior', 'assets/player-warrior.png');
         this.load.image('player-archer', 'assets/player-archer.png');
         this.load.image('player-thing', 'assets/player-thing.png');
-
         this.load.image('boxingdeer-boss', 'assets/boxingdeer-boss.png');
-
-        //Enemies
         this.load.image('enemy', 'assets/enemy.png');
         this.load.image('ranged-enemy', 'assets/ranged-enemy.png');
         this.load.image('obstacle-enemy', 'assets/obstacle-enemy.png');
         this.load.image('tentacle-boss', 'assets/professor-tentacle.png');
         this.load.image('tentacle', 'assets/tentacle-minion.png');
-        //Weapons
         this.load.image('fire-spellbook', 'assets/fire-spellbook.png');
         this.load.image('ice-spellbook', 'assets/ice-spellbook.png');
         this.load.image('wind-spellbook', 'assets/wind-spellbook.png');
-
-        // NPC assets
         this.load.image('npc', 'assets/shopkeeper-npc.png');
         this.load.image('speech-bubble', 'assets/speech-bubble.png');
         this.load.image('grass', 'assets/grass.png');
         this.load.image('health-potion', 'assets/health-potion.png');
         this.load.image('xp-potion', 'assets/xp-potion.png');
-
-        // Chest sprites
         this.load.image('chest-closed', 'assets/chest-closed.png');
-
-        // Weapons
         this.load.image('iron-sword', 'assets/iron-sword.png');
         this.load.image('sword-slash', 'assets/sword-slash.png');
         this.load.image('longbow', 'assets/longbow.png');
         this.load.image('void-spellbook', 'assets/void-spellbook.png');
-        
-        // Projectiles
         this.load.image('fireball', 'assets/fireball.png');
         this.load.image('arrow', 'assets/arrow.png');
         this.load.image('voidball', 'assets/voidball.png');
-
         this.load.image('strength-pickup', 'assets/strength-pickup.png');
-
         this.load.image('boxing-glove', 'assets/boxing-glove.png');
         this.load.image('standing-projectile', 'assets/standing-projectile.png');
-
         this.load.image('spikes', 'assets/spikes.png');
-
         this.load.image('lava-puddle', 'assets/lava-puddle.png');
-
-        // Load player class sprites
         this.load.image('player-warrior', 'assets/player-warrior.png');
         this.load.image('player-mage', 'assets/player-mage.png');
         this.load.image('player-archer', 'assets/player-archer.png');
         this.load.image('player-thing', 'assets/player-thing.png');
-
-        // Load weapon images
         this.load.image('fire-spellbook', 'assets/fire-spellbook.png');
         this.load.image('iron-sword', 'assets/iron-sword.png');
         this.load.image('longbow', 'assets/longbow.png');
-        // Add any other necessary images
-
         this.load.image('devil', 'assets/devil.png');
-
-        // Add this line with other asset loads
         this.load.image('tent', 'assets/tent.png');
-
         this.load.image('leather-outfit', 'assets/items/leather-outfit.png');
         this.load.image('leather-boot', 'assets/items/leather-boot.png');
         this.load.image('leather-helmet', 'assets/items/leather-helmet.png');
@@ -188,37 +154,33 @@ export class ArenaScene extends Phaser.Scene {
         this.load.image('emerald-outfit', 'assets/items/emerald-outfit.png');
         this.load.image('emerald-boot', 'assets/items/emerald-boot.png');
         this.load.image('emerald-helmet', 'assets/items/emerald-helmet.png');
-        
     }
 
     create() {
-        // Create the floor
+        //create the floor
         this.add.tileSprite(200, 150, 400, 300, this.currentFloorSprite);
         
-        // Create the walls
         this.createArenaWalls(this.currentWallSprite);
         this.createScatteredDecorations();
 
         this.input.setDefaultCursor('url(assets/cursor.png), auto');
 
-        // Get spawn position from RoomManager
+        //get spawn position from RoomManager
         const spawnPosition = this.roomManager.getSpawnPosition(this.entryDirection);
         const selectedClass = localStorage.getItem('selectedClass') || 'MAGE';
         this.player = new Player(this, spawnPosition.x, spawnPosition.y, selectedClass);
         
-        // Update UI with current values
         this.player.updateUIText();
-
         this.setupGroups();
 
-        // Collision
+        //collision
         this.physics.world.fixedStep = false;
 
-        // Physics
+        //physics
         this.setupPhysicsColliders();
         this.setupPhysicsOverlaps();
 
-        // Modify room based on type
+        //modify room based on type
         if (this.roomType === 'boss') {
             this.max_enemies = 0;
             new BossRoom(this).setup();
@@ -230,32 +192,31 @@ export class ArenaScene extends Phaser.Scene {
             this.startEnemySpawner();
         }
 
-        // Pause
+        //pause
         this.input.keyboard!.on('keydown-ESC', () => {
             this.scene.pause();
             this.scene.launch('PauseScene');
         });
 
-        // Character Sheet
+        //character sheet
         this.input.keyboard!.on('keydown-C', () => {
             this.scene.pause();
             this.scene.launch('CharacterSheetScene', { player: this.player });
             this.scene.bringToTop('CharacterSheetScene');
         });
 
-        // Create portals
+        //portals
         this.time.delayedCall(10000, () => {
             this.createPortals();
             this.portalsSpawned = true;
             
-            // Flash screen
             this.cameras.main.flash(500, 0, 0, 255);
         });
 
         // Add this after initializing enemies group
         this.playerProjectiles = this.add.group();
 
-        // Add collision detection for player projectiles and enemies
+        //collision detection for player projectiles and enemies
         this.physics.add.overlap(
             this.playerProjectiles,
             this.enemies,
@@ -299,7 +260,6 @@ export class ArenaScene extends Phaser.Scene {
         // I need to cast here because the type is any, ArcadePhysicsCallback returns any
         const playerObj = player as Player;
         
-        // Check if player is invulnerable
         if (playerObj.isInvulnerable) return;
 
         const damage = 10;
@@ -325,7 +285,6 @@ export class ArenaScene extends Phaser.Scene {
             const damage = proj.getDamage();
             en.damage(damage);
 
-            // Add floating damage number
             new FloatingDamage(
                 this,
                 en.x,
@@ -342,10 +301,9 @@ export class ArenaScene extends Phaser.Scene {
 
     update() {
         console.log(this.enemies.getLength());
-        // Update player
+
         this.player.update();
         
-        // Update regular enemies
         this.enemies.getChildren().forEach((enemy: any) => {
             if (enemy?.active) {
                 enemy.update(this.player);
@@ -354,13 +312,13 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     private setupPhysicsColliders(): void {
-        // Player and walls
+        //player and walls
         this.physics.add.collider(this.player, this.walls);
         
-        // Enemy and walls
+        //enemy and walls
         this.physics.add.collider(this.enemies, this.walls);
         
-        // Player projectiles and walls
+        //player projectiles and walls
         this.physics.add.collider(
             this.player.getProjectiles(), 
             this.walls, 
@@ -369,7 +327,7 @@ export class ArenaScene extends Phaser.Scene {
             }
         );
         
-        // Player projectiles and enemies
+        //player projectiles and enemies
         this.physics.add.collider(
             this.player.getProjectiles(), 
             this.enemies, 
@@ -378,7 +336,7 @@ export class ArenaScene extends Phaser.Scene {
             this
         );
         
-        // Player projectiles and ranged enemies
+        //player projectiles and ranged enemies
         this.physics.add.collider(
             this.player.getProjectiles(),
             this.rangedEnemies,
@@ -387,23 +345,20 @@ export class ArenaScene extends Phaser.Scene {
             this
         );
 
-        // Ranged enemy projectiles setup
+        //ranged enemy projectiles
         this.rangedEnemies.children.iterate((enemy: any) => {
             if (enemy) {
-                // With player
                 this.physics.add.collider(
                     this.player,
                     (enemy as RangedEnemy).getProjectiles(),
                     (player, projectile) => {
                         const playerObj = player as Player;
-                        // Apply damage
                         playerObj.damage(10);
 
                         (projectile as Projectile).destroy();
                     }
                 );
                 
-                // With walls
                 this.physics.add.collider(
                     (enemy as RangedEnemy).getProjectiles(),
                     this.walls,
@@ -416,31 +371,31 @@ export class ArenaScene extends Phaser.Scene {
         });
     }
 
-    // Groups: groups are used to manage game objects efficiently
+    //GROUPS
 
     private setupGroups(): void {
-        // Create enemies group
+        //enemies group
         this.enemies = this.add.group({
             classType: Enemy,
             runChildUpdate: true,
             maxSize: 20
         });
     
-        // Create ranged enemies group
+        //ranged enemies group
         this.rangedEnemies = this.add.group({
             classType: RangedEnemy,
             runChildUpdate: true,
             maxSize: 20
         });
     
-        // Replace separate pickup groups with a single group
+        //pickups group
         this.pickups = this.add.group({
             runChildUpdate: true
         });
     }
 
     private setupPhysicsOverlaps(): void {
-        // Player and enemies
+        //player and enemies
         this.physics.add.overlap(
             this.player, 
             this.enemies, 
@@ -449,7 +404,7 @@ export class ArenaScene extends Phaser.Scene {
             this
         );
 
-        // Pickups and player
+        //pickups and player
         this.physics.add.overlap(
             this.player,
             this.pickups,
@@ -458,7 +413,7 @@ export class ArenaScene extends Phaser.Scene {
             }
         );
 
-        // Player and obstacle enemy
+        //player and obstacle enemy
         this.physics.add.overlap(
             this.player,
             this.obstacleEnemy,
@@ -467,7 +422,7 @@ export class ArenaScene extends Phaser.Scene {
             this
         );
 
-        // Add this for item pickups
+        // item pickups
         this.pickups.getChildren().forEach((pickup: any) => {
             if (pickup instanceof ItemPickup) {
                 pickup.setupInteraction(this.player);
@@ -485,29 +440,27 @@ export class ArenaScene extends Phaser.Scene {
         const randomNum = Phaser.Math.Between(1, 100);
         let enemy;
 
-        if (randomNum <= 60) {  // Regular enemy: 60%
+        if (randomNum <= 60) {
             const spawnPoint = this.getRandomSpawnPoint();
             enemy = new Enemy(this, spawnPoint.x, spawnPoint.y);
-        } else if (randomNum <= 80) {  // Line enemy: 20%
+        } else if (randomNum <= 80) {
             const spawnPoint = this.getRandomSpawnPoint();
             enemy = new LineEnemy(this, spawnPoint.x, spawnPoint.y);
-        } else if (randomNum <= 90) {  // Ranged enemy: 10%
+        } else if (randomNum <= 90) {
             const spawnPoint = this.getRandomSpawnPoint();
             enemy = new RangedEnemy(this, spawnPoint.x, spawnPoint.y);
-        } else {  // Obstacle enemy: 10%
+        } else {
             enemy = ObstacleEnemy.spawnNearPlayer(this, this.player);
         }
 
         this.enemies.add(enemy);
 
-        // Add projectile collisions if it's a RangedEnemy
         if (enemy instanceof RangedEnemy) {
             this.physics.add.collider(
                 this.player,
                 enemy.getProjectiles(),
                 (player, projectile) => {
                     const playerObj = player as Player;
-                    // Apply damage
                     playerObj.damage(10);
 
                     (projectile as Projectile).destroy();
@@ -565,7 +518,6 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     private createPortals(): void {
-        // Don't create portals in boss rooms
         if (this.roomType === 'boss') {
             return;
         }
@@ -612,7 +564,7 @@ export class ArenaScene extends Phaser.Scene {
 
     public addPickup(pickup: Pickup): void {
         this.pickups.add(pickup);
-        // Set up interaction immediately when adding new pickup
+        //set up interaction
         if (pickup instanceof ItemPickup) {
             pickup.setupInteraction(this.player);
         }
@@ -623,7 +575,7 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     public setupEnemyProjectileColliders(enemy: RangedEnemy): void {
-        // Setup player collision
+        //setup player collision
         this.physics.add.collider(
             this.player,
             enemy.getProjectiles(),
@@ -634,7 +586,7 @@ export class ArenaScene extends Phaser.Scene {
             }
         );
 
-        // Setup wall collision
+        //wall collision
         this.physics.add.collider(
             enemy.getProjectiles(),
             this.walls,
@@ -656,7 +608,6 @@ export class ArenaScene extends Phaser.Scene {
         const NUM_DECORATIONS = 30;
         const PADDING = 30;
         
-        // Choose decoration based on level type
         let decorationSprite;
         if (this.levelType === 'dungeon') {
             decorationSprite = 'spikes';
@@ -679,13 +630,10 @@ export class ArenaScene extends Phaser.Scene {
             const decoration = this.add.sprite(x, y, decorationSprite)
                 .setDepth(0);
                 
-            // Add special effects based on decoration type
             if (decorationSprite === 'spikes') {
                 decoration.setTint(0xcccccc);
             } else if (decorationSprite === 'lava-puddle') {
-                // Add glowing effect for lava
                 decoration.setTint(0xff6600);
-                // Optional: Add a pulsing effect
                 this.tweens.add({
                     targets: decoration,
                     alpha: 0.8,

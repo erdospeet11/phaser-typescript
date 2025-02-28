@@ -7,7 +7,7 @@ export class GameManager {
     private health: number = 100;
     private maxHealth: number = 100;
     private attack: number;
-    private defense: number = 80;
+    private defense: number = 0;
     private speed: number;
     private experience: number = 0;
     private level: number = 1;
