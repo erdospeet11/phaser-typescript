@@ -29,6 +29,13 @@ export class LevelSelectScene extends Phaser.Scene {
             this.backgrounds.push(bg);
         }
 
+        // Add escape key for going back
+        if (this.input.keyboard) {
+            this.input.keyboard.on('keydown-ESC', () => {
+                this.scene.start('MainMenuScene');
+            });
+        }
+
         this.add.text(
             this.cameras.main.centerX,
             50,
@@ -157,5 +164,27 @@ export class LevelSelectScene extends Phaser.Scene {
             roomType: 'start',
             levelType: levelType
         });
+    }
+    
+    shutdown() {
+        // Clean up resources in shutdown
+        if (this.backgrounds) {
+            this.backgrounds.forEach(bg => {
+                if (bg && bg.active) {
+                    bg.destroy();
+                }
+            });
+            this.backgrounds = [];
+        }
+
+        // Clear keyboard events
+        if (this.input && this.input.keyboard) {
+            this.input.keyboard.removeAllListeners('keydown-ESC');
+        }
+
+        // Clear all events
+        this.input.removeAllListeners();
+        this.tweens.killAll();
+        this.time.removeAllEvents();
     }
 } 

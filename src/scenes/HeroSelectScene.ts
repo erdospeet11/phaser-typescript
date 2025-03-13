@@ -70,6 +70,13 @@ export class HeroSelectScene extends Phaser.Scene {
             this.backgrounds.push(bg);
         }
 
+        //going back
+        if (this.input.keyboard) {
+            this.input.keyboard.on('keydown-ESC', () => {
+                this.scene.start('MainMenuScene');
+            });
+        }
+
         // Title
         this.add.text(centerX, 50, 'Select Your Hero', {
             fontSize: '32px',
@@ -165,6 +172,11 @@ export class HeroSelectScene extends Phaser.Scene {
 
         if (this.hoverText && this.hoverText.active) {
             this.hoverText.destroy();
+        }
+
+        // Clear keyboard events
+        if (this.input && this.input.keyboard) {
+            this.input.keyboard.removeAllListeners('keydown-ESC');
         }
 
         // Clear all events

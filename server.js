@@ -2,7 +2,7 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const app = express();
-const port = 3000;
+const port = 9001;
 
 //database connections
 const dbs = {
@@ -70,6 +70,40 @@ app.get('/api/scores', (req, res) => {
     });
 });
 
+//get a single score
+app.get('/api/scores/:id', (req, res) => {
+    const { id } = req.params;
+    dbs.scores.get('SELECT * FROM scores WHERE id = ?', [id], (err, row) => {
+        if (err) {
+            res.status(500).send(err.message);
+            return;
+        }
+        if (!row) {
+            res.status(404).json({ error: 'Score not found' });
+            return;
+        }
+        res.json(row);
+    });
+});
+
+//delete a single score
+app.delete('/api/scores/:id', (req, res) => {
+    const { id } = req.params;
+    dbs.scores.run('DELETE FROM scores WHERE id = ?', [id], function(err) {
+        if (err) {
+            res.status(500).send(err.message);
+            return;
+        }
+        
+        if (this.changes === 0) {
+            res.status(404).json({ error: 'Score not found' });
+            return;
+        }
+        
+        res.json({ message: 'Score deleted successfully' });
+    });
+});
+
 app.post('/api/scores', (req, res) => {
     const { playerName, score } = req.body;
     
@@ -105,45 +139,7 @@ app.post('/api/scores/clear', (req, res) => {
     });
 });
 
-app.post('/api/register', (req, res) => {
-    const { username, password } = req.body;
-    dbs.scores.run('INSERT INTO users (username, password) VALUES (?, ?)', [username, password], (err) => {
-        if (err) {
-            res.status(500).send(err.message);
-            return;
-        }
-        res.status(201).json({ message: 'User registered successfully' });
-    });
-});
-
-app.post('/api/login', (req, res) => {
-    const { username, password } = req.body;
-    dbs.scores.get('SELECT * FROM users WHERE username = ? AND password = ?', [username, password], (err, row) => {
-        if (err) {
-            res.status(500).send(err.message);
-            return;
-        }
-        if (row) {
-            res.status(200).json({ message: 'Login successful' });
-        } else {
-            res.status(401).json({ message: 'Invalid username or password' });
-        }
-    });
-});
-
-app.post('/api/admin/login', (req, res) => {
-    const { username, password } = req.body;
-    if (username === 'admin' && password === 'admin') {
-        res.status(200).json({ 
-            message: 'Admin login successful',
-            isAdmin: true 
-        });
-    } else {
-        res.status(401).json({ message: 'Invalid admin credentials' });
-    }
-});
-
-//game endpoints
+//game data endpoints
 app.get('/api/game/:playerId', (req, res) => {
     const { playerId } = req.params;
     dbs.game.get('SELECT data FROM game_data WHERE player_id = ?', [playerId], (err, row) => {

@@ -36,6 +36,12 @@
         .button:hover {
             background: #6a6a6a;
         }
+        .button.danger {
+            background: #a02020;
+        }
+        .button.danger:hover {
+            background: #c02020;
+        }
         .stats-panel {
             background: rgba(0, 0, 0, 0.3);
             padding: 15px;
@@ -69,6 +75,47 @@
             margin-top: 10px;
             padding: 15px;
             font-size: 16px;
+        }
+        .data-table-container {
+            margin-bottom: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th, .data-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+        .data-table th {
+            background-color: #2a2a2a;
+            position: sticky;
+            top: 0;
+        }
+        .data-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .table-loader {
+            text-align: center;
+            padding: 20px;
+            color: #aaa;
+        }
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #ff6666;
+            display: none;
+        }
+        .table-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .table-actions .button {
+            margin-right: 10px;
         }
     </style>
 </head>
@@ -121,7 +168,6 @@
         <div class="stats-panel">
             <h2>Enemy Configuration</h2>
             <div class="rule-grid">
-                <!-- Basic Enemy -->
                 <div class="rule-item">
                     <label>Basic Enemy Health:</label>
                     <input type="number" id="basicEnemyHealth" min="1" max="500">
@@ -134,8 +180,6 @@
                     <label>Basic Enemy Drop Rate (%):</label>
                     <input type="number" id="basicEnemyDropRate" min="0" max="100">
                 </div>
-
-                <!-- Ranged Enemy -->
                 <div class="rule-item">
                     <label>Ranged Enemy Health:</label>
                     <input type="number" id="rangedEnemyHealth" min="1" max="500">
@@ -148,8 +192,6 @@
                     <label>Ranged Enemy Drop Rate (%):</label>
                     <input type="number" id="rangedEnemyDropRate" min="0" max="100">
                 </div>
-
-                <!-- Line Enemy -->
                 <div class="rule-item">
                     <label>Line Enemy Health:</label>
                     <input type="number" id="lineEnemyHealth" min="1" max="500">
@@ -162,8 +204,6 @@
                     <label>Line Enemy Drop Rate (%):</label>
                     <input type="number" id="lineEnemyDropRate" min="0" max="100">
                 </div>
-
-                <!-- Obstacle Enemy -->
                 <div class="rule-item">
                     <label>Obstacle Enemy Health:</label>
                     <input type="number" id="obstacleEnemyHealth" min="1" max="1000">
@@ -183,7 +223,6 @@
         <div class="stats-panel">
             <h2>Shop Configuration</h2>
             <div class="rule-grid">
-                <!-- Health Potion -->
                 <div class="rule-item">
                     <label>Health Potion Cost:</label>
                     <input type="number" id="healthPotionCost" min="1" max="1000">
@@ -192,8 +231,6 @@
                     <label>Health Restore Amount:</label>
                     <input type="number" id="healthRestoreAmount" min="1" max="100">
                 </div>
-                
-                <!-- Attack Boost -->
                 <div class="rule-item">
                     <label>Attack Boost Cost:</label>
                     <input type="number" id="attackBoostCost" min="1" max="1000">
@@ -204,6 +241,30 @@
                 </div>
             </div>
             <button class="button save-rules" onclick="saveShopRules()">Save Shop Rules</button>
+        </div>
+        <div class="stats-panel">
+            <h2>Scores Database</h2>
+            <div class="data-table-container">
+                <table id="scoresTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Player Name</th>
+                            <th>Score</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <div class="table-loader" id="scoresLoader">Loading...</div>
+                <div class="no-data" id="noScoresData">No scores found</div>
+            </div>
+            <div class="table-actions">
+                <button class="button" onclick="refreshScores()">Refresh</button>
+                <button class="button danger" onclick="resetScores()">Reset All Scores</button>
+            </div>
         </div>
 
         <div class="stats-panel">
