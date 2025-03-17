@@ -36,13 +36,13 @@ module.exports = {
       directory: path.join(__dirname, 'dist'),
     },
     compress: true,
-    port: 9001,
+    port: 9002,
     open: {
       target: ['index.html']
     },
     proxy: [{
       context: ['/api'],
-      target: 'http://localhost:3000'
+      target: 'http://localhost:9001'
     }]
   },
   plugins: [

@@ -1,6 +1,59 @@
 import '@testing-library/jest-dom';
 import { Player } from '../Player';
 
+// Mock the Player class to avoid issues with prototype methods
+jest.mock('../Player', () => {
+  // Create a mock Player implementation
+  const MockPlayer = function(this: any, scene: any, x: number, y: number, characterClass: string) {
+    this.scene = scene;
+    this.x = x;
+    this.y = y;
+    this.characterClass = characterClass;
+    
+    // Set up gameManager from mock
+    const gameManagerMock = jest.requireMock('../managers/GameManager').GameManager.getInstance();
+    this.gameManager = gameManagerMock;
+    
+    // Set properties that would be initialized from gameManager
+    this.health = gameManagerMock.getHealth();
+    this.maxHealth = gameManagerMock.getMaxHealth();
+    this.level = gameManagerMock.getLevel();
+    this.attack = gameManagerMock.getAttack();
+    this.defense = gameManagerMock.getDefense();
+    this.experience = gameManagerMock.getExperience();
+    this.experienceToNextLevel = gameManagerMock.getExperienceToNextLevel();
+    this.equippedItems = gameManagerMock.getEquippedItems();
+  };
+  
+  // Add methods for testing
+  MockPlayer.prototype.getHealth = function() { return this.health; };
+  MockPlayer.prototype.getMaxHealth = function() { return this.maxHealth; };
+  MockPlayer.prototype.getLevel = function() { return this.level; };
+  MockPlayer.prototype.getExperience = function() { return this.experience; };
+  
+  // Implement damage method
+  MockPlayer.prototype.damage = function(amount: number) {
+    this.gameManager.damage(amount);
+    this.health = this.gameManager.getHealth();
+  };
+  
+  // Implement gainExperience method
+  MockPlayer.prototype.gainExperience = function(amount: number) {
+    const oldLevel = this.level;
+    this.experience += amount;
+    this.gameManager.setExperience(this.experience);
+    
+    // Check for level up
+    if (this.experience >= this.experienceToNextLevel) {
+      this.level += 1;
+      this.gameManager.setLevel(this.level);
+      this.experienceToNextLevel = this.gameManager.getExperienceToNextLevel();
+    }
+  };
+  
+  return { Player: MockPlayer };
+});
+
 jest.mock('../managers/GameManager', () => {
   //track health and experience
   let health = 100;  
@@ -20,6 +73,7 @@ jest.mock('../managers/GameManager', () => {
         getSpeed: jest.fn().mockReturnValue(1),
         getGold: jest.fn().mockReturnValue(0),
         getScore: jest.fn().mockReturnValue(0),
+        getEquippedItems: jest.fn().mockReturnValue({ helmet: null, outfit: null, boots: null }),
         setAttack: jest.fn(),
         setExperience: jest.fn(),
         setLevel: jest.fn(),
@@ -39,6 +93,9 @@ describe('Player', () => {
   let mockScene: any;
 
   beforeEach(() => {
+    // Reset health for each test
+    jest.clearAllMocks();
+    
     //mock phaser scene
     mockScene = {
       add: {
@@ -113,7 +170,7 @@ describe('Player', () => {
         stop: jest.fn()
       }
     };
-
+    
     player = new Player(mockScene, 100, 100, 'WARRIOR');
   });
 

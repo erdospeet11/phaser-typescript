@@ -3,7 +3,6 @@
 - [] no critical
 - [] fix the map (there is an instance of getting stuck)
 - [] fix the level upgrades
-- [] make the room stop spawning mosnters after clearing and keep the portals to lead all rooms
 
 more defense you have the more the chance you will ignore damage
 

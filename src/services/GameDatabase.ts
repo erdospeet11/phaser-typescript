@@ -6,7 +6,7 @@ interface Score {
 
 export class GameDatabase {
     private static instance: GameDatabase;
-    private readonly API_URL = 'http://localhost:3000/api';
+    private readonly API_URL = 'http://localhost:9001/api';
 
     private constructor() {}
 

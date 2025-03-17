@@ -167,6 +167,105 @@ app.post('/api/game/:playerId', (req, res) => {
     );
 });
 
+// User registration endpoint
+app.post('/api/register', (req, res) => {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' });
+    }
+    
+    // Check if username already exists
+    dbs.scores.get("SELECT * FROM users WHERE username = ?", [username], (err, row) => {
+        if (err) {
+            console.error("Database error:", err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        
+        if (row) {
+            return res.status(409).json({ error: 'Username already exists' });
+        }
+        
+        // Insert new user
+        dbs.scores.run(
+            "INSERT INTO users (username, password) VALUES (?, ?)",
+            [username, password],
+            function(err) {
+                if (err) {
+                    console.error("Error registering user:", err);
+                    return res.status(500).json({ error: 'Failed to register user' });
+                }
+                
+                res.status(201).json({ 
+                    message: 'Registration successful',
+                    userId: this.lastID
+                });
+            }
+        );
+    });
+});
+
+// User login endpoint
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' });
+    }
+    
+    dbs.scores.get(
+        "SELECT * FROM users WHERE username = ? AND password = ?",
+        [username, password],
+        (err, row) => {
+            if (err) {
+                console.error("Database error:", err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            
+            if (!row) {
+                return res.status(401).json({ error: 'Invalid credentials' });
+            }
+            
+            res.json({
+                message: 'Login successful',
+                userId: row.id,
+                username: row.username
+            });
+        }
+    );
+});
+
+// Admin login endpoint
+app.post('/api/admin/login', (req, res) => {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' });
+    }
+    
+    dbs.scores.get(
+        "SELECT * FROM users WHERE username = ? AND password = ? AND is_admin = 1",
+        [username, password],
+        (err, row) => {
+            if (err) {
+                console.error("Database error:", err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            
+            if (!row) {
+                return res.status(401).json({ error: 'Invalid admin credentials' });
+            }
+            
+            res.json({
+                message: 'Admin login successful',
+                userId: row.id,
+                username: row.username,
+                isAdmin: true
+            });
+        }
+    );
+});
+
 //admin route protection
 app.get('/admin.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));

@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         //admin login
         if (name === 'admin') {
-            fetch('http://localhost:3000/api/admin/login', {
+            fetch('http://localhost:9001/api/admin/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         //user login
-        fetch('http://localhost:3000/api/login', {
+        fetch('http://localhost:9001/api/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = registerPassword.value.trim();
 
             // Send register to server
-            fetch('http://localhost:3000/api/register', {
+            fetch('http://localhost:9001/api/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

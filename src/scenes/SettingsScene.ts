@@ -93,10 +93,25 @@ export class SettingsScene extends Phaser.Scene {
             // TODO: Implement SFX volume control
         });
 
+        // Fullscreen Toggle
+        this.createToggleButton(
+            this.cameras.main.centerX,
+            200,
+            'Fullscreen',
+            this.scale.isFullscreen,
+            (isOn) => {
+                if (isOn) {
+                    this.scale.startFullscreen();
+                } else {
+                    this.scale.stopFullscreen();
+                }
+            }
+        );
+
         // Back Button
         this.createButton(
             this.cameras.main.centerX,
-            220,
+            260,
             'Back',
             () => this.returnToMainMenu()
         );
@@ -221,5 +236,58 @@ export class SettingsScene extends Phaser.Scene {
 
     private returnToMainMenu() {
         this.scene.start('MainMenuScene');
+    }
+
+    private createToggleButton(x: number, y: number, text: string, initialState: boolean, onChange: (isOn: boolean) => void) {
+        let isOn = initialState;
+        
+        // Create a container for better layout
+        const containerWidth = 200; // Width of the entire control
+        const containerX = x - containerWidth/2;
+        
+        // Label
+        this.add.text(
+            containerX + containerWidth * 0.25, // Position at 25% of container width
+            y,
+            text,
+            {
+                fontSize: '14px',
+                color: '#ffffff',
+                fontStyle: 'bold'
+            }
+        ).setOrigin(0.5);
+        
+        // Toggle background
+        const toggleWidth = 50;
+        const toggleHeight = 24;
+        const toggleBg = this.add.rectangle(
+            containerX + containerWidth * 0.75, // Position at 75% of container width
+            y,
+            toggleWidth,
+            toggleHeight,
+            isOn ? 0x4CAF50 : 0x9E9E9E
+        ).setInteractive();
+        
+        // Toggle knob
+        const knobSize = toggleHeight - 6;
+        const knobX = containerX + containerWidth * 0.75; // Same as toggle background
+        const knob = this.add.circle(
+            isOn ? knobX + (toggleWidth/2) - (knobSize/2) - 3 : knobX - (toggleWidth/2) + (knobSize/2) + 3,
+            y,
+            knobSize / 2,
+            0xFFFFFF
+        );
+        
+        // Handle toggle interaction
+        toggleBg.on('pointerdown', () => {
+            isOn = !isOn;
+            
+            // Update visuals
+            toggleBg.fillColor = isOn ? 0x4CAF50 : 0x9E9E9E;
+            knob.x = isOn ? knobX + (toggleWidth/2) - (knobSize/2) - 3 : knobX - (toggleWidth/2) + (knobSize/2) + 3;
+            
+            // Call handler
+            onChange(isOn);
+        });
     }
 } 

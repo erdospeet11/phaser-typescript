@@ -34,7 +34,6 @@ describe('Enemy', () => {
                             setSize: jest.fn(),
                             setVelocity: jest.fn()
                         };
-                        //sprite methods
                         obj.setTexture = jest.fn().mockReturnThis();
                         obj.setPosition = jest.fn().mockReturnThis();
                         obj.destroy = jest.fn();
@@ -42,12 +41,10 @@ describe('Enemy', () => {
                     })
                 }
             },
-            //mock ArenaScene methods
             getPlayer: jest.fn().mockReturnValue(mockPlayer),
             addPickup: jest.fn()
         };
 
-        //create enemy
         const spriteMethods = {
             setTexture: jest.fn().mockReturnThis(),
             setPosition: jest.fn().mockReturnThis(),
